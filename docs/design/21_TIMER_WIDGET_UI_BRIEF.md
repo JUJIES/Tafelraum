@@ -1,0 +1,87 @@
+# UI Brief – Timer als eingebautes Widget
+
+**Stand:** 13. Oktober 2026 · **Status:** erster Widgets-Slice, veröffentlicht mit 0.1.48 am 14. Oktober 2026
+
+## Handlung und Designfrage
+
+Die Lehrkraft fügt über `Widgets` einen frei platzierbaren Countdown ein, stellt die Arbeitszeit ein und startet ihn am Lehrergerät oder im Room Canvas. Ist Ring, Restzeit und Bedienung ohne Anleitung verständlich und im Unterricht ruhig?
+
+## Scope und Gestaltung
+
+- `Widgets` ist ein eigener Einstieg neben `Apps`; sein verankertes Popover enthält zunächst ausschließlich `Timer`. Offizielle Fluent-Icons in der Hauptleiste, Lucide für Widgetcontrols.
+- Reduzierter Restzeitring mit großen stabilen Ziffern, einer Akzentfarbe und neutraler heller/dunkler Fläche. D-300 ersetzt den früheren sichtbaren Griff: freie Außenflächen und der ausgewählte Außenrahmen verschieben das Widget; native Auswahlgriffe skalieren es. Alle Details folgen derselben Canvastransformation.
+- Seit dem beauftragten Ring-Umbau (28.10.2026, Entwicklung) ersetzen direkte Ringbedienung und eine einzelne genaue Zeiteingabe das bisherige Minuten-/Sekundenformular. Die Ziffern öffnen die genaue Eingabe als Minuten:Sekunden. Der große Button bietet `Starten`, `Pause` oder `Weiter`. Sekundär: Zurücksetzen und optionaler Ton, standardmäßig aus. Dauer 1 Sekunde bis 24 Stunden als begrenzter technischer Eingabevertrag.
+- Timer nehmen Maus-, Finger- und Stifteingabe unabhängig vom Canvaswerkzeug an. Keine Annotation, Formbeschriftung, Abdeckung oder Materialprovenienz. Löschen, Kopieren, Transformation und Undo verwenden den vorhandenen Canvaspfad.
+- Lehrer und Room bedienen eine gemeinsame autoritative Laufzeit. Room zeigt dieselbe Geometrie in Canvas/Ausschnittclips; ein Materialeinzelziel zeigt weiterhin ausschließlich sein Material. Start/Pause wechselt weder Room-Ziel noch Kamera. Keine automatische Anheftung, Remote-Auslieferung, Stoppuhr oder Zufallsauswahl.
+- Das Endsignal entsteht ausschließlich im Lehrerfenster, höchstens einmal je Lauf. Bei browserseitig gesperrtem Audio ist die notwendige Aktivierung am Lehrergerät sichtbar. Stundenwechsel, Reload und Wiederherstellen eines gelöschten Widgets starten mit eingestellter Dauer; kein später nachgeholter Gong.
+- Konfiguration im Room wartet in der vorhandenen Schreibqueue auf laufende Lehrergesten und verwendet den eigenen Room-Verlauf. Start/Pause/Reset bleiben flüchtig. Auf dem Lehrergerät sind Konfigurationscontrols während einer aktiven Schreib- oder Transformationsgeste nicht verfügbar. Reduzierte Systembewegung aktualisiert den Ring im Sekundentakt.
+
+## Exakter UI-Text
+
+`Widgets`, `Widgets auswählen`, `Timer`, `Timer einfügen`, `Timer verschieben`, `Dauer einstellen`, `Minuten`, `Sekunden`, `Übernehmen`, `Abbrechen`, `Starten`, `Pause`, `Weiter`, `Zurücksetzen`, `Ton einschalten`, `Ton ausschalten`, `Zeit abgelaufen`, `Dauer: 1 Sekunde bis 24 Stunden.`, `Ton am Lehrergerät aktivieren`, `Der Timer wurde inzwischen geändert.`, `Bearbeitung der Fläche zuerst beenden.` Bestehende Room-Queuefehler bleiben erhalten.
+
+## Architektur und Referenz
+
+Visuelle Referenz: React Countdown Circle Timer, einfacher SVG-Ring. Umsetzung als eigene kleine React/SVG-Oberfläche ohne neue Dependency. Native Trägergeometrie bleibt kanonisch; Dauer/Ton sind gespeicherte Konfiguration. Deadline, Restzeit und Laufrevision sind flüchtig. Room-Befehle prüfen Generation, Sichtbarkeit und Laufrevision; keine zweite Uhr, keine sekündlichen Archivwrites oder Remote-Wire-Erweiterung.
+
+## Abnahme
+
+Einfügen, Zeit einstellen, Start/Pause/Weiter/Ende, Ton aus/an, Verschieben/Skalieren, Kopieren, Undo/Redo, Reload und Stundenwechsel. Lehrer ↔ Room, spätes Room-Öffnen, Clipwechsel, Raumvorschau, veraltete Befehle und Entfernen eines laufenden Timers prüfen. Stift/Marker/Text auf dem Widget erzeugen keine Annotation. Hell/Dunkel und 10/50/100/160/300 % Zoom prüfen. Desktopprüfung ersetzt keinen Touch-/Stifttest am Legamaster oder native Zweitdisplay-/Audioabnahme.
+
+## Prüfstand – 13. Oktober 2026
+
+Wiederholbarer Shell-Einstieg mit Node ≥22.18: `node scripts/live-canvas-browser-check.mjs --widgets`. Der bestehende Prüfdienst erzeugt ein temporäres Archiv mit frischen synthetischen IDs und zwei leeren Stunden; weder produktive Dateibasis noch Browserprofil werden zurückgesetzt. Bei parallelen Fixtures eigene `LIVE_CANVAS_HOST_PORT`/`LIVE_CANVAS_SERVICE_PORT` wählen.
+
+- **Automatisiert:** 294 App-/Archivtests und 90 Live-/Room-Tests grün, beide Typprüfungen und Haupt-/Teilnehmerbuild erfolgreich. Deadline, Pause/Resume, einmaliger Alarm, Löschen/Undo/Dispose, stale Befehle, Queue bei Lehrergesten, Room-Konfigurationsverlauf und Remote-Platzhalter abgesichert. Vorhandene große Buildchunks bleiben der bekannte Buildhinweis.
+- **Browser:** Codex In-app Browser (Chromium/Electron) auf dem lokalen Test-Mac, 1280 × 720 beziehungsweise 1374 × 1160; eigener Loopback-Ursprung und temporäres synthetisches Archiv. Echte Shell: Widgets-Einstieg, 2:15 und 0:03 einstellen, Start/Pause in beide Richtungen, gemeinsamer Endzustand und Tonwahl. Lehrer-/Room-Griffbewegung, native Größenänderung mit Undo, Zeitbedienung bei aktivem Textwerkzeug und Stiftgesten auf beiden Widgetflächen geprüft. Der gespeicherte Stand enthielt danach weiterhin nur den Timerträger, keine Annotation oder Laufzeitdaten.
+- **Projektion:** Ausschnittclip mit Timer aufgenommen und gezeigt; Start änderte das gewählte Room-Ziel nicht. Hell/Dunkel, Reload als startbereiter 5-Minuten-Timer, Copy/Paste als unabhängige Instanz sowie Löschen/Undo/Redo geprüft. Ringdurchmesser bei 10/50/100/160/300 %: 24/120/240/384/720 CSS-Pixel; Controls skalieren mit. Die Development-Zoomdiagnose wurde bei ausgeblendeter Hauptleiste verwendet. Browserbild (lokaler Beleg, nicht im öffentlichen Quellstand).
+- **Browserbefund:** Die erste Pause scheiterte an einer ungebundenen Browser-`clearTimeout`-Funktion. Der echte Aufrufkontext wurde korrigiert und Start/Pause danach frisch geladen erneut in beiden Fenstern geprüft; keine Validierung oder Tests abgeschwächt.
+- **Ursprünglich offen:** Die native Probe war zunächst durch den gesperrten Mac verhindert. Der Folgeprüfstand unten ersetzt diese Sperre; Hardware- und Releasegrenzen bleiben bestehen.
+
+## Native Folgeprüfung – 14. Oktober 2026
+
+- **Aufbau:** Separates ARM64-QA-Bundle unter `output/timer-widget/Tafelraum Timer QA.app`, bereits dokumentierte QA-ID `app.jujies.tafelraum.qa0147`, Loopbackport 49347 und ausschließlich neutrales QA-Profil. Die 200 Webdateien entsprechen bytegleich dem aktuellen Hauptbuild; Bundle nach dem Austausch ad hoc signiert und strikt geprüft. Rust/Archivserver unverändert. Eine zusätzliche leere Teststunde wurde über die App angelegt; produktive App und Archiv unverändert, kein Release.
+- **WKWebView:** Widgets → Timer, Dauer 1:15, Lehrerstart und nachträglicher nativer Room-Start; Room-Pause erschien am Lehrergerät als Weiter mit derselben Restzeit 1:11. Room stellte 0:03 und Ton an ein, startete und erreichte 0:00/Zeit abgelaufen, Lehrer hatte denselben Endzustand und Tonwahl. Kein Audioaktivierungsfehler angezeigt; die tatsächliche akustische Ausgabe ist damit nicht bestätigt. App-Neustart las 0:03/Ton an als startbereiten Timer. Room-Griffbewegung erschien im kanonischen QA-Board; weiterhin ausschließlich ein Timerrechteck, Dauer/Ton/Geometrie und keine Laufzeitdaten oder Annotationen. Room-Endzustand (lokaler Beleg, nicht im öffentlichen Quellstand).
+- **Befund/Korrektur:** Die native Raumvorschau enthielt den Timer, doch ihr bisheriger allgemeiner Buttonstil überschrieb Ziffernposition und Farbe. Alle Kopfbuttonregeln sind jetzt auf direkte Buttons in `.student-preview-header` begrenzt. Haupt-/Teilnehmerbuild und Haupttypprüfung danach erneut grün. Der korrigierte ausgelieferte QA-Webstand wurde im Chromium-Browser mit Room/Vorschau geprüft: Ziffernzentrum und Ringzentrum deckungsgleich, unveränderte Kopfcontrols. Korrigierte Vorschau (lokaler Beleg, nicht im öffentlichen Quellstand). Kein zusätzlicher Test für die reine CSS-Eingrenzung; die 294/90 fachlichen Tests der Implementierung bleiben der automatisierte Stand.
+- **Prüfgrenzen:** Die native App-Steuerung antwortete beim anschließenden Fensterwechsel wiederholt mit Timeout; die letzte CSS-Korrektur ist deshalb visuell im Browser, noch nicht erneut in WKWebView bestätigt. Native QA-App blieb separat; Browser-Testpräsentation wurde beendet. Erweitertes Unterrichtsdisplay, echtes Touch/Stift, tatsächlicher Ton und letzte private Gestenkonkurrenz auf Zielhardware bleiben offen.
+
+## Releaseprüfung 0.1.48 – 14. Oktober 2026
+
+Erneut 294 App-/Archivtests, 90 Live-/Room-Tests, Rust-Test, beide Typprüfungen und Haupt-/Teilnehmerbuild bestanden. Portable ZIP-Datenfreiheit, Codesign und Updatersignatur geprüft; sechs synthetische Dateien beim Übergang von 0.1.47 bytegleich. Der native Kontrolllauf in einem neuen neutralen QA-Profil bestätigte jetzt auch die letzte Vorschaukorrektur: gleiche Ring-/Ziffernzentrierung, erhaltene Vorschaukopfcontrols, bestätigtes Roombild, Vollbildumschaltung und normales Präsentationsende. Alle 207 Ressourcen entsprechen dem signierten portablen Paket. Native korrigierte Vorschau (lokaler Beleg, nicht im öffentlichen Quellstand). Dieser Kontrolllauf ersetzt die oben offene WKWebView-Probe der CSS-Korrektur; Touch/Stift und physische Ton-/Unterrichtsdisplayprüfung bleiben offen. Update veröffentlicht; konkrete Installation und Downloadbeleg im [Desktop-Protokoll](../implementation/09_DESKTOP_APP_UND_UPDATES.md#update-0148-widgets-und-gemeinsamer-ring-timer).
+
+## Ringbedienung · beauftragter Entwicklungsstand 28.10.2026
+
+Gewählte Referenz: interaktiver Entwurf „Drehbarer Ring“ aus dem Vergleich mit dem Zeitlineal. Häufige Zeiten stehen direkt als 48×48 große Tippziele am offenen 270°-Ring: `10 s`, `30 s`, `1 m`, `2 m`, `3 m`, `4 m`, `5 m`, `10 m`, `15 m`, `30 m`, `60 m`. Dieselbe Skala erlaubt Ziehen mit Finger, Stift und Maus; beschriftete nichtlineare Zeitintervalle und feine Rastschritte ersetzen separate Schnellwahl/Custom-Seiten. Keine automatische Wiedergabe.
+
+Ein Pointer besitzt die Geste per Capture. Zwischenwerte und Ringposition sind lokal; Pointerup sendet genau einen bestehenden revisionsgebundenen Dauerbefehl. Abbruch, verlorener Capture, Fensterblur, Sperrung oder fremde Laufrevision verwerfen den Entwurf. Gedrehte und skalierte Canvasträger werden invers auf dieselbe Dialgeometrie abgebildet. Während der Geste sind Start/Reset/Ton gesperrt.
+
+Der laufende Countdown behält eine lineare proportionale Restzeitanzeige ohne Einstellungsskala. Pausiert darf die Dauer erneut gesetzt werden; dies setzt wie bisher startbereit zurück. Die Mitte öffnet eine einzelne Eingabe `Minuten:Sekunden` mit `Übernehmen`/`Abbrechen` als Check-/X-Icons (48px). Sie erhält alle exakten Bestandsdauern von1s bis24h; der Ring selbst deckt10s bis60min ab. Bestehende längere/kürzere Zeiten werden beim Laden nicht gekürzt. Keine neue gespeicherte Konfiguration, parallele Uhr oder geänderte Trägergröße (300×354). Lehrer und Room nutzen dieselbe Komponente.
+
+Prüffrage: Zeitmarke antippen oder mit einer Geste einstellen → Starten, ohne Einstellungsdialog. Pflichtchecks: Tipp-/Zieh-/Abbruchpfad, kurzer Touch, Pointercapture außerhalb des Rings, konkurrierende Roomrevision, Rotation/Zoom, exakte Werte außerhalb der Ringskala, Undo/Redo/Reload, Lehrer↔Room und Hell/Dunkel. Echte Legamaster-Touch-/Stiftabnahme bleibt separat.
+
+**Automatisierter Entwicklungsprüfstand D-291:** 389 App-/14 Playback-/113 Live-Tests, beide Typprüfungen und Haupt-/Teilnehmerbuild bestanden. Browser mit temporärem Archiv und frischem synthetischem Stundenbezug: CDP-Touch für Marken und Ring, Tastaturwahl ohne Canvas-Shortcut, untere Ringlücke ohne Zeitumschlag, Vorschau ohne Archivwrite, ein Undo/Redo, Pointercancel, exakte1s/24h, Start/Pause/Reset, Room→Lehrer und konkurrierende Roomrevision,45°-Drehung bei130% Zoom ohne Canvaspan sowie Speichern/Reload geprüft. Hell/Dunkel gesichtet; Bilder und Ergebnisliste `output/timer-dial/`. Wiederholung: `LIVE_CANVAS_HOST_PORT=5179 LIVE_CANVAS_SERVICE_PORT=5849 node scripts/live-canvas-browser-check.mjs --clips`, danach mit Node≥22.18 `LIVE_CANVAS_HOST_PORT=5179 node scripts/timer-dial-browser-test.mjs <absoluter Pfad zu playwright/index.mjs>`. Keine Produktivdaten und keine installierte App geändert.
+
+Weitere aktuelle UI-Texte: `Dauer in Minuten:Sekunden`, `Pausiert`, `1 Sekunde bis 24 Stunden · Minuten:Sekunden`; die beschrifteten Zeitmarken besitzen vollständige Sekunden-/Minuten-Namen für Tastatur und Screenreader.
+
+## Nummerierter Timerclip und Remote-Anzeige · beauftragt 28.10.2026
+
+Der Nutzer erweitert D-252 ausdrücklich: Timer dürfen wie Material in der bestehenden stundenlokalen Clip-Liste einmal nummeriert werden. `Clip aufnehmen` → Timer antippen beziehungsweise Auswahl plus Strg+1–9 verwenden dieselbe Referenz/Undo-Logik. Nummer zeigt den isolierten Timer sowohl in Room als auch Remote; × kehrt zur Canvasansicht zurück. Bei laufender Präsentation bietet der Timer zusätzlich `Timer zeigen`, ohne eine Clipnummer anzulegen. Andere Remote-Materialeinzelansichten werden dadurch nicht freigeschaltet.
+
+Remote ist eine passive Uhr ohne Einstellungen, Start/Pause, Ton oder Teilnehmerbefehle. Host und Room bedienen weiterhin dieselbe Hostlaufzeit. Das öffentliche Rechteck erhält ausschließlich eine explizit validierte Timerdarstellung (Dauer, Status, Restzeit, Laufrevision) unter opaker ID. Der Dienst setzt den Zeitbezug beim Empfang und liefert seine aktuelle Uhrzeit bei Snapshot/Diff; späte Empfänger ziehen dieses Alter ab und zählen lokal weiter. Keine Annahme gleicher Geräteuhren, keine sekündlichen Archivwrites oder neue Assets/Pakete. Laufänderungen publizieren über denselben gebundenen Szenen-/Diffpfad; ein Countdown wird nicht als Video gestreamt.
+
+`supportsTimerWidgets` ist verbindlich ausgehandelt. Alter Dienst wird vor Timerpublikation abgelehnt, alte Empfänger erhalten Reload-/Versionsfehler. Dienst und Teilnehmerbuild müssen vor praktischer Nutzung aktualisiert werden. Keine automatische öffentliche Bereitstellung durch diese Entwicklungsänderung. Erforderliche Abnahme: Nummer aufnehmen/umordnen/Reload, direkte Anzeige, Rückkehr, Hoststart/Pause/Ende, später Beitritt/Reconnect mit Uhrversatz, Entfernen/Stundenwechsel, freie Szene und Ausschnittclip, Room-Regressionsprüfung.
+
+**Integrationsprüfstand (Nachtrag):** 390 App-/14 Playback-/115 Live-/18 Diensttests, drei Typprüfungen und beide Webbuilds bestanden. Isolierter echter Remote-Wirelauf: Touchaufnahme ohne Durchklick, Nummer3, Room-Einzelziel, Remote ohne Controls/Ton, Live-Start/Pause/Ablauf, verspäteter Beitritt mit1h Geräteuhrversatz, Teilnehmer-Reconnect, Direktanzeige, Host-Recovery des isolierten Ziels und Rückkehr zur vollständigen Szene. Host-Recovery speichert die validierte native Zielreferenz ausschließlich neben seinem bisherigen Quellen-/Präsentationsstand; keine Timerlaufzeit oder neue Clip-Liste. Belege `output/timer-remote/`. Dienst/Teilnehmerbuild/Desktop am28.10.2026 gemeinsam als0.1.75 aktiviert; öffentlicher Timerlauf und native Version geprüft, Belege `output/local-install-0.1.75/`.
+
+### Zeitmarken-Halo · 28.10.2026
+
+Auf Nutzerwunsch ersetzt ein kleiner runder Akzent-Halo die gefüllte Hoverkachel der Zeitmarken. Nur die Beschriftung hebt sich um2px und skaliert leicht auf1,12; die48px-Trefferfläche bleibt ortsfest. Beim Weiterfahren kehrt die vorige Beschriftung weich zurück. Hover nur für feine Zeiger mit Hoverfähigkeit, Touch erhält denselben kurzen Druckzustand ohne bleibenden Hover. Tastaturfokus behält seinen sichtbaren Fokusrahmen. Reduzierte Bewegung zeigt die Hervorhebung ohne Bewegung oder Übergang. Keine Änderung von Zeitwahl, Gestencommit, Speicherung oder Remote-Vertrag.
+
+**Halo-Prüfung:** Browservergleich Hell/Dunkel gesichtet. Berechnete Hoverfläche bleibt transparent, Beschriftung erreicht `scale(1.12)`/−2px und kehrt nach Weiterfahren zurück; beide Trefferflächen bleiben48×48px. Reduzierte Bewegung ohne Transformation/Transition; Touchwahl30s korrekt und ohne zurückbleibenden Hover. Typprüfung und Webbuild bestanden. Belege `output/timer-halo/`. Keine neuen Fachtests für die reine Darstellungsänderung; keine Änderung von Appversion, Archiv oder öffentlichem Updatekanal.
+
+
+## D-300 – Timer ohne separaten Verschiebegriff
+
+Wie bei HTML und Apps bewegt die Lehrkraft im Auswahlmodus die Uhr durch Ziehen auf neutralen Außenflächen; ein Tipp wählt sie. Bei Auswahl bieten gerade äußere Rahmenabschnitte zusätzliche Trefferflächen, mit 48 Bildschirm-Pixeln Tiefe für grobe Zeiger und Abstand zu den nativen Skalierungs-/Drehgriffen. Die Mitte, Zeitmarken, Ring und Buttons behalten ihre eigene Bedienung; keine Zeitänderung beim Verschieben. Im Room verschieben neutrale Außenflächen über den bestehenden revisionsgeprüften Transformationsbefehl, Timerbedienung und andere Room-Werkzeuge bleiben bestehen. Kein neues Datenmodell oder zusätzlicher Speicherpfad.
+
+Abnahme: Browser mit synthetischer Stunde und Touchsimulation prüft direkte Bewegung und ausgewählten Rahmen, 50 % Canvaszoom, laufenden Countdown, Zeitmarken/Ring, Abbruch, Undo/Redo, Rotation, Room-Synchronisierung und Speichern/Reload. 395 App-, 15 Playback- und 115 Live-/Room-Tests sowie beide Typprüfungen bestanden. Die Oberfläche wurde im Browser gesichtet. Physisches Touchboard und Zweitdisplay sind noch nicht geprüft; lokal seit 0.1.81 installiert.

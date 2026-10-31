@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+// Run live-canvas-browser-check.mjs --meeting first. Only synthetic content.
+import assert from 'node:assert/strict';
+import { mkdir } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+const { chromium } = await import(pathToFileURL(process.argv[2]).href);
+const browser = await chromium.launch({ headless: true,
+  executablePath: process.env.CHROME_EXECUTABLE ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' });
+const base = 'http://127.0.0.1:5841';
+const info = await (await fetch(`${base}/api/live/meeting`, { headers: { Authorization: 'Bearer synthetic-browser-check' } })).json();
+const invite = `${base}/join/${info.inviteId}`;
+const host = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+const desktop = await browser.newPage({ viewport: { width: 1100, height: 760 } });
+const tablet = await browser.newPage({ viewport: { width: 820, height: 1180 }, hasTouch: true });
+await tablet.addInitScript(() => Object.defineProperty(navigator, 'standalone', { value: true }));
+const errors = [], checks = [];
+for (const page of [host, desktop, tablet]) { page.setDefaultTimeout(12000); page.on('pageerror', error => errors.push(error.message)); }
+const join = async (page, name) => {
+  await page.goto(invite); await page.getByLabel('Dein Name', { exact: true }).fill(name);
+  await page.getByRole('button', { name: 'Beitreten', exact: true }).click();
+};
+const idle = page => page.getByRole('heading', { name: 'Noch kein Canvas gestartet.', exact: true }).waitFor();
+const live = page => page.getByRole('button', { name: 'Zur Lehrkraft', exact: true }).waitFor();
+const panel = host.locator('#live-host-panel');
+try {
+  await mkdir('output/live-canvas-meeting', { recursive: true });
+  await join(desktop, 'Laptop'); await idle(desktop);
+  await join(tablet, 'Tablet'); await idle(tablet);
+  assert.equal(await tablet.getByRole('button', { name: 'Vollbild', exact: true }).count(), 0);
+  assert.equal(await desktop.getByRole('button', { name: 'Vollbild', exact: true }).count(), 1);
+  const manifest = await tablet.locator('link[rel="manifest"]').getAttribute('href');
+  const definition = await (await fetch(base + manifest)).json();
+  assert.equal(base + definition.start_url, invite);
+  await tablet.screenshot({ path: 'output/live-canvas-meeting/tablet-waiting.png' });
+  await desktop.reload(); await idle(desktop);
+  checks.push('name entry and idle without host; stable manifest; reload; standalone hides Fullscreen API control');
+  await host.goto('http://127.0.0.1:5174/src/live/host-pointer.browser.html');
+  // Same style tokens as the local shell; no archive plugin/data is loaded.
+  await host.addStyleTag({ url: 'http://127.0.0.1:5174/src/styles.css?direct' });
+  await host.getByRole('button', { name: 'Live Canvas', exact: true }).click();
+  await panel.getByText('Laptop', { exact: true }).waitFor(); await panel.getByText('Tablet', { exact: true }).waitFor();
+  assert.equal(await host.getByRole('button', { name: 'Live Canvas, Frei, 2 Teilnehmer', exact: true }).count(), 1);
+  assert.equal(await host.locator('.live-host-dot').count(), 0);
+  await panel.getByRole('button', { name: 'Clip', exact: true }).click();
+  await host.getByRole('button', { name: 'Live Canvas, Clip wählen, 2 Teilnehmer', exact: true }).waitFor();
+  assert.equal(await panel.getByRole('button', { name: 'Starten', exact: true }).isEnabled(), false);
+  await panel.getByRole('button', { name: 'Frei', exact: true }).click();
+  await host.getByRole('button', { name: 'Live Canvas, Frei, 2 Teilnehmer', exact: true }).waitFor();
+  assert.equal(await host.getByRole('link', { name: 'Teilnehmer öffnen' }).getAttribute('href'), invite);
+  assert.equal(await panel.locator('img').count(), 0);
+  assert.equal(await panel.locator('.live-host-material-note, .live-host-url').count(), 0);
+  assert.equal(await panel.getByRole('button', { name: 'Live-Einstellungen', exact: true }).count(), 0);
+  assert.equal(await panel.getByRole('button', { name: 'Ganze Fläche zeigen', exact: true }).count(), 0);
+  assert.equal(await panel.getByText('Einladen', { exact: true }).count(), 1);
+  assert.equal(await panel.getByLabel('Freies Bewegen erlauben', { exact: true }).count(), 0);
+  assert.equal(await panel.getByRole('button', { name: 'Link kopieren', exact: true }).count(), 1);
+  const bottomActions = await panel.locator('.live-host-footer button').allTextContents();
+  assert.deepEqual(bottomActions, ['Starten', 'Schülervorschau']);
+  assert.equal(await panel.getByRole('button', { name: 'Beenden', exact: true }).count(), 0);
+  assert.equal(await panel.getByRole('button', { name: 'Starten', exact: true }).evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(23, 110, 170)');
+  await host.context().grantPermissions(['clipboard-read', 'clipboard-write'], { origin: 'http://127.0.0.1:5174' });
+  await panel.getByRole('button', { name: 'Link kopieren', exact: true }).click();
+  assert.equal(await host.evaluate(() => navigator.clipboard.readText()), invite);
+  await host.screenshot({ path: 'output/live-canvas-meeting/host-menu.png' });
+  await panel.getByRole('button', { name: 'QR-Code', exact: true }).click();
+  await panel.getByRole('img', { name: 'QR-Code zum Beitreten' }).waitFor();
+  await host.screenshot({ path: 'output/live-canvas-meeting/host-qr.png' });
+  await panel.getByRole('button', { name: 'QR-Code', exact: true }).click();
+  await panel.getByRole('button', { name: 'Starten', exact: true }).click();
+  await Promise.all([live(desktop), live(tablet)]);
+  assert.deepEqual(await panel.locator('.live-host-footer button').allTextContents(), ['Beenden', 'Schülervorschau']);
+  assert.equal(await panel.getByRole('button', { name: 'Starten', exact: true }).count(), 0);
+  assert.equal(await panel.getByRole('button', { name: 'Beenden', exact: true }).evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(159, 63, 70)');
+  await host.screenshot({ path: 'output/live-canvas-meeting/host-live-menu.png' });
+  assert.equal(await desktop.getByRole('button',{name:'Folgen',exact:true}).count(),0);
+  await desktop.getByRole('button',{name:'Zur Lehrkraft',exact:true}).click();
+  await panel.getByRole('button',{name:'Alle zu mir',exact:true}).click();
+  await tablet.screenshot({ path: 'output/live-canvas-meeting/tablet-live.png' });
+  await panel.getByRole('button', { name: 'Tablet entfernen', exact: true }).click();
+  await tablet.getByRole('heading', { name: 'Du wurdest aus Live Canvas entfernt.' }).waitFor();
+  await panel.getByRole('button', { name: 'Beenden', exact: true }).click(); await idle(desktop);
+  assert.equal(await desktop.locator('.live-view canvas').count(), 0);
+  await desktop.reload(); await idle(desktop);
+  checks.push('reduced host panel/optional QR; shared automatic start; free mode with one-shot recall; kick; end clears canvas and returns to idle');
+  await host.getByRole('button', { name: 'Live Canvas', exact: true }).click();
+  await panel.getByText('Laptop', { exact: true }).waitFor();
+  assert.equal(await panel.getByText('Tablet', { exact: true }).count(), 0);
+  await panel.getByRole('button', { name: 'Starten', exact: true }).click(); await live(desktop);
+  await tablet.reload(); await tablet.getByRole('heading', { name: 'Du wurdest aus Live Canvas entfernt.' }).waitFor();
+  await panel.getByRole('button', { name: 'Beenden', exact: true }).click(); await idle(desktop);
+  await desktop.getByRole('button', { name: 'Name ändern', exact: true }).click();
+  await desktop.getByRole('heading', { name: 'Wer bist du?' }).waitFor();
+  assert.equal(await desktop.getByLabel('Dein Name', { exact: true }).inputValue(), '');
+  checks.push('second publication on same link; revoked participant stays removed after restart/reload; name change leaves old membership');
+  assert.deepEqual(errors, []);
+  console.log(JSON.stringify({ ok: true, checks, screenshots: 'output/live-canvas-meeting', hardwareValidated: false }, null, 2));
+} finally { await browser.close(); }

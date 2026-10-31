@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "include": ["src/live", "src/vite-env.d.ts", "vite.live.config.ts", "live-canvas-plugin.ts"],
+  "exclude": ["src/**/*.test.ts"]
+}

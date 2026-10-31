@@ -1,0 +1,57 @@
+{
+  "format": "teaching-workspace-mirror",
+  "schemaVersion": "0.1.0-concept",
+  "conceptStatus": "discussion-example",
+  "series": {
+    "id": "series-english-means-of-transport",
+    "subject": "Englisch",
+    "title": "Means of transport",
+    "humanMirrorRef": "reihenspiegel.md",
+    "materialManifestRef": "materialien.manifest.json",
+    "sourceSystems": ["onenote", "local-files"],
+    "migrationStatus": "partial"
+  },
+  "lessons": [
+    {
+      "id": "lesson-2026-08-27-means-of-transport-02",
+      "sequence": 2,
+      "title": "Private and public means of transport",
+      "source": {
+        "system": "onenote",
+        "notebook": "Englisch B-Kurs",
+        "section": "1. HJ 26_27",
+        "page": "Means of transport",
+        "pageDate": "2026-08-27T08:46:00+02:00",
+        "sourceExportRef": null
+      },
+      "evidenceStatus": "user-confirmed",
+      "executionStatus": "partially-used",
+      "activities": [
+        {
+          "id": "activity-private-public",
+          "title": "Private and public transport",
+          "purpose": "Wortschatz strukturieren",
+          "semanticPhase": "Erarbeitung",
+          "semanticPhaseVocabulary": "free-text",
+          "instruction": "Which of these are private? Which of these are public?",
+          "materialIds": [],
+          "evidenceStatus": "observed",
+          "executionStatus": "used"
+        },
+        {
+          "id": "activity-transport-challenge",
+          "title": "Transport Challenge",
+          "purpose": "Vor- und Nachteile im Partnerdialog diskutieren",
+          "semanticPhase": null,
+          "semanticPhaseVocabulary": null,
+          "instruction": null,
+          "materialIds": ["asset-transport-challenge"],
+          "evidenceStatus": "observed",
+          "executionStatus": "prepared"
+        }
+      ],
+      "flow": ["activity-private-public", "activity-transport-challenge"],
+      "lessonMirrorRef": null
+    }
+  ]
+}

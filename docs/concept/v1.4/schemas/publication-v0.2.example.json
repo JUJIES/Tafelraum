@@ -1,0 +1,67 @@
+{
+  "format": "teaching-workspace-publication",
+  "schemaVersion": "0.2.0-concept",
+  "conceptStatus": "later-discussion-example",
+  "notPhase1": true,
+  "publication": {
+    "id": "publication-climate-lesson",
+    "sourceLessonId": "lesson-climate-causes-effects",
+    "type": "single-lesson",
+    "title": "Ursachen und Folgen des Klimawandels",
+    "activeReleaseId": "release-002",
+    "status": "published",
+    "access": {
+      "mode": "secret-link",
+      "tokenRef": "opaque-token-reference",
+      "pinRequired": false,
+      "expiresAt": null,
+      "revocable": true
+    },
+    "capabilities": [
+      "view"
+    ]
+  },
+  "releases": [
+    {
+      "id": "release-002",
+      "sourceLessonRevision": 15,
+      "createdAt": "2026-09-15T15:00:00+02:00",
+      "status": "active",
+      "publicPayloadRef": "publications/release-002/public-lesson.json",
+      "lessonPath": {
+        "includedSectionIds": [
+          "section-start",
+          "section-work"
+        ],
+        "includedStepIds": [
+          "step-image-question",
+          "step-task",
+          "step-support"
+        ],
+        "showSectionTitles": false,
+        "showStepTitles": true,
+        "showProgress": false
+      },
+      "projectionPolicy": {
+        "includeAudience": [
+          "public",
+          "both"
+        ],
+        "excludePublicationPolicy": [
+          "exclude"
+        ],
+        "excludeSensitivity": [
+          "internal",
+          "student-data"
+        ],
+        "includeTeacherNotes": false
+      },
+      "studentExperience": {
+        "mode": "read-only",
+        "navigation": "lesson-path",
+        "showDownloads": false
+      }
+    }
+  ]
+}
+

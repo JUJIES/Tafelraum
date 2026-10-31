@@ -1,0 +1,274 @@
+
+    :root {
+      --ink: #17324d;
+      --slate: #667784;
+      --accent: #d66d4d;
+      --paper: #ffffff;
+      --soft: #f3f6f7;
+      --line: #cbd6db;
+    }
+
+
+    * { box-sizing: border-box; }
+
+
+    html, body { min-height: 100%; margin: 0; padding: 0; }
+
+
+    body {
+      background: transparent;
+      color: var(--ink);
+      font-family: Inter, Aptos, "Segoe UI", Arial, sans-serif;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+
+    .page {
+      width: 100%;
+      min-height: 100vh;
+      margin: 0;
+      padding: 11mm 13mm 9mm;
+      background: var(--paper);
+      box-shadow: none;
+      overflow: hidden;
+    }
+
+
+    .top {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 12mm;
+      margin-bottom: 5mm;
+    }
+
+
+    .eyebrow {
+      margin: 0 0 1.5mm;
+      color: var(--accent);
+      font-size: 8pt;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+
+    h1 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 24pt;
+      line-height: .98;
+      letter-spacing: -.035em;
+    }
+
+
+    .subtitle {
+      margin: 2mm 0 0;
+      color: var(--slate);
+      font-size: 12.5pt;
+      font-weight: 650;
+    }
+
+
+    .identity {
+      display: grid;
+      grid-template-columns: 54mm 27mm;
+      gap: 5mm;
+      padding-bottom: 1mm;
+    }
+
+
+    .field label {
+      display: block;
+      margin-bottom: 1.5mm;
+      color: var(--slate);
+      font-size: 7.5pt;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+
+    .field input {
+      width: 100%;
+      height: 7mm;
+      padding: 0 1mm;
+      border: 0;
+      border-bottom: .45mm solid var(--ink);
+      border-radius: 0;
+      outline: none;
+      background: transparent;
+      color: var(--ink);
+      font: 11pt inherit;
+    }
+
+
+    .photos {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr 1fr 1fr;
+      gap: 1.5mm;
+      height: 43mm;
+      margin-bottom: 3.5mm;
+    }
+
+
+    figure {
+      position: relative;
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      border-radius: 2.2mm;
+      background: #dce4e8;
+    }
+
+
+    figure img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+
+    figure.ride img { object-position: 58% center; }
+
+    figure.portrait img { object-position: 53% center; }
+
+
+    figcaption {
+      position: absolute;
+      left: 2mm;
+      bottom: 2mm;
+      max-width: calc(100% - 4mm);
+      padding: 1.1mm 2mm .9mm;
+      border-radius: 1.2mm;
+      background: rgba(20, 44, 65, .86);
+      color: white;
+      font-size: 6.5pt;
+      font-weight: 850;
+      letter-spacing: .06em;
+      line-height: 1;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+
+    .facts {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3.5mm;
+      min-height: 9mm;
+      margin: 0 0 1mm;
+      color: var(--ink);
+      font-size: 10.5pt;
+      font-weight: 800;
+    }
+
+
+    .facts i {
+      width: 1.4mm;
+      height: 1.4mm;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+
+    .instruction {
+      margin: 0 0 4mm;
+      color: var(--slate);
+      font-size: 9pt;
+      text-align: center;
+    }
+
+
+    .questions {
+      display: grid;
+      gap: 3.3mm;
+    }
+
+
+    .question { break-inside: avoid; }
+
+
+    .question-head {
+      display: grid;
+      grid-template-columns: 7.5mm 1fr;
+      align-items: center;
+      gap: 1.5mm;
+      margin-bottom: 1.8mm;
+    }
+
+
+    .number {
+      display: grid;
+      place-items: center;
+      width: 7.5mm;
+      height: 7.5mm;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 9.5pt;
+      font-weight: 850;
+    }
+
+
+    h2 {
+      margin: 0;
+      font-size: 12.2pt;
+      line-height: 1.15;
+      letter-spacing: -.01em;
+    }
+
+
+    .answer {
+      width: 100%;
+      height: 29mm;
+      padding: 3mm;
+      border: .45mm solid var(--line);
+      border-radius: 2mm;
+      outline: none;
+      background: var(--soft);
+      color: #243d52;
+      font-size: 10.5pt;
+      line-height: 1.45;
+    }
+
+
+    .answer:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+
+
+    .sources {
+      margin: 3.3mm 0 0;
+      color: #7a878f;
+      font-size: 5.8pt;
+      line-height: 1.25;
+    }
+/* Original paper rules, shared by screen and print. */
+
+      body { background: white; }
+
+      .page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; }
+
+      .field input { color: black; }
+/* Plugin 0.1.7: same initial A4 page for screen and print; no responsive reflow. */
+@page{size:A4 portrait;margin:11mm 13mm}
+html,body{margin:0;padding:0;width:210mm;min-height:0;height:auto;max-height:none;overflow:visible}
+[data-tafelraum-page]{box-sizing:border-box;display:flex;flex-direction:column;width:210mm;min-height:297mm;height:auto;max-height:none;padding:11mm 13mm;margin:0;overflow:visible;break-after:auto;page-break-after:auto}
+input:focus-visible,textarea:focus-visible{outline:2px solid #bd573c;outline-offset:2px}
+textarea{resize:vertical;overflow:auto}
+@media print{
+ html,body{width:184mm;height:auto;max-height:none;overflow:visible}
+ [data-tafelraum-page]{width:184mm;min-height:0;height:auto;max-height:none;padding:0;overflow:visible}
+ input,textarea{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;outline:none!important;box-shadow:none!important;resize:none!important}
+ input::placeholder,textarea::placeholder{color:transparent!important}
+}
+
+[data-tafelraum-page]{display:block}.answer{display:block;resize:vertical;overflow:auto;font-family:Arial,sans-serif}
+@media print{.answer{height:29mm!important;min-height:29mm!important;max-height:29mm!important}}
+
+@media print{.answer{width:100%!important}}

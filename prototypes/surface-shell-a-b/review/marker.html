@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<title>Marker · isolierte Renderprüfung</title>
+<style>
+  body { margin: 24px; background: #eae8e3; font: 15px system-ui; color: #20252b; }
+  h1 { font-size: 20px; } p { max-width: 75ch; }
+  img { display: block; width: 900px; max-width: 100%; margin: 16px 0; border-radius: 8px; }
+</style>
+<h1>Marker: native Render- und Exportprüfung</h1>
+<p>Highlighter V2: links 17, rechts 34 Canvas-Einheiten horizontale Breite, beide 32 %. Gleiche synthetische Pfade; keine Unterrichtsdaten. Weiche Meißelecken, begrenzte Mitdrehung, direkte Endposition.</p>
+<script type="module">
+  import { convertToExcalidrawElements, exportToBlob } from '@excalidraw/excalidraw';
+  import { markerGeometry, markerOpacity, markerRole } from '../src/canvas/marker-stroke.ts';
+  import { createStrokeSampler, sampleStrokePoint } from '../src/canvas/stroke-sampling.ts';
+  const colors = ['#eecb69', '#8ebfa5', '#d88d82', '#87b5c8', '#d88d82'];
+  const paths = [
+    [[0,0],[30,2],[60,-2],[90,1],[120,-1],[150,2],[180,0],[215,0]],
+    Array.from({length:48}, (_,i) => [i*4.5, Math.sin(i/6)*20]),
+    Array.from({length:60}, (_,i) => [110 + Math.sin(i/59*Math.PI*2)*90, 8 + Math.cos(i/59*Math.PI*2)*30]),
+    [[0,10],[50,-15],[100,15],[150,-15],[210,10]],
+    [[0,0],[215,3],[25,5],[200,10],[35,-10],[190,-5],[0,7]],
+  ];
+  for (const dark of [false, true]) {
+    const background = dark ? '#1d232b' : '#ffffff';
+    const foreground = dark ? '#f1f2f3' : '#20252b';
+    const items = [{type:'rectangle',x:0,y:0,width:860,height:500,strokeColor:'transparent',backgroundColor:background,fillStyle:'solid',roughness:0}];
+    for (let row=0;row<paths.length;row++) {
+      for (let column=0;column<2;column++) {
+        const x=40+column*420, y=55+row*90;
+        items.push({type:'text',x,y:y-13,text:['Text bleibt gut lesbar','Weiche freie Kurven','Kreise bleiben frei','Absichtliche Richtungswechsel','Mehrfach hin und zurück'][row],fontFamily:2,fontSize:20,strokeColor:foreground});
+        const width = column ? 34 : 17;
+        const sampler = createStrokeSampler([x+paths[row][0][0],y+paths[row][0][1]],1,width);
+        for (const p of paths[row].slice(1)) sampleStrokePoint(sampler,[x+p[0],y+p[1]]);
+        items.push({type:'line',...markerGeometry(sampler.points,width,undefined,sampler.tip),strokeColor:'transparent',strokeWidth:0,backgroundColor:colors[row],fillStyle:'solid',roughness:0,roundness:null,opacity:markerOpacity,startArrowhead:null,endArrowhead:null,customData:{role:markerRole}});
+      }
+    }
+    const blob = await exportToBlob({elements:convertToExcalidrawElements(items),files:{},mimeType:'image/png',exportPadding:12,appState:{exportBackground:true,viewBackgroundColor:background,exportWithDarkMode:false},getDimensions:(width,height)=>({width:width*2,height:height*2,scale:2})});
+    const image = new Image(); image.alt=dark?'V2 auf dunkler Fläche, normal und breit':'V2 auf heller Fläche, normal und breit';
+    image.src=URL.createObjectURL(blob); document.body.append(image);
+  }
+</script>
+</html>

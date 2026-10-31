@@ -1,0 +1,77 @@
+:root{color-scheme:light;--ink:#18324d;--body:#283b4b;--muted:#617481;--coral:#d96849;--task:#fbeee9;--teal:#257f82;--teal-soft:#e8f3f2;--line:#b9cbd2;--paper:#fffdfa;font-family:Arial,"Segoe UI",sans-serif;color:var(--body);background:transparent}
+
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.sheet{min-height:100vh;background:var(--paper);padding:34px 38px;display:flex;flex-direction:column}
+.page-head{display:flex;justify-content:space-between;gap:24px;align-items:center;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.eyebrow{margin:0 0 5px;color:var(--coral);font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+h1{margin:0;color:var(--ink);font:700 clamp(31px,5vw,46px)/1.02 Georgia,serif;letter-spacing:-.025em}
+.lead{margin:7px 0 0;color:var(--muted);font-size:14px}
+.source,.final-section{margin-top:20px}
+.task-head{display:flex;gap:12px;align-items:flex-start;background:var(--task);border-left:5px solid var(--coral);padding:11px 14px}
+.number{display:grid;place-items:center;flex:0 0 30px;height:30px;border-radius:50%;background:var(--coral);color:#fff;font-weight:800}
+.task-head h2{margin:0 0 3px;color:var(--ink);font-size:18px}
+.instruction{display:flex;align-items:center;flex-wrap:wrap;gap:5px 10px;margin:0;font-size:13.5px;line-height:1.38}
+.work-mode{display:inline-flex;align-items:center;gap:5px;color:var(--teal);font-weight:800;white-space:nowrap}
+.work-mode img{width:19px;height:19px;display:block}
+.source article{margin:11px 0;border:1px solid var(--line);border-radius:7px;padding:13px 16px;background:#fff}
+.source article h3{margin:0 0 7px;color:var(--ink);font:700 18px/1.2 Georgia,serif}
+.source article p{margin:0;font:15.5px/1.55 Georgia,serif}
+.word-help{margin:10px 0 11px;padding:9px 12px;border-left:4px solid var(--teal);background:var(--teal-soft);color:var(--ink);font-size:12.5px;line-height:1.35}
+.writing-box{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden}
+.writing-box>span{padding:7px 10px;background:#eef3f4;color:var(--ink);font-size:12.5px;font-weight:800}
+.writing-box textarea{width:100%;height:220px;min-height:220px;resize:none;border:0;padding:10px;color:var(--body);font:15px/1.45 Arial;outline:none}
+.writing-box textarea:focus{outline:2px solid var(--coral);outline-offset:-2px}
+.final-section{display:flex;flex-direction:column}
+.final-box{margin-top:11px}
+.final-box textarea{height:220px;min-height:220px}
+
+.number{width:30px;min-width:30px;max-width:30px}
+
+.extra-help{margin-top:3px;color:var(--muted)}
+/* Original paper rules, shared by screen and print. */
+html,body{width:210mm;min-height:0;background:#fff}
+.sheet{width:210mm;height:297mm;min-height:0;padding:11mm 13mm}
+.page-head{padding-bottom:3mm}
+.eyebrow{font-size:8pt;margin-bottom:1mm}
+h1{font-size:25pt}
+.lead{font-size:9pt;margin-top:1.5mm}
+.source,.final-section{margin-top:3mm}
+.task-head{gap:2.5mm;padding:2mm 3mm;border-left-width:1mm}
+.number{flex-basis:6mm;height:6mm;font-size:9pt}
+.task-head h2{font-size:11pt;margin-bottom:.7mm}
+.instruction{gap:1mm 2mm;font-size:8.6pt;line-height:1.28}
+.work-mode{gap:1mm}
+.work-mode img{width:4mm;height:4mm}
+.source article{margin:2mm 0;padding:2mm 3mm;border-radius:1mm}
+.source article h3{font-size:11pt;margin-bottom:1.2mm}
+.source article p{font-size:9.4pt;line-height:1.45}
+.word-help{margin:1.5mm 0 2mm;padding:1.8mm 2.5mm;border-left-width:1mm;font-size:8.1pt}
+.writing-box{border-radius:1mm}
+.writing-box>span{padding:1.4mm 2mm;font-size:8.3pt}
+.writing-box textarea{height:52mm;min-height:52mm;padding:2mm;font-size:9.5pt}
+.final-box{margin-top:2.5mm}
+.final-box textarea{height:52mm;min-height:52mm}
+.writing-box textarea::placeholder{color:transparent}
+.number{width:6mm;min-width:6mm;max-width:6mm}
+html,body{height:296mm;max-height:296mm;overflow:hidden}
+.sheet{height:296mm;max-height:296mm;overflow:hidden;break-after:avoid-page;page-break-after:avoid}
+.writing-box textarea,.final-box textarea{height:63mm;min-height:63mm}
+/* Plugin 0.1.7: same initial A4 page for screen and print; no responsive reflow. */
+@page{size:A4 portrait;margin:11mm 13mm}
+html,body{margin:0;padding:0;width:210mm;min-height:0;height:auto;max-height:none;overflow:visible}
+[data-tafelraum-page]{box-sizing:border-box;display:flex;flex-direction:column;width:210mm;min-height:297mm;height:auto;max-height:none;padding:11mm 13mm;margin:0;overflow:visible;break-after:auto;page-break-after:auto}
+input:focus-visible,textarea:focus-visible{outline:2px solid #bd573c;outline-offset:2px}
+textarea{resize:vertical;overflow:auto}
+@media print{
+ html,body{width:184mm;height:auto;max-height:none;overflow:visible}
+ [data-tafelraum-page]{width:184mm;min-height:0;height:auto;max-height:none;padding:0;overflow:visible}
+ input,textarea{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;outline:none!important;box-shadow:none!important;resize:none!important}
+ input::placeholder,textarea::placeholder{color:transparent!important}
+}
+
+.writing-box{overflow:visible}.writing-box textarea,.final-box textarea{height:63mm;min-height:63mm;resize:vertical;overflow:auto}
+@media print{.writing-box textarea,.final-box textarea{height:63mm!important;min-height:63mm!important;max-height:63mm!important}}
+
+@media print{textarea{width:100%!important;appearance:none!important;font-size:0!important}}

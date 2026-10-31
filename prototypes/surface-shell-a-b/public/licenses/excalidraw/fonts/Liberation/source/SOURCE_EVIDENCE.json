@@ -1,0 +1,56 @@
+{
+  "font": {
+    "file": "Liberation/LiberationSans-Regular.woff2",
+    "sha256": "006a2b28cbbeeaec937d1b367d0949f5f48ef4b2e7b4e1d8dc7a799d2d639be8"
+  },
+  "sourceArchive": {
+    "file": "ttf-liberation_1.04.93.orig.tar.gz",
+    "sha256": "1cf46049ecde9551440d2227eeb3f896d7dfe17c915561d080942a89484cf4d2",
+    "url": "https://archive.debian.org/debian/pool/main/t/ttf-liberation/ttf-liberation_1.04.93.orig.tar.gz"
+  },
+  "debianPatch": {
+    "file": "ttf-liberation_1.04.93-1.diff.gz",
+    "sha256": "15354f92efcdd78318e6bda28ef8f790e3f8b6006bacf58a7a5447121760d22a",
+    "url": "https://archive.debian.org/debian/pool/main/t/ttf-liberation/ttf-liberation_1.04.93-1.diff.gz"
+  },
+  "descriptor": {
+    "file": "ttf-liberation_1.04.93-1.dsc",
+    "sha256": "fa7b97803fc2a1a3b7e715ceeddee28253f23fac8c77a0f0df4e3a77935ceabc",
+    "url": "https://archive.debian.org/debian/pool/main/t/ttf-liberation/ttf-liberation_1.04.93-1.dsc"
+  },
+  "binaryPackage": {
+    "url": "https://archive.debian.org/debian/pool/main/t/ttf-liberation/ttf-liberation_1.04.93-1_all.deb",
+    "sha256": "6889d8e1bdc7fe958f582e00fdb01969fb2fa8e52cb183888f8fb378dc81ccfc",
+    "fontFile": "usr/share/fonts/truetype/ttf-liberation/LiberationSans-Regular.ttf",
+    "fontSha256": "1f72b98b1245c4f6591b26e53c658cb8ed2e8140e7cc80699eff2a9667141a31"
+  },
+  "comparison": {
+    "glyphs": 675,
+    "outlineDifferences": [],
+    "hintProgramDifferences": [],
+    "cmapEqual": true,
+    "metricsEqual": true,
+    "tableBytesEqual": {
+      "head": false,
+      "hhea": true,
+      "maxp": false,
+      "OS/2": true,
+      "hmtx": true,
+      "cmap": true,
+      "fpgm": true,
+      "prep": true,
+      "cvt ": true,
+      "loca": false,
+      "glyf": true,
+      "name": false,
+      "post": true,
+      "gasp": true,
+      "GDEF": true,
+      "GSUB": true,
+      "GPOS": true,
+      "FFTM": false
+    }
+  },
+  "method": "fontTools 4.60.1: glyph coordinates/flags/endpoints, per-glyph bytecode, full cmap and hmtx plus table bytes. Source archive and Debian diff SHA-256 match the published .dsc; PGP signature not verified.",
+  "limits": "Semantic font correspondence, not a byte-identical FontForge rebuild or a legal license-compatibility approval. head/name/FFTM and WOFF2-reencoded glyf/loca/maxp bytes differ."
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "software": "Tafelraum",
+  "licensor": "JUJIES",
+  "contact": "mail@jujies.app",
+  "github": "https://github.com/JUJIES",
+  "licenseName": "MIT with Commons Clause 1.0",
+  "license": {
+    "source": "LICENSE",
+    "file": "LICENSE",
+    "sha256": "a7d3908ac443c888ac730e3a6cd1fbafe2c3a01eba118f2b994067ba270ae8bf"
+  },
+  "originalTexts": [
+    {
+      "name": "Commons Clause 1.0",
+      "url": "https://commonsclause.com/",
+      "sourceUrl": "https://github.com/fossas/commons-clause/blob/master/src/index.html",
+      "gitBlob": "eb1279b1d86a8cb3959881c31e03bd67832ece0e",
+      "changes": "Only Software, License and Licensor placeholders filled."
+    },
+    {
+      "name": "MIT",
+      "url": "https://opensource.org/license/mit",
+      "changes": "Copyright year/holder filled; line wrapping normalized."
+    }
+  ],
+  "assets": [
+    {
+      "source": "prototypes/surface-shell-a-b/src-tauri/app-icon.png",
+      "sha256": "2ce2f8164f85b78960beba05166f1ab1c70d02b656ab77c5a46d7d222b4d4a2c",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/tafelraum-icon.svg",
+      "sha256": "d1b9dfe54a2c0ac9bba1db640e1fa5d10451072bcd19d232b85574f8960bc1dc",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/apple-touch-icon.png",
+      "sha256": "cbb604978a3aa270c0b8499429f30e7cb68c127c463cb5d9c48fb041e42b9b68",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/tafelraum-192.png",
+      "sha256": "ce28eefb1bddb70d545ab90e27f5224accd410dbb1a5fc0c9cf5f2b5dc66d090",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/tafelraum-32.png",
+      "sha256": "83c83fe2526f3db8de0417c45660eaed3b32bc110ef4adf70fac6b08c512910d",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/tafelraum-512.png",
+      "sha256": "92c77103b16bf3b047fe2e0c588d5d37028fdb4feadbc3caa5d31bcd10fe37ba",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/tafelraum-maskable-192.png",
+      "sha256": "ce28eefb1bddb70d545ab90e27f5224accd410dbb1a5fc0c9cf5f2b5dc66d090",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/public/icons/tafelraum-maskable-512.png",
+      "sha256": "92c77103b16bf3b047fe2e0c588d5d37028fdb4feadbc3caa5d31bcd10fe37ba",
+      "provenance": "owner-attested-imagegen",
+      "attestedAt": "2026-10-29"
+    },
+    {
+      "source": "prototypes/surface-shell-a-b/src/assets/demo/transport-set.png",
+      "sha256": "8c36b98fde3edc75d494dff4692dbe1458e3799b2b63d38ce1ae8bd0db7f6c95",
+      "provenance": "recorded-imagegen-generation",
+      "attestedAt": "2026-10-29"
+    }
+  ],
+  "limits": [
+    "Owner attestation is recorded provenance, not independent proof of rights or exclusive copyright in AI-generated images.",
+    "Historical prompts, reference inputs and original generation sessions for the project icons were not recovered.",
+    "Third-party Fluent/Lucide icons, fonts, library assets and archived teaching materials are excluded from this own-asset list."
+  ]
+}

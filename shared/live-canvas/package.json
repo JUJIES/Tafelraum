@@ -1,0 +1,6 @@
+{
+  "name": "@tafelraum/live-canvas-protocol",
+  "private": true,
+  "type": "module",
+  "exports": "./protocol.ts"
+}

@@ -1,0 +1,41 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.turbo/
+
+playwright-report/
+test-results/
+
+*.log
+*.local
+
+# Lokale Laufzeit- und Testdaten, nicht kuratierte Fixtures
+data/
+local-data/
+output/
+test-materials/
+tmp/
+dist-live/
+desktop-resources/
+release-output/
+target/
+
+# Erzeugter Python-Bytecode und lokale Zugangsmaterialien
+__pycache__/
+*.py[cod]
+*.key
+*.pem
+*.p12
+*.pfx
+.ssh/
+
+# Generated, bounded agent instructions and helpers (canonical sources stay tracked).
+prototypes/surface-shell-a-b/agent-kit/
+prototypes/surface-shell-a-b/.agent-kit-*/

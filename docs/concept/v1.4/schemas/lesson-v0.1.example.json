@@ -1,0 +1,273 @@
+{
+  "format": "teaching-workspace-lesson",
+  "schemaVersion": "0.1.0",
+  "lesson": {
+    "id": "lesson-climate-causes-effects",
+    "title": "Ursachen und Folgen des Klimawandels",
+    "subjectId": "subject-geography",
+    "unitId": "unit-climate",
+    "classLevel": "8/9",
+    "plannedDurationMinutes": 45,
+    "objectives": [
+      "Die Schüler unterscheiden Ursachen und Folgen des Klimawandels.",
+      "Die Schüler ordnen Beispiele einem Ursache-Wirkungs-Modell zu."
+    ],
+    "status": "draft",
+    "createdAt": "2026-07-26T18:00:00+02:00",
+    "updatedAt": "2026-07-26T18:00:00+02:00",
+    "defaultBoardId": "board-main",
+    "phaseIds": [
+      "phase-entry",
+      "phase-work",
+      "phase-evaluation",
+      "phase-summary"
+    ],
+    "artifactIds": [
+      "artifact-entry-image",
+      "artifact-worksheet",
+      "artifact-explainer-video"
+    ]
+  },
+  "phases": [
+    {
+      "id": "phase-entry",
+      "type": "introduction",
+      "title": "Bildimpuls",
+      "order": 1,
+      "plannedMinutes": 7,
+      "boardId": "board-main",
+      "frameId": "frame-entry",
+      "artifactIds": [
+        "artifact-entry-image"
+      ],
+      "socialForm": "whole-class",
+      "transition": "Vermutungen aus dem Bildimpuls werden zum Arbeitsauftrag gebündelt.",
+      "visibility": "both"
+    },
+    {
+      "id": "phase-work",
+      "type": "individual-work",
+      "title": "Arbeitsblatt",
+      "order": 2,
+      "plannedMinutes": 18,
+      "boardId": "board-main",
+      "frameId": "frame-work",
+      "artifactIds": [
+        "artifact-worksheet"
+      ],
+      "socialForm": "individual",
+      "transition": "Ergebnisse werden zunächst paarweise abgeglichen und anschließend gesammelt.",
+      "visibility": "both"
+    },
+    {
+      "id": "phase-evaluation",
+      "type": "evaluation",
+      "title": "Ergebnisse ordnen",
+      "order": 3,
+      "plannedMinutes": 12,
+      "boardId": "board-main",
+      "frameId": "frame-evaluation",
+      "artifactIds": [],
+      "socialForm": "whole-class",
+      "transition": "Die geordneten Ergebnisse werden zu einem gemeinsamen Modell verdichtet.",
+      "visibility": "both"
+    },
+    {
+      "id": "phase-summary",
+      "type": "summary",
+      "title": "Sicherung",
+      "order": 4,
+      "plannedMinutes": 8,
+      "boardId": "board-main",
+      "frameId": "frame-summary",
+      "artifactIds": [
+        "artifact-explainer-video"
+      ],
+      "socialForm": "whole-class",
+      "transition": null,
+      "visibility": "both"
+    }
+  ],
+  "boards": [
+    {
+      "id": "board-main",
+      "title": "Hauptboard",
+      "renderer": "excalidraw",
+      "scenePath": "board/scene.excalidraw",
+      "structurePath": "board/structure.json",
+      "frameIds": [
+        "frame-entry",
+        "frame-work",
+        "frame-evaluation",
+        "frame-summary"
+      ]
+    }
+  ],
+  "frames": [
+    {
+      "id": "frame-entry",
+      "boardId": "board-main",
+      "phaseId": "phase-entry",
+      "title": "Einstieg",
+      "bounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 900
+      }
+    },
+    {
+      "id": "frame-work",
+      "boardId": "board-main",
+      "phaseId": "phase-work",
+      "title": "Erarbeitung",
+      "bounds": {
+        "x": 1800,
+        "y": 0,
+        "width": 1600,
+        "height": 1200
+      }
+    },
+    {
+      "id": "frame-evaluation",
+      "boardId": "board-main",
+      "phaseId": "phase-evaluation",
+      "title": "Auswertung",
+      "bounds": {
+        "x": 3600,
+        "y": 0,
+        "width": 1600,
+        "height": 900
+      }
+    },
+    {
+      "id": "frame-summary",
+      "boardId": "board-main",
+      "phaseId": "phase-summary",
+      "title": "Sicherung",
+      "bounds": {
+        "x": 5400,
+        "y": 0,
+        "width": 1600,
+        "height": 900
+      }
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "artifact-entry-image",
+      "kind": "image",
+      "title": "Extremwetter-Bildimpuls",
+      "originalPath": "images/extreme-weather.png",
+      "renditions": {
+        "thumbnail": "images/extreme-weather.thumbnail.webp",
+        "board": "images/extreme-weather.board.webp"
+      },
+      "machineReadable": {
+        "descriptionPath": "images/extreme-weather.description.md",
+        "ocrPath": null
+      },
+      "provenance": {
+        "type": "generated",
+        "generator": "image-model",
+        "promptPath": "images/extreme-weather.prompt.md"
+      },
+      "visibility": "both"
+    },
+    {
+      "id": "artifact-worksheet",
+      "kind": "worksheet",
+      "title": "Arbeitsblatt: Ursachen und Folgen",
+      "originalPath": "materials/worksheet.pdf",
+      "renditions": {
+        "pageImages": [
+          "materials/worksheet.page-01.webp",
+          "materials/worksheet.page-02.webp"
+        ],
+        "thumbnail": "materials/worksheet.thumbnail.webp"
+      },
+      "machineReadable": {
+        "textPath": "materials/worksheet.txt",
+        "ocrPath": "materials/worksheet.ocr.json",
+        "sourceSpecPath": "materials/worksheet.image-spec.json"
+      },
+      "provenance": {
+        "type": "generated",
+        "generator": "SheetifyIMG"
+      },
+      "visibility": "both"
+    },
+    {
+      "id": "artifact-explainer-video",
+      "kind": "video",
+      "title": "Sicherung: Ursache-Wirkungs-Modell",
+      "originalPath": null,
+      "renditions": {
+        "thumbnail": "videos/summary/thumbnail.webp",
+        "video": "videos/summary/render.mp4"
+      },
+      "machineReadable": {
+        "scriptPath": "videos/summary/script.md",
+        "captionsPath": "videos/summary/captions.vtt",
+        "videoSpecPath": "videos/summary/video-spec.json",
+        "sourcePath": "videos/summary/source/"
+      },
+      "provenance": {
+        "type": "generated",
+        "generator": "remotion-pipeline",
+        "rendererVersion": "unresolved"
+      },
+      "visibility": "both"
+    }
+  ],
+  "elementMetadata": [
+    {
+      "elementId": "excalidraw-text-001",
+      "boardId": "board-main",
+      "phaseId": "phase-entry",
+      "semanticRole": "guiding-question",
+      "createdBy": "teacher",
+      "createdDuringRunId": null,
+      "sourceArtifactId": "artifact-entry-image",
+      "visibility": "both"
+    },
+    {
+      "elementId": "excalidraw-text-099",
+      "boardId": "board-main",
+      "phaseId": "phase-summary",
+      "semanticRole": "solution",
+      "createdBy": "teacher",
+      "createdDuringRunId": null,
+      "sourceArtifactId": "artifact-worksheet",
+      "visibility": "hidden-until-reveal"
+    }
+  ],
+  "lessonRuns": [
+    {
+      "id": "run-example",
+      "lessonId": "lesson-climate-causes-effects",
+      "baseRevision": 12,
+      "classLabel": "8/9",
+      "startedAt": "2026-09-14T08:00:00+02:00",
+      "endedAt": "2026-09-14T08:47:00+02:00",
+      "eventLogPath": "session/run-example.events.jsonl",
+      "annotationScenePath": "session/run-example.annotations.excalidraw",
+      "reflectionPath": "session/run-example.reflection.md",
+      "evidenceIds": [
+        "evidence-final-board"
+      ]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-final-board",
+      "kind": "board-snapshot",
+      "title": "Abschließendes Tafelbild",
+      "path": "outcomes/final-board.png",
+      "lessonRunId": "run-example",
+      "sensitivity": "internal",
+      "visibility": "teacher"
+    }
+  ]
+}
+

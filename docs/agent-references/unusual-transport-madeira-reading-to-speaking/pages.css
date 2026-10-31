@@ -1,0 +1,199 @@
+:root { color-scheme:light; --ink:#17324d; --body:#293a49; --muted:#526674; --coral:#bd573c; --task:#fbede7; --teal:#2f7e83; --line:#bdccd3; font-family:Arial,"Segoe UI",sans-serif; color:var(--body); background:transparent; }
+
+* { box-sizing:border-box; }
+
+html,body { margin:0; min-height:100%; }
+
+body { print-color-adjust:exact; -webkit-print-color-adjust:exact; }
+
+.sheet { padding:30px; background:white; min-height:100vh; }
+
+.sheet + .sheet { border-top:12px solid #e8edef; }
+
+.topline { display:flex; justify-content:space-between; align-items:center; gap:12px; padding-bottom:10px; border-bottom:1.5px solid var(--ink); color:var(--ink); font-size:12px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; }
+
+.level { color:var(--teal); white-space:nowrap; }
+
+.level > span:first-child { display:none; }
+
+.stars { font-size:19px; letter-spacing:.07em; }
+
+.hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:24px; align-items:center; margin:20px 0 24px; }
+
+h1 { font:700 clamp(28px,4.3vw,44px)/1.06 Georgia,serif; letter-spacing:-.025em; color:var(--ink); margin:0; }
+
+.standfirst { margin:10px 0 0; font-size:14px; line-height:1.45; color:var(--muted); }
+
+figure { margin:0; }
+
+figure img { display:block; width:100%; height:166px; object-fit:cover; border-radius:4px; }
+
+.assignment { display:flex; gap:12px; align-items:flex-start; background:var(--task); border-left:4px solid var(--coral); padding:12px 14px; }
+
+.task-number { display:grid; place-items:center; flex:0 0 28px; width:28px; height:28px; border-radius:50%; background:var(--coral); color:#fff; font-size:15px; font-weight:700; }
+
+.assignment h2 { margin:0 0 4px; color:var(--ink); font-size:17px; line-height:1.2; }
+
+.assignment p { margin:0; font-size:14px; line-height:1.4; }
+
+.reading { margin:14px 0 0; }
+
+.reading h2 { font-size:16px; color:var(--ink); margin:0 0 8px; }
+
+.reading p { font:16px/1.5 Georgia,serif; margin:0 0 9px; }
+
+.reading p:last-child { margin-bottom:0; }
+
+.planner { margin-top:26px; }
+
+.format-note { margin:10px 0 14px; color:var(--muted); font-size:13px; line-height:1.4; }
+
+.format-note strong { color:var(--ink); }
+
+.plan-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+
+.plan-cell { min-width:0; border:1px solid var(--line); border-radius:4px; padding:12px; display:flex; flex-direction:column; }
+
+.plan-cell h3 { color:var(--teal); font-size:14px; margin:0 0 5px; }
+
+.prompt { color:var(--muted); font-size:14px; line-height:1.35; min-height:39px; margin:0 0 8px; }
+
+.starter { color:var(--teal); font-weight:700; }
+
+.note { flex:1; min-height:110px; padding:8px; outline:none; font-size:15px; line-height:1.4; background:#fafbfc; border:1px solid #d8e0e4; border-radius:3px; }
+
+.note:empty::before { content:"Your notes …"; color:#8495a0; }
+
+[contenteditable]:focus { outline:2px solid var(--coral); outline-offset:1px; background:#fff; }
+
+.present { margin-top:26px; }
+
+.vocabulary { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:12px 0 0; }
+
+.vocab-card { padding:0 0 0 10px; border-left:2px solid #b9d0cf; }
+
+.vocab-card strong { color:var(--teal); font-size:14px; display:block; }
+
+.vocab-card span { color:var(--muted); font-size:13px; display:block; margin-top:3px; }
+
+.footer { color:var(--muted); font-size:11px; text-align:right; margin-top:14px; }
+
+.slip-sheet { background:#fff; padding:24px; }
+
+.slip { padding:24px 0; }
+
+.slip + .slip { border-top:1px dashed #9ba9b0; }
+
+.slip:first-child { padding-top:0; }
+
+table { width:100%; table-layout:fixed; border-collapse:collapse; margin-top:10px; }
+
+th,td { border:1px solid var(--line); text-align:left; }
+
+th { background:#eef3f4; color:var(--ink); padding:7px 8px; font-size:12px; line-height:1.2; }
+
+td { height:56px; padding:4px 6px; vertical-align:top; }
+
+.listen-cell { min-height:46px; font-size:14px; line-height:1.3; outline:none; }
+
+.speaker { width:14%; }
+.transport { width:24%; }
+.use { width:31%; }
+/* Original paper rules, shared by screen and print. */
+
+  html,body { width:210mm; min-height:0; background:white; }
+
+  .sheet { width:210mm; height:297mm; min-height:0; padding:11mm 13mm; display:flex; flex-direction:column; break-after:page; }
+
+  .sheet:last-child { break-after:auto; }
+
+  .sheet + .sheet { border-top:0; }
+
+  .topline { font-size:8pt; padding-bottom:2mm; }
+
+  .stars { font-size:12pt; }
+
+  .hero { margin:4mm 0 5mm; gap:7mm; grid-template-columns:minmax(0,1fr) minmax(0,.95fr); }
+
+  h1 { font-size:25pt; }
+
+  .standfirst { margin-top:2mm; font-size:9pt; line-height:1.35; }
+
+  figure img { height:33mm; border-radius:1mm; }
+
+  .assignment { gap:2.5mm; padding:2.4mm 3mm; border-left-width:1mm; break-inside:avoid; flex-shrink:0; }
+
+  .task-number { width:6mm; height:6mm; flex-basis:6mm; font-size:10pt; }
+
+  .assignment h2 { font-size:10.5pt; margin-bottom:1mm; }
+
+  .assignment p { font-size:9pt; line-height:1.3; }
+
+  .reading { margin-top:3mm; }
+
+  .reading h2 { font-size:10pt; margin-bottom:1.8mm; }
+
+  .reading p { font-size:9.8pt; line-height:1.38; margin:0 0 1.8mm; }
+
+  .planner { margin-top:5mm; display:flex; flex-direction:column; flex:1; }
+
+  .format-note { font-size:8.5pt; line-height:1.3; margin:2mm 0 3mm; }
+
+  .plan-grid { gap:3mm; flex:1; grid-template-rows:repeat(2,1fr); }
+
+  .plan-cell { padding:2.4mm; border-radius:1mm; }
+
+  .plan-cell h3 { font-size:9.5pt; margin-bottom:1mm; }
+
+  .prompt { font-size:9pt; line-height:1.3; min-height:0; margin:0 0 1.5mm; }
+
+  .note { min-height:20mm; padding:1.5mm; font-size:10pt; border-radius:.7mm; background:white; border:0; }
+
+  .note:empty::before { content:none; }
+
+  .present { margin-top:5mm; flex-shrink:0; }
+
+  .vocabulary { margin-top:3mm; gap:4mm; }
+
+  .vocab-card { padding-left:2mm; border-left-width:.5mm; }
+
+  .vocab-card strong { font-size:9pt; }
+
+  .vocab-card span { margin-top:1mm; font-size:8.5pt; }
+
+  .footer { font-size:7pt; margin-top:3mm; }
+
+  .slip-sheet { width:210mm; height:297mm; padding:10mm; display:grid; grid-template-rows:repeat(4,1fr); }
+
+  .slip { padding:4mm 0; min-height:0; break-inside:avoid; }
+
+  .slip:first-child { padding-top:4mm; }
+
+  .slip .assignment { padding:2mm 2.5mm; }
+
+  table { margin-top:2.5mm; }
+
+  th { padding:1.5mm 2mm; font-size:8pt; }
+
+  td { height:11mm; padding:1mm 1.5mm; }
+
+  .listen-cell { min-height:8mm; font-size:9pt; }
+/* Plugin 0.1.7: same initial A4 page for screen and print; no responsive reflow. */
+@page{size:A4 portrait;margin:11mm 13mm}
+html,body{margin:0;padding:0;width:210mm;min-height:0;height:auto;max-height:none;overflow:visible}
+[data-tafelraum-page]{box-sizing:border-box;display:flex;flex-direction:column;width:210mm;min-height:297mm;height:auto;max-height:none;padding:11mm 13mm;margin:0;overflow:visible;break-after:auto;page-break-after:auto}
+input:focus-visible,textarea:focus-visible{outline:2px solid #bd573c;outline-offset:2px}
+textarea{resize:vertical;overflow:auto}
+@media print{
+ html,body{width:184mm;height:auto;max-height:none;overflow:visible}
+ [data-tafelraum-page]{width:184mm;min-height:0;height:auto;max-height:none;padding:0;overflow:visible}
+ input,textarea{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;outline:none!important;box-shadow:none!important;resize:none!important}
+ input::placeholder,textarea::placeholder{color:transparent!important}
+}
+
+/* The first original sheet only. Native fields replace the former editable divs. */
+[data-tafelraum-page]{display:flex}.planner{flex:1}.plan-grid{flex:1;grid-template-rows:repeat(2,minmax(0,1fr))}
+.note{display:block;width:100%;height:20mm;min-height:20mm;font-family:Arial,sans-serif;resize:vertical;overflow:auto}
+@media print{[data-tafelraum-page]{min-height:274.5mm}.note{height:20mm!important;min-height:20mm!important;max-height:20mm!important}}
+
+@media print{textarea{width:100%!important;appearance:none!important;font-size:0!important}}

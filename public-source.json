@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "omit": [
+    "docs/unterricht/beispiele"
+  ],
+  "replace": {
+    "docs/implementation/11_NATIVE_APP_SMOKE_TEST_0_1_9.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/12_NATIVE_APP_UPDATE_0_1_10_TEST.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/13_NATIVE_APP_UPDATE_0_1_11_CLIPBOARD.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/14_NATIVE_APP_UPDATE_0_1_12_PRINT.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/15_NATIVE_APP_UPDATE_0_1_13_EMBED_INK.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/16_NATIVE_APP_UPDATE_0_1_14_ICON.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/17_NATIVE_APP_UPDATE_0_1_15_ICON_ATTENTION.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/18_NATIVE_APP_UPDATE_0_1_16_ATTENTION_REMINDER.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/19_NATIVE_APP_UPDATE_0_1_17_THEMES.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/20_NATIVE_APP_UPDATE_0_1_18_LINKS.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/21_NATIVE_APP_UPDATE_0_1_19_SIDEBAR.md": "docs/public/HISTORICAL_DESKTOP.md",
+    "docs/implementation/09_DESKTOP_APP_UND_UPDATES.md": "docs/public/DESKTOP.md",
+    "docs/implementation/55_PROJECT_LICENSE_AND_PUBLIC_IDENTITY.md": "docs/public/PROJECT_CONDITIONS.md",
+    "docs/unterricht/beispiele/README.md": "docs/public/LESSON_EXAMPLES.md"
+  }
+}

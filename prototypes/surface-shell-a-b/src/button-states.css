@@ -1,0 +1,42 @@
+/* Shared neutral controls: the same contained surface for pointer and keyboard.
+   Semantic selections, destructive actions and canvas handles keep their own states. */
+:root,
+.room-view {
+  --button-hover-bg: color-mix(in srgb, var(--toolbar-strong) 88%, var(--text) 12%);
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+:root :is(.action-button, .tool-button, .settings-option, .desktop-update-close,
+    .archive-toggle, .toolbar-visibility-button, .toolbar-overflow-button,
+    .toolbar-recall, .student-notes-trigger, .room-tools button,
+    .room-fullscreen, dialog header button, .class-picker button,
+    .student-notes-popup button, .canvas-link-label-editor button,
+    .canvas-history-actions > button, .embedded-app-popover button,
+    .archive-context-menu button, .archive-folder-edit-action,
+    .archive-add-button, .archive-subject-create, .archive-create-row button,
+    .archive-trash-item > button, .lesson-material-header-actions button,
+    .lesson-material-device, .lesson-material-rename, .lesson-material-insert,
+    .lesson-material-link-form button, .lesson-material-name-form button,
+    .canvas-zoom-button, .canvas-zoom-value, .image-quick-action,
+    .text-formatting-font-button, .text-formatting-size-button, .context-formatting-button,
+    .image-crop-mode-menu button, .live-host-trigger, .live-host-icon,
+    .live-target-clear, .live-host-copy, .live-host-error button,
+    .student-preview-header > button, .clip-context-menu button, .clip-undo button,
+    .clip-frame button:not(.clip-resize):not(.clip-number),
+    .room-video-controller button,
+    :is(dialog, [role="dialog"]) button:not(:is(
+      .is-danger, .is-destructive, .document-image-primary, .document-image-handle,
+      .live-host-primary, .live-host-end, .mobile-capture-start, .desktop-update-check,
+      .tool-color-option, .tool-stroke-option, [aria-pressed="true"]))):is(:hover, :focus-visible):not(:disabled) {
+  outline: none;
+  background-color: var(--button-hover-bg);
+}
+
+/* Semantic actions keep their color; pointer and keyboard use the same emphasis. */
+button:is(.is-danger, .is-destructive, .document-image-primary,
+  .live-host-primary, .live-host-end, .mobile-capture-start):is(:hover, :focus-visible):not(:disabled) {
+  outline: none;
+  filter: brightness(1.08);
+}

@@ -1,0 +1,41 @@
+{
+  "format": "teaching-workspace-live-session",
+  "schemaVersion": "0.1.0-concept",
+  "conceptStatus": "later-discussion-example",
+  "notPhase1": true,
+  "liveSession": {
+    "id": "live-session-opaque-id",
+    "sourceLessonId": "lesson-climate-causes-effects",
+    "hostId": "teacher-account-reference",
+    "status": "active",
+    "startedAt": "2026-09-14T18:00:00+02:00",
+    "expiresAt": "2026-09-14T20:00:00+02:00",
+    "endedAt": null,
+    "access": {
+      "mode": "temporary-secret-link",
+      "tokenRef": "opaque-token-reference",
+      "accountRequired": false,
+      "pinRequired": false,
+      "revocable": true
+    },
+    "capabilities": [
+      "view",
+      "follow-public-camera"
+    ],
+    "publicProjectionPolicy": {
+      "includeAudience": [
+        "public",
+        "both"
+      ],
+      "excludeTeacherOnly": true,
+      "excludeSensitive": true
+    },
+    "presentationStateRef": "runtime/presentation-state",
+    "participantInteraction": {
+      "mode": "read-only",
+      "drawingEnabled": false,
+      "contributionsWriteToTeacherOriginal": false
+    }
+  }
+}
+

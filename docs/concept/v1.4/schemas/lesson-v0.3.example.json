@@ -1,0 +1,118 @@
+{
+  "format": "teaching-workspace-lesson",
+  "schemaVersion": "0.3.0-concept",
+  "conceptStatus": "discussion-example",
+  "lessonDefinition": {
+    "id": "lesson-climate-causes-effects",
+    "title": "Ursachen und Folgen des Klimawandels",
+    "subjectId": "subject-geography",
+    "unitId": "unit-climate",
+    "status": "draft",
+    "createdAt": "2026-07-27T12:00:00+02:00",
+    "updatedAt": "2026-08-30T12:00:00+02:00",
+    "defaultViewId": "view-board-main",
+    "lessonFlowId": "flow-main",
+    "assetIds": ["asset-entry-image"],
+    "importSource": {
+      "kind": "mirror",
+      "mirrorRef": "imports/mirror-v0.1.json"
+    }
+  },
+  "activities": [
+    {
+      "id": "activity-entry-image",
+      "title": "Bildimpuls und Leitfrage",
+      "purpose": "Vorwissen aktivieren",
+      "semanticPhase": "Einstieg",
+      "semanticPhaseVocabulary": "free-text",
+      "instruction": "Welche Folgen lassen sich direkt beobachten?",
+      "teacherAction": "Bild zeigen und erste Beobachtungen sammeln",
+      "studentActivity": "Beobachtungen benennen und Vermutungen formulieren",
+      "expectedOutcome": "erste Hypothesen zu Ursachen und Folgen",
+      "materialIds": ["asset-entry-image"],
+      "sourceStatus": "planned"
+    },
+    {
+      "id": "activity-work-task",
+      "title": "Arbeitsauftrag",
+      "purpose": "Zusammenhänge erarbeiten",
+      "semanticPhase": null,
+      "semanticPhaseVocabulary": null,
+      "instruction": "Ordnet Ursachen und Folgen einander zu.",
+      "teacherAction": null,
+      "studentActivity": "Material auswerten und Zuordnungen begründen",
+      "expectedOutcome": null,
+      "materialIds": [],
+      "sourceStatus": "planned"
+    }
+  ],
+  "lessonFlows": [
+    {
+      "id": "flow-main",
+      "lessonId": "lesson-climate-causes-effects",
+      "activityOrder": ["activity-entry-image", "activity-work-task"],
+      "sectionOrder": ["section-start", "section-work"]
+    }
+  ],
+  "sections": [
+    {
+      "id": "section-start",
+      "lessonFlowId": "flow-main",
+      "title": "Start",
+      "activityIds": ["activity-entry-image"]
+    },
+    {
+      "id": "section-work",
+      "lessonFlowId": "flow-main",
+      "title": "Arbeitsauftrag",
+      "activityIds": ["activity-work-task"]
+    }
+  ],
+  "views": [
+    {
+      "id": "view-board-main",
+      "type": "board",
+      "renderer": "excalidraw",
+      "sceneRef": "board/scene.excalidraw",
+      "canvasMode": "potentially-infinite"
+    }
+  ],
+  "presentationSteps": [
+    {
+      "id": "step-image-question",
+      "activityId": "activity-entry-image",
+      "viewId": "view-board-main",
+      "title": "Bild und Leitfrage",
+      "order": 1,
+      "viewpoint": {
+        "bounds": {"x": 0, "y": 0, "width": 1600, "height": 900},
+        "fit": "contain",
+        "padding": 48
+      }
+    },
+    {
+      "id": "step-task",
+      "activityId": "activity-work-task",
+      "viewId": "view-board-main",
+      "title": "Arbeitsauftrag",
+      "order": 2,
+      "viewpoint": {
+        "bounds": {"x": 3600, "y": 400, "width": 1600, "height": 900},
+        "fit": "contain",
+        "padding": 48
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-entry-image",
+      "mediaType": "image",
+      "originalRef": "assets/extreme-weather.png",
+      "role": "illustration",
+      "availabilityStatus": "local",
+      "origin": {"kind": "upload", "system": null},
+      "rightsStatus": "unknown"
+    }
+  ],
+  "lessonRuns": []
+}

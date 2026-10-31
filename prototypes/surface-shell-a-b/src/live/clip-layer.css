@@ -1,0 +1,50 @@
+.clip-layer { position:absolute; inset:0; z-index:15; pointer-events:none; overflow:hidden; }
+.clip-layer.is-creating { pointer-events:auto; touch-action:none; cursor:crosshair; }
+.clip-frame { position:absolute; border:2px dashed var(--accent,#2385bd); border-radius:4px; pointer-events:none; box-sizing:border-box; }
+.clip-frame.is-active { border:2px solid var(--accent,#2385bd); }
+.clip-frame.is-material { border:0; }
+.clip-material-outline { position:absolute; box-sizing:border-box; border:2px solid var(--accent,#2385bd); transform-origin:center; pointer-events:none; }
+.clip-frame.is-material .clip-frame-status { top:calc(6px * var(--clip-number-scale,1)); left:calc(6px * var(--clip-number-scale,1)); }
+.clip-frame-status, .clip-frame-actions { position:absolute; top:4px; display:flex; align-items:center; pointer-events:auto; border-radius:8px; background:var(--surface,#fffefa); box-shadow:0 2px 8px #0001; color:var(--text,#263442); }
+.clip-frame-status { top:calc(4px * var(--clip-number-scale,1)); left:calc(4px * var(--clip-number-scale,1)); background:transparent; box-shadow:none; }
+.clip-frame-actions { right:4px; }
+.clip-frame button { border:0; background:transparent; color:inherit; width:48px; height:48px; cursor:pointer; display:grid; place-items:center; border-radius:5px; touch-action:none; }
+.clip-frame button:hover { background:var(--toolbar-strong,#edf1f4); }
+.clip-frame :is(.clip-number,.clip-resize):focus-visible { outline:2px solid var(--accent,#2385bd); outline-offset:-2px; }
+.clip-frame button svg { width:17px; height:17px; }
+.clip-frame .clip-number { position:relative; font-size:24px; line-height:1; font-weight:700; font-variant-numeric:tabular-nums; }
+/* Scale only the visible badge; its touch target stays 48px at every zoom. */
+.clip-number-badge { position:absolute; inset:0; display:grid; place-items:center; border-radius:8px; background:var(--surface,#fffefa); box-shadow:0 2px 8px #0001; transform:scale(var(--clip-number-scale,1)); transform-origin:top left; pointer-events:none; }
+.clip-frame .clip-number:hover { background:transparent; }
+.clip-frame .clip-number:hover .clip-number-badge { background:var(--toolbar-strong,#edf1f4); }
+.clip-frame .clip-number[aria-disabled="true"] { opacity:.85; cursor:not-allowed; }
+.clip-frame.is-active .clip-number { color:white; }
+.clip-frame.is-active .clip-number-badge { background:var(--accent,#2385bd); }
+.clip-frame .clip-resize { position:absolute; right:-12px; bottom:-12px; pointer-events:auto; cursor:nwse-resize; border-radius:0; }
+.clip-frame .clip-resize:hover { background:transparent; }
+.clip-resize::before, .clip-resize::after { content:''; position:absolute; box-sizing:border-box; border-right:4px solid var(--accent,#2385bd); border-bottom:4px solid var(--accent,#2385bd); filter:drop-shadow(0 0 2px var(--surface,#fff)); transition:transform .16s ease; }
+.clip-resize::before { right:5px; bottom:5px; width:18px; height:18px; }
+.clip-resize::after { right:16px; bottom:16px; width:11px; height:11px; }
+.clip-resize:hover::before, .clip-resize:hover::after, .clip-resize:focus-visible::before, .clip-resize:focus-visible::after { transform:translate(3px,3px); }
+.clip-move { cursor:move!important; }
+.clip-pending { position:absolute; width:5px; height:5px; border-radius:50%; background:currentColor; bottom:4px; }
+.clip-frame.is-selected { border-color:var(--accent,#2385bd); }
+.clip-frame.is-selected .clip-number { color:var(--accent,#2385bd); }
+.clip-undo { position:absolute; left:50%; bottom:24px; transform:translateX(-50%); display:flex; gap:8px; pointer-events:auto; padding:4px; border-radius:10px; background:var(--surface,#fffefa); box-shadow:0 2px 12px #0002; }
+.clip-undo button { border:0; background:none; color:var(--text); padding:8px 12px; min-height:40px; cursor:pointer; }
+.clip-undo svg { width:16px; height:16px; }
+.canvas-engine .clip-layer.is-creating { cursor:crosshair!important; }
+.canvas-engine .clip-layer button { cursor:pointer!important; }
+.canvas-engine .clip-layer .clip-move { cursor:move!important; }
+.canvas-engine .clip-layer .clip-resize { cursor:nwse-resize!important; }
+@media (pointer:coarse) { .clip-undo button { min-height:48px; } }
+@media (prefers-reduced-motion:reduce) { .clip-resize::before, .clip-resize::after { transition:none; } }
+.clip-context-menu { position:absolute; z-index:2; width:192px; padding:4px; border-radius:10px; background:var(--surface,#fffefa); color:var(--text,#263442); box-shadow:0 8px 24px #0003; pointer-events:auto; }
+.clip-context-menu button { display:block; width:100%; min-height:44px; padding:0 12px; border:0; border-radius:6px; background:transparent; color:inherit; text-align:left; cursor:pointer; font:inherit; }
+.clip-context-menu button:hover, .clip-context-menu button:focus-visible { background:var(--toolbar-strong,#edf1f4); }
+.clip-context-menu input:focus-visible { outline:2px solid var(--accent,#2385bd); outline-offset:1px; }
+.clip-context-menu label { display:block; padding:8px 8px 4px; font-size:13px; }
+.clip-context-row { display:flex; gap:4px; }
+.clip-context-row input { width:54px; min-width:0; margin-left:4px; padding:0 4px; border:1px solid var(--text-muted,#738296); border-radius:6px; background:var(--surface,#fffefa); color:inherit; font:inherit; }
+.clip-context-row button { padding:0 8px; text-align:center; }
+.clip-context-menu button:disabled { opacity:.5; cursor:not-allowed; }

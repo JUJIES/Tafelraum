@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Synthetic live motion source</title>
+<body><p>Synthetic motion fixture. No archive or real materials.</p>
+<script type="module">
+import { convertToExcalidrawElements } from '@excalidraw/excalidraw';
+import { LiveHost } from './live-host.ts';
+const native = value => convertToExcalidrawElements([value],{regenerateIds:false})[0];
+let host, elements, change = () => {}, base;
+const canvas = document.createElement('canvas'); canvas.width = 800; canvas.height = 500;
+const context = canvas.getContext('2d'); context.fillStyle='#0000ff'; context.fillRect(0,0,800,500);
+const files = { synthetic: {id:'synthetic',dataURL:canvas.toDataURL(),mimeType:'image/png',created:1} };
+const state = {scrollX:0,scrollY:0,width:1600,height:900,zoom:{value:1},viewBackgroundColor:'#ffffff',isLoading:false};
+let mode;
+window.motionFixture = {
+  async start(nextMode) {
+    mode = nextMode;
+    const material = mode.endsWith('image') || mode === 'clip-edge' || mode === 'clip-window'
+      ? native({type:'image',id:'moving',fileId:'synthetic',x:mode==='clip-edge'?-200:100,y:100,width:400,height:250,status:'saved'})
+      : native({type:'rectangle',id:'moving',x:100,y:100,width:400,height:250,backgroundColor:'#0000ff',strokeColor:'#0000ff',strokeWidth:0,roughness:0,fillStyle:'solid'});
+    base = mode.endsWith('cover') ? [
+      native({type:'rectangle',id:'hidden',x:100,y:100,width:900,height:600,backgroundColor:'#ff0000',strokeColor:'#ff0000',strokeWidth:0,roughness:0,fillStyle:'solid'}),
+      native({type:'rectangle',id:'control',x:1300,y:100,width:200,height:200,backgroundColor:'#0000ff',strokeColor:'#0000ff',strokeWidth:0,roughness:0,fillStyle:'solid'}),
+      native({type:'rectangle',id:'cover',x:96,y:96,width:458,height:608,backgroundColor:'#3e4854',strokeColor:'#3e4854',roughness:0,fillStyle:'solid',roundness:null,customData:{role:'image-cover',imageId:'hidden',coverEdge:'top'}}),
+    ] : [material];
+    elements = base.map(e=>({...e}));
+    host = new LiveHost();
+    host.attach({getSceneElements:()=>elements,getFiles:()=>files,getAppState:()=>state,
+      onChange:callback=>{change=callback;return()=>{change=()=>{};}},onScrollChange:()=>()=>{}},'synthetic-motion');
+    host.activate(); await host.create();
+    for(let i=0;i<1000 && !host.state.connected;i++) await new Promise(resolve=>setTimeout(resolve,5));
+    if(!host.state.connected) throw Error('Synthetic host did not connect');
+    if(mode.startsWith('clip-')) host.showClip({id:'synthetic-clip',x:0,y:0,width:1600,height:900});
+    return `${host.state.session.baseUrl}/join/${host.state.session.inviteId}`;
+  },
+  begin(){host.start();},
+  move(amount) {
+    if(mode==='clip-window') { host.moveClip({id:'synthetic-clip',x:amount,y:0,width:1600,height:900}); return; }
+    elements = base.map((element,index) => mode.endsWith('cover')
+      ? index === 2 ? {...element,height:element.height-amount,version:element.version+Math.round(amount)} : element
+      : {...element,x:element.x+amount,version:element.version+Math.round(amount)});
+    change();
+  },
+  state:()=>({ready:host.state.publicationReady,error:host.state.error}),
+  end(){host.end();host.dispose();},
+};
+</script></body></html>

@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Tests und Browser-Kernsuite
+    runs-on: macos-15
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Node 24 und npm-Cache
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: prototypes/surface-shell-a-b/package-lock.json
+
+      - name: Dependencies aus Lockfiles
+        run: |
+          node scripts/check-distribution.mjs
+          mkdir -p output/ci
+          npm ci --prefix prototypes/surface-shell-a-b 2>&1 | tee output/ci/app-install.log
+          if [ -d services/live-canvas ]; then npm ci --prefix services/live-canvas 2>&1 | tee output/ci/live-install.log; fi
+
+      - name: App-Typen, Unit-Tests und vorhandene Präsentationsbuilds
+        run: |
+          npm --prefix prototypes/surface-shell-a-b run typecheck 2>&1 | tee output/ci/app-types.log
+          npm --prefix prototypes/surface-shell-a-b run typecheck:live 2>&1 | tee output/ci/live-types.log
+          npm --prefix prototypes/surface-shell-a-b test 2>&1 | tee output/ci/app-tests.log
+          npm --prefix prototypes/surface-shell-a-b run test:live 2>&1 | tee output/ci/live-tests.log
+          if [ -d services/live-canvas ]; then npm --prefix prototypes/surface-shell-a-b run build:live 2>&1 | tee output/ci/viewer-build.log; fi
+
+      - name: Hohe und kritische Dependencybefunde prüfen
+        run: |
+          npm --prefix prototypes/surface-shell-a-b audit --audit-level=high 2>&1 | tee output/ci/app-audit.log
+          if [ -d services/live-canvas ]; then npm --prefix services/live-canvas audit --audit-level=high 2>&1 | tee output/ci/service-audit.log; fi
+
+      - name: Lokale Diensttests
+        run: |
+          if [ -d services/live-canvas ]; then npm --prefix services/live-canvas run typecheck 2>&1 | tee output/ci/service-types.log; fi
+          if [ -d services/live-canvas ]; then npm --prefix services/live-canvas test 2>&1 | tee output/ci/service-tests.log; fi
+          npm --prefix services/mobile-capture test 2>&1 | tee output/ci/relay-tests.log
+
+      - name: Chromium und WebKit installieren
+        run: npm --prefix prototypes/surface-shell-a-b run test:browser:install 2>&1 | tee output/ci/browser-install.log
+
+      - name: Browser-Kernsuite mit synthetischen Daten
+        run: npm --prefix prototypes/surface-shell-a-b run test:browser 2>&1 | tee output/ci/browser-tests.log
+
+      - name: Prüfberichte bei Fehlern sichern
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ci-diagnostics-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            output/ci/*.log
+            output/ui-language-browser/*.json
+            output/ui-language-browser/*.png
+            output/app-hardening-regression/*.json
+            output/app-hardening-regression/*.png
+            output/storage-material-regression/*.json
+            output/storage-material-regression/*.png
+            output/agent-onboarding/*.json
+            output/agent-onboarding/*.png
+            output/developer-onboarding/*.json
+            output/developer-onboarding/*.png
+            output/developer-onboarding/*.log

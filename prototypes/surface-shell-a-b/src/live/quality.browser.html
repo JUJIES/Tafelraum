@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Synthetic worksheet quality</title>
+<body><p>Synthetic worksheet only; no archive or real classroom data.</p>
+<script type="module">
+import { convertToExcalidrawElements } from '@excalidraw/excalidraw';
+import { createPublicProjector } from './public-projection.ts';
+import { LiveHost } from './live-host.ts';
+import { materialFilesToCanvasImages } from '../material-import.ts';
+const native = value => convertToExcalidrawElements([value], {regenerateIds:false})[0];
+const canvas = document.createElement('canvas'); canvas.width=1600; canvas.height=2240;
+const ctx=canvas.getContext('2d'); ctx.fillStyle='#fff';ctx.fillRect(0,0,1600,2240);
+ctx.fillStyle='#000';
+for(let x=0;x<800;x+=2)ctx.fillRect(x,0,1,800);
+ctx.font='32px sans-serif';
+for(let y=950;y<2200;y+=70)ctx.fillText('Worksheet: Read, compare and explain. 123456789',40,y);
+ctx.fillStyle='#f00';ctx.fillRect(1400,0,200,2240);
+const pngURL=canvas.toDataURL();
+let file={id:'worksheet',dataURL:pngURL,mimeType:'image/png',created:1};
+const image=native({type:'image',id:'sheet',fileId:'worksheet',x:100,y:100,width:400,height:560,status:'saved'});
+const mask=native({type:'rectangle',id:'mask',x:450,y:96,width:54,height:568,strokeColor:'#3e4854',backgroundColor:'#3e4854',fillStyle:'solid',roughness:0,strokeWidth:0,roundness:null,customData:{role:'image-cover',imageId:'sheet'}});
+const state={scrollX:0,scrollY:0,width:650,height:800,zoom:{value:1},viewBackgroundColor:'#ffffff',isLoading:false};
+let elements,clip,host,change=()=>{};
+const api={getSceneElements:()=>elements,getFiles:()=>({worksheet:file}),getAppState:()=>state,onChange:callback=>{change=callback;return()=>{};},onScrollChange:()=>()=>{}};
+// Minimal synthetic vector PDF, imported through the product's actual PDF path.
+async function pdfSource(){
+  let paint='0 0 0 rg\n';for(let x=0;x<400;x++)paint+=`${x} 720 .5 400 re f\n`;
+  paint+='BT /F1 16 Tf 20 640 Td (Worksheet: Read, compare and explain.) Tj ET\n1 0 0 rg 700 0 100 1120 re f\n';
+  const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 800 1120] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+    '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',`<< /Length ${paint.length} >>\nstream\n${paint}endstream`];
+  let pdf='%PDF-1.4\n',offsets=[0];objects.forEach((object,i)=>{offsets.push(pdf.length);pdf+=`${i+1} 0 obj\n${object}\nendobj\n`;});
+  const xref=pdf.length;pdf+=`xref\n0 6\n0000000000 65535 f \n${offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')}trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`;
+  const [asset]=await materialFilesToCanvasImages([new File([pdf],'synthetic.pdf',{type:'application/pdf'})]);
+  return asset.dataUrl;
+}
+window.qualityFixture={
+  native,
+  async prepare(mode){
+    const inputMode=mode;file={...file,dataURL:mode.endsWith('-pdf')?await pdfSource():pngURL};mode=mode.replace(/-pdf$/,'');
+    elements=mode.endsWith('cover')?[image,mask]:[image];
+    clip=mode==='clip-edge'?{x:100,y:100,width:350,height:560}:mode.startsWith('clip')?{x:80,y:80,width:440,height:600}:undefined;
+    const projector=createPublicProjector(),start=performance.now(),result=await projector.project(api);
+    const elapsed=performance.now()-start;
+    const output=document.createElement('canvas');output.width=2600;output.height=3200;
+    const context=output.getContext('2d');context.fillStyle='#fff';context.fillRect(0,0,2600,3200);
+    const sizes=[];
+    for(const element of result.elements){
+      const asset=result.assets.find(a=>a.id===element.fileId);if(!asset)continue;
+      const bitmap=await createImageBitmap(asset.blob);
+      sizes.push({width:bitmap.width,height:bitmap.height,density:bitmap.width/element.width,bytes:asset.blob.size});
+      context.drawImage(bitmap,element.x*4,element.y*4,element.width*4,element.height*4);bitmap.close();
+    }
+    const data=context.getImageData(520,560,256,32).data;
+    let sum=0,squares=0;for(let i=0;i<data.length;i+=4){sum+=data[i];squares+=data[i]**2;}
+    const count=data.length/4,contrast=Math.sqrt(squares/count-(sum/count)**2);
+    const repeated=await projector.project(api);
+    return {mode:inputMode,elapsed,contrast,sizes,bytes:result.assets.reduce((s,a)=>s+a.blob.size,0),reused:repeated.assets.every((a,i)=>a.blob===result.assets[i].blob)};
+  },
+  async start(){
+    host=new LiveHost();host.attach(api,'synthetic-quality');host.activate();await host.create();
+    for(let i=0;i<1000&&!host.state.connected;i++)await new Promise(r=>setTimeout(r,5));
+    if(clip)host.showClip({id:'quality-clip',...clip});
+    return `${host.state.session.baseUrl}/join/${host.state.session.inviteId}`;
+  },
+  begin(){host.start();},end(){host.end();host.dispose();},state:()=>({error:host.state.error}),
+};
+</script></body></html>

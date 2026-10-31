@@ -1,0 +1,19 @@
+TAFELRAUM AUF DEM MAC STARTEN
+
+1. Einen bereits geöffneten Tafelraum mit ⌘Q vollständig beenden.
+2. ZIP-Datei vollständig entpacken.
+3. Neue Installation: Tafelraum.app auf den Schreibtisch oder in einen anderen eigenen Ordner ziehen.
+   Vorhandene Installation: Genau die bisher verwendete Tafelraum.app durch die neue ersetzen. Liegt sie im Dock und der Speicherort ist unklar, dort mit Rechtsklick auf Tafelraum → Optionen → Im Finder zeigen. Nicht zwei App-Kopien parallel behalten.
+4. Falls macOS die App wegen der Quarantäne nicht öffnet:
+
+   a) Terminal öffnen.
+   b) Folgenden Befehl mit dem Leerzeichen am Ende eingeben, aber noch nicht Enter drücken:
+
+      xattr -dr com.apple.quarantine 
+
+   c) Tafelraum.app aus dem Finder in das Terminalfenster ziehen. Der vollständige Pfad wird automatisch ergänzt.
+   d) Jetzt Enter drücken.
+
+5. Tafelraum.app öffnen.
+
+Die App benötigt kein Administratorpasswort. Beim Ersetzen der App bleiben vorhandene Unterrichte und Materialien im getrennten lokalen Datenordner dieses Macs erhalten. Auf einem neuen Mac ohne vorhandenen Tafelraum-Datenordner startet die App mit einem frischen Unterrichtsbereich. Das ZIP enthält keine Unterrichtsdaten. Updates werden nur nach einer bewussten Bestätigung installiert.

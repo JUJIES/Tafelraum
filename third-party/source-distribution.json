@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "scope": "Source repository only; no node_modules, Cargo cache, application binaries or private runtimes.",
+  "projectLicense": "MIT with Commons Clause 1.0 applies only to own contributions; these groups retain their original terms.",
+  "groups": [
+    {
+      "id": "web-originals",
+      "description": "Original licenses, notices and Liberation source package; independent upstream terms",
+      "files": [
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/LICENSE",
+          "sha256": "1352d204fdb90d5e482c13139d848bc2c9300a9a7de358a0a558a23e72d0d8be"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/embedded-font-names.json",
+          "sha256": "5d0c4a03b83ac11f78a0b309e7e158a805ed28d2e441624293ea95f496184126"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Assistant/LICENSE.txt",
+          "sha256": "7eaf6282cfab122b99ffd62a122fc27b6c3c8f2c65b56ff9b3a25badbc64887d"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Cascadia/LICENSE.txt",
+          "sha256": "82c05d6c53dfa0c9025985c19e371810020b74ed2c61d51d370f2a8ab2506d52"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/ComicShanns/NOTICE.txt",
+          "sha256": "7a40b90c6f43f0e2db4ffe45252dfa8f3178955a9b2207c480568406a42c8cef"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Excalifont/NOTICE.txt",
+          "sha256": "ca267eddaf13148544bbb8d0c8941260a2c352c54a6beee2ffc9e42b203ab598"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/COPYING",
+          "sha256": "32b1062f7da84967e7019d01ab805935caa7ab7321a7ced0e30ebe75e5df1670"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/License.txt",
+          "sha256": "696c8257e24fbc158549191ab3e0ef2c5edc4582a3c3f0dd096e1efd281195bf"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/source/SOURCE_EVIDENCE.json",
+          "sha256": "34643db6e1535d14a505cb111e024f0fd9330b62119d117b4b0763b3607259dc"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/source/ttf-liberation_1.04.93-1.diff.gz",
+          "sha256": "15354f92efcdd78318e6bda28ef8f790e3f8b6006bacf58a7a5447121760d22a"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/source/ttf-liberation_1.04.93-1.dsc",
+          "sha256": "fa7b97803fc2a1a3b7e715ceeddee28253f23fac8c77a0f0df4e3a77935ceabc"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Liberation/source/ttf-liberation_1.04.93.orig.tar.gz",
+          "sha256": "1cf46049ecde9551440d2227eeb3f896d7dfe17c915561d080942a89484cf4d2"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Lilita/LICENSE.txt",
+          "sha256": "255d5debbb80eb2ea762644311f266a279e8778f00156655a516e2b7781a63e1"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Nunito/LICENSE.txt",
+          "sha256": "580df76c95a1ec5ab878ceb25bb3d85c6a076804e9c970c8c6972aea775fdf65"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Virgil/LICENSE.txt",
+          "sha256": "a3ac9cdc65ef304ffb095d8cc877ee93bf1bffa88269693cd42ddf001650ffd0"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/excalidraw/fonts/Xiaolai/LICENSE.txt",
+          "sha256": "0df7e09be4c2c850a48bd8beb9cd64b343aad49cd5d3f6cfb2ad2e3d28a56ca4"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/fluent-system-icons/LICENSE",
+          "sha256": "69bc45dc42b9acb96a69823adbc6ae538374e3c0bde169b855b32c48eaaef52f"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_JBIG2",
+          "sha256": "9e66b7f1b934a28b37f3bc4dac97915de1674271e79a0a88182a18ed9731b4d1"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_OPENJPEG",
+          "sha256": "a6af136f3e15038a666b61f376612a07d9a4e48cb7c01adbf3e33b3f14ab49b6"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_PDFJS_JBIG2",
+          "sha256": "aad3cce09842e00e9e11ad5e8fef8cc02fbc3a3768fe2f007443b9cee37aaee5"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_PDFJS_OPENJPEG",
+          "sha256": "717fc62da03292dbb4dd0c8280bd4ce7bb8550dcf31d772bc93455fb50313425"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_PDFJS_QCMS",
+          "sha256": "508a77d2e7b51d98adeed32648ad124b7b30241a8e70b2e72c99f92d8e5874d1"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/LICENSE_QCMS",
+          "sha256": "36d847ae882f6574ebc72f56a4f354e4f104fde4a584373496482e97d52d31bc"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/pdfjs-dist/provenance.json",
+          "sha256": "ad9fe67d8df570996b16ba5addfa8bb0e150f163f5182503753bd833aea2af4f"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/public/licenses/rrweb-2.2.0-MIT.txt",
+          "sha256": "e49e62397b603438476e0d6b5ca3b6e6d4f23a80594e596aff29ac04fa3e1b1c"
+        }
+      ]
+    },
+    {
+      "id": "inline-fluent",
+      "description": "Copied Fluent SVG geometry under the original MIT notice",
+      "files": [
+        {
+          "file": "prototypes/surface-shell-a-b/src/icons/NOTICE.md",
+          "sha256": "2c6f9718bd53da95750911a12fc7f931335e2a7a9d6bc78a1b8acf1831568d5d"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/src/icons/FluentToolbarIcon.tsx",
+          "sha256": "361ac0d76d8072b3e0cae23b670440f4da4f85e10c952a5bd37ba81a6cc09d25"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/src/icons/ColoredPencilIcon.tsx",
+          "sha256": "b0d7c80d99a4557da86a64eb0618c8849a1ec7fce5220421e086882a07b2fa81"
+        }
+      ]
+    },
+    {
+      "id": "runtime-evidence",
+      "description": "Original Node license and runtime provenance; runtime binaries are not in the source repository",
+      "files": [
+        {
+          "file": "prototypes/surface-shell-a-b/runtime-licenses/libreoffice/provenance.json",
+          "sha256": "6afe6d5f6917ba9f2c145d034196a2e85e16011225f9cd2de074c3d853e2f36f"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/runtime-licenses/node/LICENSE",
+          "sha256": "de8f7d08b164a5b05d815cefdcdb332d38846379649b53956071522f63a5e777"
+        },
+        {
+          "file": "prototypes/surface-shell-a-b/runtime-licenses/node/provenance.json",
+          "sha256": "578250e8440981214f46550820f866d1d249bd74c081f3341f27a884a0ec0711"
+        }
+      ]
+    },
+    {
+      "id": "docres-notice",
+      "description": "Original upstream MIT notice; private DocRes/MBD runtimes and model weights are not included",
+      "files": [
+        {
+          "file": "prototypes/surface-shell-a-b/document-image/LICENSE.DocRes",
+          "sha256": "2fa58d878abc9ea7b2e4780e736eb45c904ace4cb167504b8549210f3d32df1e"
+        }
+      ]
+    }
+  ],
+  "dependencySources": {
+    "npm": [
+      "prototypes/surface-shell-a-b/package-lock.json",
+      "services/live-canvas/package-lock.json"
+    ],
+    "cargo": "prototypes/surface-shell-a-b/src-tauri/Cargo.lock",
+    "note": "Exact versions/registry archive integrity recorded in lockfiles; these dependency sources/binaries are obtained by the developer and are not copied into this source candidate."
+  },
+  "notes": [
+    "Liberation source archive, Debian patch and descriptor are included with GPL-v2/exception originals. No font binary is vendored in this source tree.",
+    "MPL dependency code is not re-licensed by the project. DOMPurify offers Apache-2.0 as an alternative.",
+    "Legacy desktop-shell/icon.png is byte-identical to the declared own 192px web icon, not a new external asset.",
+    "Native icon variants are existing Tauri derivatives of the declared own canonical icon.",
+    "A future binary release needs its separate complete runtime/dependency redistribution check."
+  ]
+}

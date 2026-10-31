@@ -1,0 +1,8 @@
+{
+  "version": "v22.18.0",
+  "source": "https://github.com/nodejs/node/blob/v22.18.0/LICENSE",
+  "gitBlobSha": "ac9e2ef9b13f5d4845194b9b397ab9dc9e9f93a7",
+  "file": "LICENSE",
+  "sha256": "de8f7d08b164a5b05d815cefdcdb332d38846379649b53956071522f63a5e777",
+  "normalization": "UTF-8, LF line endings"
+}

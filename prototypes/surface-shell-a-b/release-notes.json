@@ -1,0 +1,407 @@
+{
+  "0.1.87": [
+    "Clipnummern sind besser lesbar, wachsen beim Hineinzoomen nicht weiter und schrumpfen beim Herauszoomen mit dem Canvas."
+  ],
+  "0.1.86": [
+    "Schülernotizen und Verlauf bilden eine gemeinsame, flache Aktionsleiste am Canvas.",
+    "Die alte allgemeine Notizbuchfunktion wurde entfernt; vorhandene Notizdateien bleiben erhalten."
+  ],
+  "0.1.84": [
+    "Kursnamen und private Stundennotizen zur schnellen Unterrichtsdokumentation."
+  ],
+  "0.1.83": [
+    "Bildspeicherfehler bleiben sichtbar und werden vor dem Canvasstand erneut übertragen; Stundenwechsel zeigt ausschließlich die passenden Materialien."
+  ],
+  "0.1.82": [
+    "Lokaler Agentanschluss zur Vorbereitung der geöffneten Unterrichtsfläche: native Texte, Formen, Archivmaterialien und Clips mit Versionsprüfung und bestätigter Speicherung."
+  ],
+  "0.1.81": [
+    "Den Timer ohne separaten Griff über freie Flächen oder den ausgewählten Rahmen verschieben; Ring und Bedienelemente bleiben direkt nutzbar."
+  ],
+  "0.1.80": [
+    "HTML-Materialien und Apps direkt über freie Flächen oder den ausgewählten Außenrahmen verschieben; Eingaben und Controls bleiben bedienbar.",
+    "Die äußere Inhaltszoomleiste entfällt. Gespeicherte Skalen bleiben erhalten; Canvaszoom und Clips bleiben nutzbar.",
+    "Materialaktionen erscheinen näher an der unteren sichtbaren Seite von Bildern, HTML und Videos."
+  ],
+  "0.1.79": [
+    "Interaktive HTML-Materialien mit verzögertem Start werden nach der Zustandswiederherstellung wieder bedienbar.",
+    "Behebt einen dauerhaft gesperrten Play-Button bei Language Bites; gespeicherte Antworten und Wiedergabeposition bleiben erhalten."
+  ],
+  "0.1.77": [
+    "Lerndeck wie HTML auf freiem Hintergrund auswählen und verschieben; Eingabefelder und Lernkarten bleiben bedienbar.",
+    "Room Canvas zeigt dieselbe Lerndeck-Instanz einschließlich Menü, Setauswahl und Lernen. Materialclips und Ausschnittclips verwenden den bestehenden Präsentationsweg.",
+    "Lernen öffnet im Tafelraum-Embed im selben Frame. Die Room-Ausgabe bleibt lesend; Anmeldung, Steuerung und Ton bleiben am Mac. Keine Lerndeck-Ausgabe im Remote Canvas per Link/QR."
+  ],
+  "0.1.75": [
+    "Timerzeiten direkt am Ring antippen oder ziehen. Dezenter Halo und leichtes Anheben ersetzen die Hoverkacheln.",
+    "Timer lassen sich als nummerierte Materialclips und über Timer zeigen groß in Room und Remote darstellen. Remote zeigt dieselbe Uhr ohne Bedienung oder Ton.",
+    "Start, Pause, Ablauf und später Beitritt verwenden den bestehenden Hosttimer; die Teilnehmeranzeige benötigt den aktualisierten Live-Dienst."
+  ],
+  "0.1.74": [
+    "Lerndeck erscheint wie HTML-Material rahmenlos mit abgerundeten Ecken. Verschieben, Inhaltszoom und Browseröffnung liegen bei Auswahl außerhalb des Inhalts.",
+    "Bestehende Appplatzierungen behalten ihren sichtbaren Inhaltsbeginn und ihre Annotationen. Lerndecks Anbieterfreigabe unterstützt den nativen Tafelraum-Desktop."
+  ],
+  "0.1.73": [
+    "Die freigegebene Satzprüfung bewertet ausdrücklich auch, ob die Eingabe die Aufgabe erfüllt. Metaaufforderungen wie „Assess in a sentence.“ gelten nicht als eigener Beispielsatz.",
+    "Sinnvolle Imperative und andere tatsächliche Wortverwendungen bleiben zulässig. Persönliche Schlüssel und Unterrichtsdaten bleiben außerhalb des Appupdates."
+  ],
+  "0.1.72": [
+    "Abdeckungen eigener Textboxen auf HTML-Material bleiben nach der Wischanimation sichtbar, auch nach Rückgängig, Wiederholen und Neuladen."
+  ],
+  "0.1.71": [
+    "Persönlicher KI-Anschluss mit OpenAI-Key im macOS-Schlüsselbund. Der Schlüssel bleibt außerhalb von Unterrichtsmaterialien und App-Updates.",
+    "Language Bites: freigegebene Word-Families-Satzprüfung direkt in Tafelraum ohne laufendes Video Lab, auch im lokalen Room.",
+    "Ein gemeinsamer persönlicher Schlüssel für künftig einzeln freigegebene KI-Funktionen; HTML-Materialien und Widgets erhalten keinen Schlüsselzugriff."
+  ],
+  "0.1.70": [
+    "DOCX-Dateien lokal als PDF importieren; der Konverter wird mitgeliefert.",
+    "Bilder mit Vorschau und vier Blattecken verbessern und perspektivisch ausrichten; erweiterte Aufbereitung bei persönlicher Einrichtung.",
+    "Bild übertragen öffnet den QR-Empfang direkt. Materialreihenfolge bleibt nach dem Sortieren gespeichert.",
+    "Neue neutrale Texte und Stiftstriche wählen Schwarz oder Weiß passend zum Untergrund.",
+    "Lokale HTML-Medienpakete unterstützen gestreamte Videos und Room-Wiedergabe mit passiver Lehrersteuerung und nativem Video-Vollbild.",
+    "Vorbereitete HTML-Autoransichten unterstützen die direkte Medienleiste mit Play/Pause, Stopp, Zeitleiste und Ton; laufende Wiedergabe setzt nach bestätigtem Scrubbing fort. Die Leiste ist Bestandteil des jeweiligen Materials."
+  ],
+  "0.1.69": [
+    "Neutrale Stiftfarbe auf der Lehrerfläche passt sich beim Aufsetzen an helle oder dunkle Untergründe an.",
+    "Die Farbe bleibt während eines Strichs konstant. Akzentfarben und Marker bleiben unverändert."
+  ],
+  "0.1.68": [
+    "Neue Textboxen auf Bildern und PDF-Seiten wählen automatisch Schwarz oder Weiß nach dem Hintergrund; weiße HTML-Arbeitsblätter erhalten schwarzen Text.",
+    "Materialgebundener Text behält seine Farbe beim Themewechsel. Freier Canvastext folgt weiter dem Theme."
+  ],
+  "0.1.67": [
+    "Materialien per Drag-and-drop innerhalb der Liste sortieren; Reihenfolge bleibt im Archiv erhalten.",
+    "Ziehen auf den Canvas bleibt unverändert. Tastaturalternative: Alt + Pfeil hoch oder runter."
+  ],
+  "0.1.0": [
+    "Erste portable Mac-Version mit rein lokaler Unterrichtsablage.",
+    "Signierte Updates können direkt in Tafelraum installiert werden."
+  ],
+  "0.1.1": [
+    "Erste portable Pilotversion mit rein lokaler Unterrichtsablage.",
+    "Signierte Updates können direkt in Tafelraum installiert werden.",
+    "Frische Installationen starten mit einem neutralen, eigenen Unterrichtsbereich."
+  ],
+  "0.1.2": [
+    "Updatehinweise erscheinen zuverlässig im Tafelraum-Fenster.",
+    "Der lokale Hintergrunddienst wird auch nach einem unerwarteten App-Ende beendet.",
+    "Frische Installationen starten mit einem neutralen, eigenen Unterrichtsbereich."
+  ],
+  "0.1.3": [
+    "Updates warten auf eine ausdrückliche Ja-oder-Nein-Entscheidung.",
+    "Updatehinweise erscheinen zuverlässig im Tafelraum-Fenster.",
+    "Lokale Unterrichtsdaten bleiben vom Programmupdate getrennt."
+  ],
+  "0.1.4": [
+    "Updates werden ausschließlich nach einer bewussten Prüfung im Tafelraum-Menü installiert.",
+    "Der Installationsdialog verlangt eine ausdrückliche Ja-oder-Nein-Entscheidung.",
+    "Lokale Unterrichtsdaten bleiben vom Programmupdate getrennt."
+  ],
+  "0.1.5": [
+    "Verfügbare Updates werden ruhig im Tafelraum-Menü angezeigt.",
+    "Während Prüfung und Installation verhindert Tafelraum parallele Updateversuche.",
+    "Der Releaseweg prüft Signatur und veröffentlichtes Archiv vor der Freigabe."
+  ],
+  "0.1.6": [
+    "Ein Info-Symbol in der Kopfzeile zeigt die installierte Tafelraum-Version.",
+    "Die Updateprüfung lässt sich direkt aus der Oberfläche starten.",
+    "App-Menü und Versionsfenster verwenden weiterhin denselben geschützten Updateablauf."
+  ],
+  "0.1.7": [
+    "Das Versionsfenster kann die native Updateprüfung jetzt zuverlässig starten.",
+    "Der Zugriff bleibt auf den festen lokalen Tafelraum-Dienst begrenzt.",
+    "Unterrichtsdaten und Updatepaket bleiben weiterhin vollständig getrennt."
+  ],
+  "0.1.8": [
+    "Die beiden Funktionen des Versionsfensters besitzen jetzt ihre ausdrücklich begrenzten App-Rechte.",
+    "Die Updateprüfung lässt sich dadurch zuverlässig direkt aus der Kopfzeile starten.",
+    "Alle übrigen nativen Funktionen bleiben für die lokale Weboberfläche gesperrt."
+  ],
+  "0.1.9": [
+    "Klassen und Kurse über eine kompakte Auswahl wechseln, selbst anlegen und umbenennen.",
+    "Bestehende Klassen und Unterrichtsmaterialien bleiben im persönlichen lokalen Archiv erhalten."
+  ],
+  "0.1.10": [
+    "Freie Texte bleiben beim Schreiben auch bei verändertem Zoom an ihrem Platz.",
+    "HTML-Annotationen bleiben unterhalb der Bedienleiste.",
+    "Tastenkürzelübersicht in den Einstellungen.",
+    "Bilder über die Zwischenablage zwischen Tafelraum und anderen Apps austauschen.",
+    "Drag-and-drop, PDF-Import, Vollbild und lokale HTML-Bilder in der Mac-App korrigiert."
+  ],
+  "0.1.11": [
+    "Kopierte Canvasbilder erscheinen in anderen Apps zuverlässig als Bild statt als technischer Text.",
+    "Beim Einfügen zurück in Tafelraum bleiben dieselben Canvasobjekte weiterhin bearbeitbar."
+  ],
+  "0.1.12": [
+    "Der Druckdialog für druckbare HTML-Materialien öffnet sich wieder zuverlässig in der Mac-App.",
+    "Die leere, skriptfreie Druckvorlage und das lokale Unterrichtsarchiv bleiben unverändert."
+  ],
+  "0.1.13": [
+    "Stift- und Markerstriche bleiben beim Zeichnen auf gescrollten HTML-Materialien direkt unter dem Zeiger.",
+    "Der normale Canvas und bereits gespeicherte Annotationen bleiben unverändert."
+  ],
+  "0.1.14": [
+    "Tafelraum erhält ein neues App-Icon mit transparent gestaffelten Bildschirmen und Materialkacheln.",
+    "Das Update ersetzt ausschließlich Programmbestandteile; Unterrichte, Materialien und Notizen bleiben unverändert."
+  ],
+  "0.1.15": [
+    "Das größere, frontale App-Icon zeigt Bild-, Dokument- und Videomaterial auch im Dock klarer.",
+    "Ein verfügbares Update macht mit drei kurzen Lichtimpulsen auf sich aufmerksam und bleibt danach ruhig sichtbar.",
+    "Unterricht, Materialien und Notizen bleiben unverändert."
+  ],
+  "0.1.16": [
+    "Ein noch nicht geöffnetes Update erinnert nach zwei Minuten Ruhe erneut mit drei kurzen Lichtimpulsen.",
+    "Das Öffnen der Versionsanzeige beendet die Erinnerung für diese Version bis zum nächsten Appstart.",
+    "Unterricht, Materialien und Notizen bleiben unverändert."
+  ],
+  "0.1.17": [
+    "Helles und dunkles Design bieten jetzt jeweils drei ruhige Farbvarianten.",
+    "Die gewählte Variante bleibt auf dem jeweiligen Gerät gespeichert.",
+    "Unterrichte, Materialien, Notizen und Materialfarben bleiben unverändert."
+  ],
+  "0.1.18": [
+    "Eingefügte Weblinks öffnen sich aus der Arbeitsfläche wieder zuverlässig im Standardbrowser.",
+    "Im Handwerkzeug genügt ein Klick auf die Linkfläche; im Auswahlwerkzeug bleiben Links verschiebbar und bearbeitbar.",
+    "Unterrichte, Materialien und gespeicherte Links bleiben unverändert."
+  ],
+  "0.1.19": [
+    "Der Schalter für die Unterrichts-Sidebar bleibt sichtbar, während Notizen geöffnet sind.",
+    "Unterrichte, Materialien und persönliche Notizen bleiben unverändert."
+  ],
+  "0.1.20": [
+    "Room Canvas zeigt die Unterrichtsfläche in einem eigenen Fenster für Beamer oder erweiterten Bildschirm.",
+    "Clipnummern und Material zeigen steuern die öffentliche Ansicht direkt; die Lehrkraft bleibt in ihrer Arbeitsfläche.",
+    "Remote Canvas behält Einladung und freie Teilnehmernavigation. Gespeicherte Unterrichte und Materialien bleiben erhalten."
+  ],
+  "0.1.21": [
+    "Die Raumvorschau folgt Bewegungen der Lehrerfläche und aktualisiert Zeichnungen ohne flackernden Präsentieren-Einstieg.",
+    "Nach einem Clip zeigt Room Canvas die freie Arbeitsfläche wieder zuverlässig.",
+    "Materialien lassen sich gemeinsam mit Ausschnitten nummerieren; Audio, lokale Videos und YouTube können im Room Canvas unter Lehrersteuerung wiedergegeben werden."
+  ],
+  "0.1.22": [
+    "Room Canvas und Remote Canvas haben im Präsentieren-Menü jetzt passende, gut unterscheidbare Symbole.",
+    "Während einer Präsentation zeigt auch der Einstieg das gewählte Ausgabeziel als Symbol."
+  ],
+  "0.1.23": [
+    "Room Canvas bietet vorne eine einblendbare Leiste mit Hand, Stift und Marker.",
+    "Striche aus dem Raumfenster werden in derselben Unterrichtsstunde gespeichert, während die Lehrkraft unabhängig weiterarbeitet.",
+    "Remote Canvas und vorhandene Unterrichte bleiben unverändert."
+  ],
+  "0.1.24": [
+    "Die Werkzeugleiste im Room Canvas verwendet nun dieselbe visuelle Sprache wie die Lehrerleiste und lässt sich mit dem Augensymbol ein- und ausblenden.",
+    "Stift und Marker bleiben beim Ziehen auch über HTML-Material sichtbar; die bestätigte Annotation übernimmt anschließend den Strich.",
+    "Werkzeugwahl und Stundenspeicherung bleiben zwischen Room und Lehreransicht getrennt beziehungsweise gemeinsam wie bisher."
+  ],
+  "0.1.25": [
+    "Der Präsentieren-Einstieg zeigt den aktuellen Anzeigemodus knapp als Canvas, Clip oder Material.",
+    "Clipnummern und Materialtitel bleiben im geöffneten Präsentieren-Menü sichtbar."
+  ],
+  "0.1.26": [
+    "Die Raumvorschau passt sich in niedrigen Fenstern an den verfügbaren Platz an.",
+    "Rückgängig und Wiederholen bleiben beim Öffnen und Verschieben der Raumvorschau sichtbar."
+  ],
+  "0.1.27": [
+    "Beim Wechsel auf einen Materialclip zeigt die Raumvorschau keinen alten Canvasstand mehr als aktuelle Ausgabe.",
+    "Die Materialvorschau wird ohne eigene Clipanimation dargestellt."
+  ],
+  "0.1.28": [
+    "HTML-Material lässt sich im Room Canvas vorne mit Fingerziehen oder Mausrad unabhängig von der Lehreransicht scrollen.",
+    "Der Scrollstand bleibt bei Änderungen auf der Lehrerfläche während derselben Room-Ansicht erhalten.",
+    "Lehrer- und Raumwerkzeugleiste verwenden dasselbe Toolbox-Symbol zum Ein- und Ausblenden.",
+    "Die Raumwerkzeugleiste folgt den hellen und dunklen Farben der Lehreransicht und blendet ebenso ruhig ein und aus.",
+    "Schüler- und Raumvorschau passen mit Kopf und Bedienelementen zum Materialbereich; das Vorschaubild behält seine eigene Canvasfarbe.",
+    "Raumstriche lassen sich vorne mit Zurück und Vor unabhängig von Lehreraktionen rückgängig machen und wiederholen.",
+    "Interaktive HTML-Arbeitsblätter können im Room Canvas direkt angeklickt und mit Tastatur bearbeitet werden; Änderungen erscheinen auch auf der Lehrerfläche."
+  ],
+  "0.1.29": [
+    "Materialien und freie Ausschnitte lassen sich in einer gemeinsamen Clipfolge nummerieren; jedes Material hat höchstens eine Nummer.",
+    "Die Clipnummer sitzt bei beiden Cliparten im Rahmen. Ein Rechtsklick oder langes Halten öffnet Umnummerieren und Entfernen.",
+    "Die offene Werkzeugleiste schließt mit einem roten X. Stift und Marker im Room Canvas bieten dieselbe Farb- und Größenwahl wie auf der Lehrerfläche.",
+    "Die Room-Werkzeugleiste lässt sich am Griff innerhalb des Raumfensters verschieben und öffnet nach dem Schließen am gewählten Ort wieder."
+  ],
+  "0.1.30": [
+    "Im Room Canvas folgt die freie Canvasansicht der Lehrerkamera jetzt auch bei offener Werkzeugleiste.",
+    "Handgesten können die freie Raumansicht nicht mehr versehentlich verschieben oder zoomen. HTML-Bedienung und Raumstift bleiben erreichbar; Clip und Material behalten ihre eigene Ansicht."
+  ],
+  "0.1.31": [
+    "Vollständig abgedeckte HTML-Arbeitsblätter zeigen im Room Canvas jetzt die graue Abdeckung statt einer weißen Fläche."
+  ],
+  "0.1.32": [
+    "HTML-Arbeitsblätter beginnen in Room Canvas und Raumvorschau an derselben Stelle innerhalb eines Ausschnittclips wie auf der Lehrerfläche.",
+    "Die Materialleiste wird vorne als ruhiger Titel ohne Bedienelemente dargestellt. Dadurch stimmen obere und untere Clipgrenze mit dem gezeigten Inhalt überein."
+  ],
+  "0.1.33": [
+    "Im Room Canvas lassen sich Zeichnungen mit dem Radierer entfernen und Objekte mit Auswahl verschieben, vergrößern, verkleinern und drehen.",
+    "Material und zugehörige Markierungen bewegen sich gemeinsam; Material bleibt vor versehentlichem Radieren geschützt.",
+    "Clipwechsel erscheinen im Raum mit einer kurzen Ankunftsbewegung; Clipnummern bleiben auf der Lehrerfläche über Abdeckungen sichtbar.",
+    "Bei genau zwei erweiterten Bildschirmen öffnet sich das Room-Fenster automatisch auf dem zweiten Bildschirm im Vollbild."
+  ],
+  "0.1.34": [
+    "Der Größen-Griff für Ausschnittclips ist klarer sichtbar und lässt den Inhalt an der Rahmenecke frei.",
+    "C wählt auf der Lehrerfläche Clip aufnehmen; die Kürzelhilfe zeigt die aktuellen Clip-Tasten.",
+    "Im Room Canvas markiert ein HTML-Feld mit Lehrkraft-Hinweis, wo die Lehrperson gerade arbeitet. Eigene Eingaben vorne bleiben bedienbar.",
+    "Neue interaktive HTML-Pakete mit Skript benötigen einen gemeinsamen Zustand für Lehrer- und Room-Ansicht."
+  ],
+  "0.1.35": [
+    "Der Radierer im Room Canvas zeigt einen sichtbaren Radierkreis, auch während Touchkontakt.",
+    "Getroffene Zeichnungen verschwinden schon beim Wischen; schnelle Bewegungen erfassen auch dazwischenliegende Striche.",
+    "Eine Radiergeste lässt sich weiterhin gemeinsam mit einem Schritt rückgängig machen."
+  ],
+  "0.1.36": [
+    "Textboxen lassen sich wieder kontrolliert vergrößern; formatierte Schriftgrößen wachsen beim Eckziehen gemeinsam.",
+    "Der Radierer entfernt in Lehreransicht und Room Canvas ausschließlich Stift- und Markerstriche. Texte, Formen und Material bleiben erhalten.",
+    "Marker werden nur an ihrer sichtbaren Kontur getroffen; Radieren neben der Markierung löscht sie nicht mehr.",
+    "Die Textausrichtung zeigt eindeutig, ob markierte Absätze oder die ganze Textbox geändert werden. Überschrift und Fließtext können getrennt ausgerichtet werden.",
+    "Die zusätzliche Clipnummer-Zeile mit X entfällt im Präsentieren-Menü."
+  ],
+  "0.1.37": [
+    "Eingefügter Text erhält automatisch eine gut lesbare Schriftfarbe passend zur hellen oder dunklen Fläche.",
+    "Beim Wechsel zwischen hell und dunkel passt sich vorhandener neutraler Text automatisch an, auch in formatierten Textboxen. Eigene Akzentfarben bleiben erhalten.",
+    "Neue Textboxen übernehmen keine Markertransparenz mehr."
+  ],
+  "0.1.38": [
+    "Der Druckdialog für Bilder und PDF-Seiten öffnet sich in der Mac-App zuverlässig.",
+    "Nach Abbrechen lässt sich derselbe Druckdialog erneut öffnen."
+  ],
+  "0.1.39": [
+    "Bilder und PDF-Seiten nutzen die A4-Druckfläche besser: doppelte Ränder entfallen.",
+    "Die Druckausgabe enthält keinen Schatten oder Rahmen der Bildschirmvorschau."
+  ],
+  "0.1.40": [
+    "Audio wird am Lehrergerät abgespielt, ohne den gerade gezeigten Room-Clip zu wechseln. Audio erhält keine neuen Materialclips.",
+    "Mehrseitige HTML-Druckvorlagen werden in der Mac-App vollständig ausgegeben.",
+    "Auch bei länger geöffnetem Druckdialog bleibt die Materialvorlage für den Druck erhalten."
+  ],
+  "0.1.41": [
+    "Material kann über das rote X mit Bestätigung aus dem Materialarchiv entfernt werden.",
+    "Die Entfernung räumt auch zugehörige Canvasinstanzen, Annotationen, Abdeckungen und Materialclips auf.",
+    "Entferntes Archivmaterial erscheint nach Rückgängig oder Neuladen nicht erneut."
+  ],
+  "0.1.42": [
+    "YouTube-Videos können direkt im eingebetteten Player der Mac-App im Vollbild gezeigt werden.",
+    "Die Bestätigung zum Entfernen von Archivmaterial bleibt kompakt und zeigt normal große Buttons."
+  ],
+  "0.1.43": [
+    "Room Canvas zeigt beim Schreiben im Lehrer-HTML den blinkenden Schreibstrich und die ausgewählte Textspanne. Die mit dem Mac verbundene Tastatur kann zum gemeinsamen Ausfüllen weitergegeben werden.",
+    "Direkte Eingaben vorne in Room bleiben möglich und zeigen ihren eigenen Schreibcursor.",
+    "Video-Play erhält den passenden Room-Clip. Nach Video-Vollbild führt Escape zum vorherigen Anzeigeziel zurück."
+  ],
+  "0.1.44": [
+    "Neu eingefügte Bilder erhalten abgerundete Ecken und eine dezente Kontur. PDF-Seiten behalten ihre rechteckige Blattkante.",
+    "Abdeckungen folgen der gerundeten Bildkante – auch beim teilweisen Aufdecken, Zuschneiden und Drehen."
+  ],
+  "0.1.45": [
+    "Verfügbare Updates öffnen automatisch einen kurzen Hinweis mit Jetzt aktualisieren und Später.",
+    "Während einer Präsentation wartet der Hinweis. Die Installation benötigt weiterhin eine ausdrückliche Bestätigung."
+  ],
+  "0.1.46": [
+    "HTML-Arbeitsblätter erscheinen ohne dauerhafte Titelleiste. Zoom und Verschiebegriff werden nur bei Auswahl oberhalb des Blatts eingeblendet.",
+    "Ein wechselndes Auge zeigt bei Bildern, Text, Formen und interaktiven Materialien, ob eine Abdeckung vorhanden ist.",
+    "Bestehende Blattinhalte, Annotationen und lokale Unterrichtsdaten bleiben erhalten."
+  ],
+  "0.1.47": [
+    "Auswahlrand und Größenänderungsgriffe von HTML-Arbeitsblättern folgen jetzt direkt der sichtbaren Blattkante.",
+    "Bestehende Blätter werden einmalig angepasst, ohne ihren sichtbaren Inhalt oder vorhandene Annotationen zu verschieben.",
+    "Die äußere Zoomgruppe und weitere Materialaktionen bleiben bei Größenänderungen getrennt."
+  ],
+  "0.1.48": [
+    "Widgets ist eine eigene Kategorie in der Werkzeugleiste und enthält einen frei platzierbaren Ring-Timer.",
+    "Zeit, Start, Pause und Zurücksetzen lassen sich auf der Lehrerfläche und im Room Canvas bedienen.",
+    "Der Timer ist nicht beschreibbar; ein kurzes Endsignal kann optional eingeschaltet werden."
+  ],
+  "0.1.49": [
+    "Das Materialarchiv zeigt alle Materialien ohne Kategorienleiste. Im Canvas platzierte Materialien sind mit „Im Canvas ✓“ gekennzeichnet.",
+    "Archivklick und Zielaktion fokussieren dasselbe Material mit Kamerafahrt und abgedunkelter Umgebung. Nur das fokussierte Material wird im Archiv markiert.",
+    "Erneutes Ziehen eines bereits vorhandenen Archivmaterials fragt vor dem Duplizieren nach."
+  ],
+  "0.1.50": [
+    "HTML-Blätter erhalten einheitlich gerundete Kanten und Scrollleisten. Mit dem Auswahlwerkzeug lassen sie sich an freien Flächen direkt verschieben; Text und Eingaben bleiben bedienbar.",
+    "Die Materialvorschau zeigt Arbeitsblätter vollständig und Bilder in ihren eigenen Proportionen. Der Lehrer-Schreibcursor wird im Room Canvas genauer am Text gemessen.",
+    "Vorbereitete A4-Arbeitsblätter können in Lehrer- und Room Canvas mit Druckproportionen starten und als Ganzes proportional vergrößert werden. Digitale Antwortfelder dürfen weiter wachsen und scrollen; die Druckvorlage bleibt unverändert.",
+    "Materialarchiv, gemeinsamer Fokus und Timer aus den bisherigen Updates bleiben enthalten. Bestehende Arbeitsblattvorlagen werden durch das Programmupdate nicht still umgestellt."
+  ],
+  "0.1.51": [
+    "Materialien lassen sich im Archiv über den Stift zwischen Plus und Entfernen selbst benennen.",
+    "Eigene Namen bleiben nach einem Neustart erhalten und erleichtern das Wiederfinden und Fokussieren auch zugedeckter Materialien.",
+    "Originaldateien, Reihenfolge und vorhandene Canvasinstanzen bleiben erhalten."
+  ],
+  "0.1.52": [
+    "HTML-Arbeitsblätter und PDFs zeigen im Materialarchiv kleine Inhaltsvorschauen. Eigene Materialnamen bleiben auch während der Eingabe im dunklen Design gut lesbar.",
+    "Der übertragene Lehrer-Schreibcursor steht im Room Canvas auch am Textende korrekt hinter dem letzten Buchstaben.",
+    "Abdeckungen von HTML-Blättern folgen den gerundeten Blattkanten. Teilweise aufgedeckte Blätter verwenden an den Rändern eine einfachere, stabilere Darstellung."
+  ],
+  "0.1.53": [
+    "Im Lehrer-Canvas ist sofort sichtbar, welches HTML-Eingabefeld vorne im Room ausgewählt ist: blau mit „Schüler“, bereits vor dem ersten Zeichen.",
+    "Die orange Markierung „Lehrkraft“ bleibt im Room erhalten. Beide Ansichten behalten ihren eigenen Eingabefokus; Feld- und Ansichtswechsel entfernen alte Markierungen."
+  ],
+  "0.1.54": [
+    "Text auf HTML-Arbeitsblättern lässt sich direkt auswählen, verschieben und per Doppelklick bearbeiten. Er folgt dem Blatt, bis er bewusst herausgezogen wird; Zurücklegen bindet ihn wieder.",
+    "Gesperrte Arbeitsblätter bleiben auswählbar und lassen sich sichtbar entsperren. Verschiebegriff und Materialaktionen bleiben auch bei starkem Zoom und Pan erreichbar.",
+    "Rückgängig und Wiederholen stellen Textposition und Blattzuordnung gemeinsam wieder her."
+  ],
+  "0.1.55": [
+    "Textboxen folgen beim Ziehen über HTML-Arbeitsblätter durchgehend ihrer aktuellen Position – auch beim Herausziehen und Zurücklegen.",
+    "Keine stehen bleibende oder versetzte Textkopie und kein mitwachsender Blattrahmen: Bei einzelner Textauswahl bleibt nur der Textrahmen sichtbar.",
+    "Blattbindung, Doppelklick zum Bearbeiten sowie gemeinsames Rückgängig und Wiederholen bleiben erhalten."
+  ],
+  "0.1.56": [
+    "Text, Stift und Marker lassen sich im Lehrer- und Room Canvas einheitlich vom Blatt lösen, zurücklegen und auf andere Blätter verschieben.",
+    "Pfeiltasten nutzen dieselbe Blattzuordnung; bewegte Annotationen bleiben während des Ziehens sichtbar.",
+    "Blattbewegung und Rückgängig im Room erhalten gebundene Inhalte auch bei aktivem Lehrer-Radierer. Temporäre Radierersperren werden nicht gespeichert."
+  ],
+  "0.1.57": [
+    "Textboxen lassen sich wieder über ihre Eckgriffe größer und kleiner ziehen.",
+    "Die seitlichen Griffe ändern wieder die Textbreite; Verschieben und Blattbindung bleiben erhalten.",
+    "Native Größenänderungen werden zuverlässig gespeichert und bleiben nach einem Neustart erhalten."
+  ],
+  "0.1.58": [
+    "Textgriffe sind deutlicher sichtbar und mit großzügigen Trefferflächen leichter mit dem Trackpad zu greifen.",
+    "Vier Ecken skalieren proportional; die beiden Seitengriffe ändern nur Breite und Zeilenumbruch.",
+    "Lehrer- und Room Canvas nutzen dieselben Textgriffe mit bestehender Blattbindung und Rückgängig."
+  ],
+  "0.1.59": [
+    "Über „Handy verbinden“ im Materialbereich lässt sich ein QR-Code für die ausgewählte Stunde öffnen.",
+    "Fotos und PDFs vom Handy werden nach dem Senden direkt im Materialarchiv dieser Stunde gespeichert. Die Liste aktualisiert sich automatisch.",
+    "Der persönliche Empfang wird separat eingerichtet, ist zeitlich begrenzt und kann jederzeit beendet werden."
+  ],
+  "0.1.60": [
+    "Scan optimieren bietet auf eingerichteten Macs lokale DocRes-Bildverbesserung mit Originalvergleich und korrigierbarer Zuschnittvorschau.",
+    "Das Original bleibt erhalten; bestehende Annotationen und Zuschnitte behalten ihre Position."
+  ],
+  "0.1.61": [
+    "Bei Scan optimieren lassen sich die vier Blattecken einzeln verschieben. Die Vorschau entzerrt das gewählte Viereck automatisch.",
+    "Originalvergleich und DocRes-Fassung behalten dieselbe Blattform; das unbearbeitete Foto und Undo bleiben erhalten."
+  ],
+  "0.1.62": [
+    "Die Bildoptimierung heißt jetzt „Bild verbessern“ und ist am Zauberstab mit Funken erkennbar."
+  ],
+  "0.1.63": [
+    "Mehr Platz für die Bildvorschau: Zuschnitt direkt an den vier Ecken, ohne Koordinatenfelder und allgemeine Anleitung."
+  ],
+  "0.1.64": [
+    "„Bild übertragen“ öffnet direkt den QR-Code für die Stunde. Der zusätzliche Empfangsstart entfällt; erneutes Öffnen behält den laufenden QR-Code."
+  ],
+  "0.1.65": [
+    "Die Bildverbesserung zeigt Fotos in derselben Drehung wie im Canvas. Eckgriffe und Vorschau folgen der Ausrichtung, ohne das Original neu zu drehen."
+  ],
+  "0.1.66": [
+    "DOCX-Dateien lassen sich über Dateiauswahl, Drag-and-drop und die persönliche mobile Abgabe importieren. Tafelraum wandelt sie lokal mit dem mitgelieferten Word-Konverter in PDF um.",
+    "Die Word-Quelldatei bleibt zusammen mit dem PDF in der Stunde erhalten; im Materialbereich erscheint ein PDF-Eintrag."
+  ],
+  "0.1.76": [
+    "Language Bites auf Lehrerfläche und Room gemeinsam sehen und bedienen.",
+    "Kapitel, Antworten und Wiedergabe bleiben synchron; Ton nur aus dem Room.",
+    "Bestehende HTML-Filmsteuerung bleibt erhalten."
+  ],
+  "0.1.78": [
+    "Alle lokalen HTML-Materialien bleiben im Room-Modus vollständig sichtbar und auf beiden Flächen bedienbar.",
+    "HTML-Zustand und Wiedergabe sind gekoppelt; Ton wird nur einmal ausgegeben.",
+    "MP4 und YouTube spielen im Room-Modus vorne. Am Mac stehen Fernsteuerungscontrols statt eines zweiten Players bereit.",
+    "Verbesserte Übergabe, schnelle Pause-/Seek-Befehle und automatisches Pausieren bei Verbindungsverlust."
+  ],
+  "0.1.88": [
+    "Kompaktere Werkzeugleiste mit direktem Zugriff auf Material, Apps und Widgets.",
+    "Zeiger und Clipaufnahme bei Präsentieren; Inhalt finden bei den Canvasaktionen.",
+    "Anpassung der Kopfzeile an schmale Fenster und neutrales Einklappen der Werkzeugleiste."
+  ]
+}

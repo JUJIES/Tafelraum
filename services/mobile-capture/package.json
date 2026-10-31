@@ -1,0 +1,9 @@
+{
+  "name": "@tafelraum/mobile-capture-relay",
+  "private": true,
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "author": { "name": "JUJIES", "email": "mail@jujies.app", "url": "https://github.com/JUJIES" },
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "start": "node server.mjs", "test": "node --test test/*.test.mjs" }
+}

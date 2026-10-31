@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bildoptimierung vergleichen</title><link rel="stylesheet" href="viewer.css"></head>
+<body>
+<header><div><h1>Bildoptimierung vergleichen</h1><p id="source-label"></p><a id="source-link" hidden target="_blank" rel="noopener noreferrer"></a></div><p class="scope">Vergleichsansicht · noch nicht in Tafelraum übernommen</p></header>
+<nav aria-label="Bildvariante"><span id="variants"></span><span class="spacer"></span><button id="fit" aria-pressed="true">Ganzes Blatt</button><button id="actual" aria-pressed="false">100 %</button></nav>
+<main>
+<section><h2>Original</h2><div class="viewport" id="original-pane" tabindex="0" aria-label="Originalbild"><img id="original" alt="Unverändertes Original"></div></section>
+<section><h2 id="variant-title">A · Bisherig</h2><div class="viewport" id="variant-pane" tabindex="0" aria-label="Vergleichsbild"><img id="variant" alt="Gewählte Bildoptimierung"></div></section>
+</main>
+<p id="status" role="status">Bilder werden geladen …</p>
+<script type="module" src="viewer.js"></script>
+</body></html>

@@ -1,0 +1,12 @@
+.text-box-selection{position:absolute;inset:0;z-index:9;pointer-events:none;overflow:visible}
+.text-box-selection__frame{position:absolute;box-sizing:border-box;border:2px solid var(--accent);box-shadow:0 0 0 1px var(--paper);pointer-events:none}
+.text-box-selection__handle{position:absolute;width:48px;height:48px;transform:translate(-50%,-50%);padding:0;border:0;border-radius:8px;background:transparent;pointer-events:auto;touch-action:none;color:var(--accent)}
+.text-box-selection__handle span{position:absolute;left:50%;top:50%;width:14px;height:14px;box-sizing:border-box;border:2px solid currentColor;border-radius:3px;background:var(--paper);box-shadow:0 0 0 1px var(--toolbar);transform:translate(-50%,-50%) rotate(var(--text-handle-angle));pointer-events:none}
+.text-box-selection__handle.is-w span,.text-box-selection__handle.is-e span{width:10px;height:22px;border-radius:5px}
+.text-box-selection__handle.is-rotate span{width:15px;height:15px;border-radius:50%}
+.text-box-selection__handle.is-rotate::after{content:'';position:absolute;top:33px;left:23px;width:2px;height:20px;background:currentColor;transform:rotate(var(--text-handle-angle));transform-origin:1px -9px;pointer-events:none}
+.text-box-selection__handle[data-highlighted="true"] span{background:var(--accent);box-shadow:0 0 0 2px var(--paper)}
+.text-box-selection__handle:focus-visible{outline:none}
+.text-box-selection__handle:focus-visible span{outline:2px solid var(--accent);outline-offset:4px}
+.canvas-engine:has(.text-box-selection) canvas.interactive{opacity:0}
+.text-box-selection-layer{position:absolute;inset:0;z-index:9;overflow:hidden;pointer-events:none}

@@ -1,0 +1,7 @@
+
+.app-mirror-surface{position:absolute;inset:0;overflow:hidden;pointer-events:none;background:#fff}
+.app-mirror-surface .replayer-wrapper{position:relative!important;transform:none!important}
+.app-mirror-surface .replayer-mouse,.app-mirror-surface .replayer-mouse-tail{display:none!important}
+.app-mirror-surface iframe{position:absolute;left:0;top:0;border:0;pointer-events:none!important}
+.app-mirror-status{position:absolute;inset:0;display:grid;place-items:center;background:var(--canvas);color:var(--text);font:600 16px/1.4 sans-serif}
+.app-mirror-surface>div,.app-mirror-surface .replayer-wrapper{width:100%;height:100%}

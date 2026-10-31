@@ -1,0 +1,108 @@
+{
+  "measure": "Jährliche Todesfälle durch Überdosierung mit Opioidbeteiligung in den USA; absolute Zahlen, endgültige Daten",
+  "sources": [
+    {
+      "years": "2003–2023",
+      "publisher": "CDC/NCHS",
+      "publication": "Data Brief 522, Tabelle 4",
+      "url": "https://www.cdc.gov/nchs/products/databriefs/db522.htm",
+      "preserved_copy": "https://dspace.njstatelib.org/server/api/core/bitstreams/a33b3c75-1369-4d37-acba-ae233928cbbd/content"
+    },
+    {
+      "years": "2024",
+      "publisher": "CDC/NCHS",
+      "publication": "Data Brief 549, Tabelle 4",
+      "url": "https://www.cdc.gov/nchs/products/databriefs/db549.htm"
+    }
+  ],
+  "rows": [
+    {
+      "year": 2003,
+      "deaths": 12940
+    },
+    {
+      "year": 2004,
+      "deaths": 13756
+    },
+    {
+      "year": 2005,
+      "deaths": 14918
+    },
+    {
+      "year": 2006,
+      "deaths": 17545
+    },
+    {
+      "year": 2007,
+      "deaths": 18516
+    },
+    {
+      "year": 2008,
+      "deaths": 19582
+    },
+    {
+      "year": 2009,
+      "deaths": 20422
+    },
+    {
+      "year": 2010,
+      "deaths": 21089
+    },
+    {
+      "year": 2011,
+      "deaths": 22784
+    },
+    {
+      "year": 2012,
+      "deaths": 23166
+    },
+    {
+      "year": 2013,
+      "deaths": 25052
+    },
+    {
+      "year": 2014,
+      "deaths": 28647
+    },
+    {
+      "year": 2015,
+      "deaths": 33091
+    },
+    {
+      "year": 2016,
+      "deaths": 42249
+    },
+    {
+      "year": 2017,
+      "deaths": 47600
+    },
+    {
+      "year": 2018,
+      "deaths": 46802
+    },
+    {
+      "year": 2019,
+      "deaths": 49860
+    },
+    {
+      "year": 2020,
+      "deaths": 68630
+    },
+    {
+      "year": 2021,
+      "deaths": 80411
+    },
+    {
+      "year": 2022,
+      "deaths": 81806
+    },
+    {
+      "year": 2023,
+      "deaths": 79358
+    },
+    {
+      "year": 2024,
+      "deaths": 54045
+    }
+  ]
+}

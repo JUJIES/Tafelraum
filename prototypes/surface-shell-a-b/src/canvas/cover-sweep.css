@@ -1,0 +1,42 @@
+.cover-sweep {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  /* The native contour never transforms. Only this rectangular viewport moves. */
+  --cover-sweep-open: inset(
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+  );
+}
+.cover-sweep.from-left {
+  --cover-sweep-closed: inset(
+    calc(-1 * var(--cover-sweep-pad-y)) calc(100% + var(--cover-sweep-pad-x))
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+  );
+}
+.cover-sweep.from-right {
+  --cover-sweep-closed: inset(
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+    calc(-1 * var(--cover-sweep-pad-y)) calc(100% + var(--cover-sweep-pad-x))
+  );
+}
+.cover-sweep.from-top {
+  --cover-sweep-closed: inset(
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+    calc(100% + var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+  );
+}
+.cover-sweep.from-bottom {
+  --cover-sweep-closed: inset(
+    calc(100% + var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+    calc(-1 * var(--cover-sweep-pad-y)) calc(-1 * var(--cover-sweep-pad-x))
+  );
+}
+.cover-sweep.is-cover { animation: cover-sweep-in 180ms cubic-bezier(.2,.75,.25,1) both; }
+.cover-sweep.is-reveal { animation: cover-sweep-out 180ms cubic-bezier(.3,.75,.25,1) both; }
+.cover-sweep.is-holding { animation: none; clip-path: var(--cover-sweep-open); }
+@keyframes cover-sweep-in { from { clip-path: var(--cover-sweep-closed); } to { clip-path: var(--cover-sweep-open); } }
+@keyframes cover-sweep-out { from { clip-path: var(--cover-sweep-open); } to { clip-path: var(--cover-sweep-closed); } }
+@media (prefers-reduced-motion: reduce) { .cover-sweep { animation: none !important; clip-path: var(--cover-sweep-open); } }

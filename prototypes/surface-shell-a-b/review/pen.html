@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<title>Pencil V2 · native Renderprüfung</title>
+<style>body{margin:24px;background:#eae8e3;color:#20252b;font:15px system-ui}h1{font-size:20px}img{display:block;width:900px;max-width:100%;margin:16px 0}pre{white-space:pre-wrap}</style>
+<h1>Pencil V2 · Fineliner</h1>
+<p>Links: bisherige Drucksimulation. Rechts: V2, konstante Normalbreite. Identische synthetische Gesten, keine Unterrichtsdaten.</p>
+<pre id="checks">Native Prüfungen laufen …</pre>
+<script type="module">
+import {convertToExcalidrawElements,exportToBlob,getFreeDrawSvgPath,restoreElements} from '@excalidraw/excalidraw';
+import {createStrokeSampler,sampleStrokePoint} from '../src/canvas/stroke-sampling.ts';
+import {penGeometry,penDiameter,penEngineWidth,penRole} from '../src/canvas/pen-stroke.ts';
+const paths=[
+  Array.from({length:120},(_,i)=>[i*2,Math.sin(i*1.1)*.8]),
+  Array.from({length:120},(_,i)=>[i*2,Math.sin(i/15)*20]),
+  Array.from({length:121},(_,i)=>[80+Math.sin(i/120*Math.PI*2)*55,Math.cos(i/120*Math.PI*2)*24]),
+  [[0,-10],[35,22],[80,-20],[100,0],[140,-20],[180,0],[220,-15]],
+  [[0,0],[80,0],[20,0],[120,0],[40,0],[220,0]],
+  [[0,0]],
+];
+const make=(path,color,v2)=>{
+ const sampler=createStrokeSampler(path[0],1,4,1);
+ path.slice(1).forEach(p=>sampleStrokePoint(sampler,p));
+ const geometry=penGeometry(v2?sampler.points:path,v2?sampler.tip:path.at(-1));
+ return {...convertToExcalidrawElements([{type:'rectangle',x:0,y:0,width:0,height:0,
+   strokeColor:color,backgroundColor:'transparent',strokeWidth:v2?penEngineWidth(penDiameter(2)):2,
+   opacity:100,roughness:0,roundness:null,customData:v2?{role:penRole,penGeometryVersion:2}:{}}])[0],
+   type:'freedraw',...geometry,simulatePressure:!v2,pressures:v2?geometry.pressures:[]};
+};
+const results=[];
+try {
+ for(const path of paths){
+   const element=make(path,'#111111',true);
+   const restored=restoreElements(JSON.parse(JSON.stringify([element])),null)[0];
+   if(!restored||restored.isDeleted||getFreeDrawSvgPath(element)!==getFreeDrawSvgPath(restored))throw Error('Native Reload verändert Kontur');
+ }
+ results.push('PASS: native Kontur vor/nach Restore identisch, einschließlich Tap.');
+ for(const dark of [false,true]){
+   const background=dark?'#1d232b':'#ffffff', foreground=dark?'#f1f2f3':'#20252b';
+   const elements=convertToExcalidrawElements([{type:'rectangle',x:0,y:0,width:850,height:600,strokeColor:'transparent',backgroundColor:background,fillStyle:'solid',roughness:0}]);
+   paths.forEach((path,row)=>{
+     for(let column=0;column<2;column++){
+       const x=45+column*420,y=65+row*90;
+       elements.push(...convertToExcalidrawElements([{type:'text',x,y:y-38,text:['Langsam / leicht zittrig','S-Kurve','Kreis','Haken und Verbindungen','Zurück über denselben Strich','Tap'][row],fontFamily:2,fontSize:15,strokeColor:foreground}]));
+       elements.push(make(path.map(([px,py])=>[px+x,py+y]),foreground,column===1));
+     }
+   });
+   const blob=await exportToBlob({elements,files:{},mimeType:'image/png',exportPadding:12,appState:{exportBackground:true,viewBackgroundColor:background,exportWithDarkMode:false},getDimensions:(width,height)=>({width:width*2,height:height*2,scale:2})});
+   const image=new Image();image.alt=dark?'Pencil-Vergleich Dunkel':'Pencil-Vergleich Hell';image.src=URL.createObjectURL(blob);document.body.append(image);
+ }
+ results.push('PASS: native Renderausgabe in Hell/Dunkel.');
+}catch(error){results.push('FAIL: '+error.message);console.error(error)}
+document.getElementById('checks').textContent=results.join('\n');
+</script>
+</html>

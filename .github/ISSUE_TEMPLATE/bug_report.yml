@@ -1,0 +1,21 @@
+name: Report a problem
+description: Describe what happened in a lesson with invented content.
+title: '[Bug] '
+body:
+  - type: textarea
+    id: observation
+    attributes:
+      label: What were you trying to do, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How can I reproduce it in an empty lesson?
+      description: Use invented examples. Please keep student details, lesson archives, access links and credentials out of public reports and screenshots.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Browser, operating system and Tafelraum commit (if known)

@@ -1,0 +1,11 @@
+/* Generated page ending: page-owned slot, never a fixed overlay. */
+[data-tafelraum-page]{display:flex;flex-direction:column}
+[data-tafelraum-page]>*{flex-shrink:0}
+.ab-page-body{display:flex;flex:1 0 auto;flex-direction:column;min-width:0}
+.ab-page-spacer{flex:0 0 0;min-height:0}
+.ab-page-footer{box-sizing:border-box;flex:0 0 auto;position:static;width:100%;margin:0;padding:3mm 0 0;background:transparent;color:var(--muted,#526674);font:7.5pt/1.25 Arial,sans-serif;break-inside:avoid}
+.ab-footer-row{display:flex;justify-content:space-between;align-items:flex-end;gap:4mm;width:100%;border-top:.2mm solid var(--line,#bdccd3);padding-top:2mm}
+.ab-footer-note{font-size:6.5pt;text-align:left}
+.ab-footer-instruction{font-size:7.1pt}
+.ab-footer-folio{flex:0 0 auto;margin-left:auto;white-space:nowrap;text-align:right}
+@media print{[data-tafelraum-page]{height:274.5mm;min-height:274.5mm}}

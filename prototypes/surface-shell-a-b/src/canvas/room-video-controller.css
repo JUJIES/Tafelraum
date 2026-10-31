@@ -1,0 +1,14 @@
+.room-video-controller{position:absolute;pointer-events:auto;display:grid;place-items:center;container-type:size;overflow:hidden;border-radius:12px;background:var(--toolbar,#fffefa);color:var(--text,#1b222b)}
+.room-video-controller.is-covered{visibility:hidden}
+.room-video-controller__content{width:min(560px,calc(100% - 24px));display:grid;gap:8px}
+.room-video-controller__content>strong{font-size:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.room-video-controller__content>span{color:var(--text-muted,#aeb6bd);font-size:14px}
+.room-video-controller__buttons{display:flex;gap:12px;justify-content:center}
+.room-video-controller button{display:grid;place-items:center;min-width:48px;min-height:48px;border:0;border-radius:50%;background:var(--toolbar-strong,#f4f3ee);color:inherit;cursor:pointer}
+.room-video-controller input:focus-visible{outline:3px solid var(--accent,#89bed7);outline-offset:3px}
+.room-video-controller label{display:flex;align-items:center;gap:12px;font-size:14px}
+.room-video-controller input{min-height:32px;min-width:0;flex:1;accent-color:var(--accent,#89bed7)}
+.room-video-controller output{min-width:90px}
+
+@container(max-width:360px){.room-video-controller__buttons{gap:8px}.room-video-controller__buttons>button:first-child,.room-video-controller__buttons>button:nth-child(3){display:none}.room-video-controller label{font-size:0;gap:8px}.room-video-controller output{font-size:12px;min-width:78px}}
+@container(max-height:200px){.room-video-controller__content{gap:4px}.room-video-controller__content>strong,.room-video-controller__content>span{display:none}}

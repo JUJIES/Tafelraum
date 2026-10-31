@@ -1,0 +1,64 @@
+{
+  "format": "teaching-workspace-material-manifest",
+  "schemaVersion": "0.1.0-concept",
+  "conceptStatus": "discussion-example",
+  "seriesId": "series-english-means-of-transport",
+  "assets": [
+    {
+      "id": "asset-transport-challenge",
+      "mediaType": "pdf",
+      "role": "worksheet",
+      "title": "Transport Challenge",
+      "availability": {
+        "status": "local",
+        "localRef": "arbeitsblaetter/output/AB01_Transport_Advantages_Disadvantages.pdf",
+        "externalUrl": null,
+        "lastVerifiedAt": "2026-08-30"
+      },
+      "origin": {
+        "kind": "locally-generated",
+        "system": "codex",
+        "sourcePage": null,
+        "importedAt": "2026-08-27T00:00:00+02:00"
+      },
+      "rights": {
+        "status": "user-owned",
+        "redistributionAllowed": "unknown"
+      },
+      "relationships": [],
+      "derived": {
+        "thumbnailRef": null,
+        "textRef": null,
+        "ocrRef": null
+      }
+    },
+    {
+      "id": "asset-auer-means-transport",
+      "mediaType": "link",
+      "role": "external-worksheet",
+      "title": "Auer: Means of transport",
+      "availability": {
+        "status": "external-link",
+        "localRef": null,
+        "externalUrl": "https://app.meinunterricht.de/dokument/5cd58a8a38c2ee00174a013f",
+        "lastVerifiedAt": "2026-08-27"
+      },
+      "origin": {
+        "kind": "external",
+        "system": "meinunterricht",
+        "sourcePage": "OneNote: Means of transport",
+        "importedAt": null
+      },
+      "rights": {
+        "status": "licensed-external-access",
+        "redistributionAllowed": false
+      },
+      "relationships": [],
+      "derived": {
+        "thumbnailRef": null,
+        "textRef": null,
+        "ocrRef": null
+      }
+    }
+  ]
+}

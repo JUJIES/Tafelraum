@@ -1,0 +1,119 @@
+{
+  "packTitle": "AI Teaching Workspace – Konzeptpaket",
+  "packVersion": "1.4.0",
+  "updatedAt": "2026-08-30",
+  "language": "de",
+  "status": "consolidated pre-implementation concept with migration and architecture decision gates",
+  "entrypoint": "00_README.md",
+  "decisionRegister": "12_ENTSCHEIDUNGEN_UND_OFFENE_FRAGEN.md",
+  "handoffPrompt": "99_HANDOFF_PROMPT.md",
+  "changelog": "CHANGELOG_V1_4.md",
+  "documents": [
+    {
+      "path": "00_README.md",
+      "purpose": "Einstieg, zentrale Produktaussage und Lesereihenfolge"
+    },
+    {
+      "path": "01_AUSGANGSLAGE_UND_VISION.md",
+      "purpose": "Realer Unterrichtskontext, freie Inhaltsinseln und langfristiges Zielbild"
+    },
+    {
+      "path": "02_PRODUKTPRINZIPIEN_UND_WORKFLOWS.md",
+      "purpose": "Reibungsarme Prinzipien und Workflows vor, während und nach der Stunde"
+    },
+    {
+      "path": "03_MVP_UND_ROADMAP.md",
+      "purpose": "Grundlagenbuild, früher Presenter-Slice, spätere Stufen und Nicht-Ziele"
+    },
+    {
+      "path": "04_DOMAENENMODELL_UND_DATEN.md",
+      "purpose": "Board, optionaler Stundenpfad, Viewpoints, Lesson/Run, Assets und Zustände"
+    },
+    {
+      "path": "05_WHITEBOARD_TOUCH_UND_MATERIALIEN.md",
+      "purpose": "Reversible Canvasentscheidung, freies Board, Touch, Pfad-Panel und öffentliches Zeigewerkzeug"
+    },
+    {
+      "path": "06_TAFELREGIE_LIVE_HOLD.md",
+      "purpose": "Unabhängige Kameras, Tafelausschnitt, Drag-and-release und LIVE/GEHALTEN"
+    },
+    {
+      "path": "07_ARTIFACTS_PDF_VIDEO_REMOTION.md",
+      "purpose": "Frühe Bild-/PDF-Assets sowie spätere Video-, SheetifyIMG- und Remotion-Integration"
+    },
+    {
+      "path": "08_LESSON_PACK_UND_MASCHINENLESBARKEIT.md",
+      "purpose": "Spätere Portabilität von Stunden/Reihen und optionale AI-Kontext-Ableitungen"
+    },
+    {
+      "path": "09_KI_ARCHITEKTUR_SPAETER.md",
+      "purpose": "Spätere ortsbezogene KI und gemeinsame validierte Commands"
+    },
+    {
+      "path": "10_TEILEN_SCHUELERANSICHT_UND_AUFGABEN.md",
+      "purpose": "Lokale Tafel, Remote-Live, Publications und spätere isolierte Schülerarbeit"
+    },
+    {
+      "path": "11_TECHNISCHE_ARCHITEKTUR.md",
+      "purpose": "Browser-first-Stack, Canvas-Port, Speicherung, Public Projection und Presentation Camera"
+    },
+    {
+      "path": "12_ENTSCHEIDUNGEN_UND_OFFENE_FRAGEN.md",
+      "purpose": "Maßgebliche bestätigte, empfohlene, entfernte und offene Entscheidungen"
+    },
+    {
+      "path": "13_REFERENZPROJEKTE.md",
+      "purpose": "Rechercheergebnisse und korrigierte Ableitung für die eigene Produktidee"
+    },
+    {
+      "path": "14_NAECHSTE_SCHRITTE.md",
+      "purpose": "Import-, Canvasvergleich-, Hardware-, Bild/PDF-, Beelink-, Kamera- und Stundenpfad-Spikes"
+    },
+    {
+      "path": "15_MIGRATION_SPIEGEL_UND_UNTERRICHTSSPEICHERMODELL.md",
+      "purpose": "Inkrementelle OneNote-Migration, semantischer Spiegel und portables Materialmanifest"
+    },
+    {
+      "path": "16_ARCHITEKTUR_STACK_UND_CANVAS_ENTSCHEIDUNG.md",
+      "purpose": "Stabiler Architekturkern, vorläufiger Stack, Canvasvergleich und Entscheidungsgates"
+    },
+    {
+      "path": "CHANGELOG_V1_1.md",
+      "purpose": "Historische konsolidierte Änderungen gegenüber Pack-Version 1.0"
+    },
+    {
+      "path": "CHANGELOG_V1_2.md",
+      "purpose": "Aufgelöste Entscheidungen zu OneNote, Beelink, erstem Build und Tafelregie"
+    },
+    {
+      "path": "CHANGELOG_V1_3.md",
+      "purpose": "Semantische Lesson-Schicht, Spiegelmodell und frühes Migrationsfundament"
+    },
+    {
+      "path": "CHANGELOG_V1_4.md",
+      "purpose": "Browser-first-Stackpräzisierung und reversible Excalidraw-/tldraw-Entscheidung"
+    },
+    {
+      "path": "99_HANDOFF_PROMPT.md",
+      "purpose": "Direkt nutzbarer Auftrag an eine weiterarbeitende KI"
+    }
+  ],
+  "schemaExamples": {
+    "currentConcept": [
+      "schemas/lesson-v0.3.example.json",
+      "schemas/mirror-v0.1.example.json",
+      "schemas/material-manifest-v0.1.example.json",
+      "schemas/presentation-state-v0.2.example.json",
+      "schemas/live-session-v0.1.example.json",
+      "schemas/command-batch-v0.2.example.json",
+      "schemas/publication-v0.2.example.json"
+    ],
+    "deprecatedConceptExamples": [
+      "schemas/lesson-v0.2.example.json",
+      "schemas/lesson-v0.1.example.json",
+      "schemas/command-batch-v0.1.example.json",
+      "schemas/publication-v0.1.example.json"
+    ],
+    "readme": "schemas/README.md"
+  }
+}

@@ -1,0 +1,6 @@
+interface:
+  display_name: "Tafelraum Unterricht organisieren"
+  short_description: "Stunden finden und Materialien gezielt zuordnen"
+  default_prompt: "Nutze $tafelraum-unterricht-organisieren, um dieses Material der gewünschten Tafelraum-Stunde zuzuordnen."
+policy:
+  allow_implicit_invocation: true

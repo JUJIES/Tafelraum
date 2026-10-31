@@ -1,0 +1,91 @@
+{
+  "format": "teaching-workspace-command-batch",
+  "schemaVersion": "0.1.0",
+  "batch": {
+    "id": "batch-create-summary-structure",
+    "lessonId": "lesson-climate-causes-effects",
+    "boardId": "board-main",
+    "origin": {
+      "type": "ai",
+      "actorId": "lesson-assistant",
+      "deviceId": "teacher-mac"
+    },
+    "mode": "preview",
+    "commands": [
+      {
+        "id": "cmd-001",
+        "type": "createText",
+        "payload": {
+          "phaseId": "phase-summary",
+          "text": "Ursachen und Folgen des Klimawandels",
+          "position": {
+            "x": 5600,
+            "y": 100
+          },
+          "semanticRole": "heading",
+          "visibility": "both",
+          "styleToken": "lesson-heading"
+        }
+      },
+      {
+        "id": "cmd-002",
+        "type": "createShape",
+        "payload": {
+          "phaseId": "phase-summary",
+          "shape": "rectangle",
+          "bounds": {
+            "x": 5500,
+            "y": 280,
+            "width": 500,
+            "height": 260
+          },
+          "text": "Ursachen",
+          "semanticRole": "summary",
+          "visibility": "both",
+          "styleToken": "concept-primary"
+        }
+      },
+      {
+        "id": "cmd-003",
+        "type": "createShape",
+        "payload": {
+          "phaseId": "phase-summary",
+          "shape": "rectangle",
+          "bounds": {
+            "x": 6300,
+            "y": 280,
+            "width": 500,
+            "height": 260
+          },
+          "text": "Folgen",
+          "semanticRole": "summary",
+          "visibility": "both",
+          "styleToken": "concept-secondary"
+        }
+      },
+      {
+        "id": "cmd-004",
+        "type": "createArrow",
+        "payload": {
+          "phaseId": "phase-summary",
+          "fromCommandResultId": "cmd-002",
+          "toCommandResultId": "cmd-003",
+          "label": "führen zu",
+          "semanticRole": "transition",
+          "visibility": "both"
+        }
+      },
+      {
+        "id": "cmd-005",
+        "type": "setVisibility",
+        "payload": {
+          "elementIds": [
+            "excalidraw-text-099"
+          ],
+          "visibility": "hidden-until-reveal"
+        }
+      }
+    ]
+  }
+}
+

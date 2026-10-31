@@ -1,0 +1,67 @@
+.live-host-trigger { display: inline-flex; gap: 8px; align-items: center; min-height: 44px; padding: 0 12px; border: 0; border-radius: 9px; background: transparent; color: var(--text-muted); cursor: pointer; white-space: nowrap; font-size: 13px; font-weight: 550; }
+.live-host-trigger svg { width: 19px; height: 19px; }
+.live-host-trigger:is(:hover,:focus-visible), .live-host-trigger[aria-expanded="true"] { background: var(--toolbar-strong); color: var(--text); }
+.live-host-trigger.has-session { color: var(--accent); }
+.live-host-trigger.is-live { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.live-host-trigger:disabled { opacity: .45; cursor: default; }
+.live-host-title { color: inherit; }
+.live-host-mode { display: inline-flex; align-items: center; min-height: 24px; padding: 0 7px; border-radius: 6px; background: var(--toolbar-strong); color: var(--text-muted); font-size: 11px; font-weight: 650; }
+.live-host-mode[data-mode="clip"] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.live-host-mode[data-mode="material"] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.live-target-clear { display:grid;place-items:center;min-width:40px;min-height:44px;border:0;border-radius:8px;background:transparent;color:var(--text-muted);cursor:pointer; }
+.live-target-clear:is(:hover,:focus-visible) { background:var(--toolbar-strong);color:var(--text); }
+.live-target-clear svg { width:17px;height:17px; }
+.live-host-mode[data-empty="true"] { background: color-mix(in srgb, var(--warning, #b98542) 14%, transparent); color: var(--warning, #b98542); }
+.live-host-count { display: inline-flex; align-items: center; gap: 4px; color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.live-host-count svg { width: 14px; height: 14px; }
+.live-person-dot { width: 6px; height: 6px; flex: 0 0 auto; border-radius: 50%; background: var(--text-muted); }
+.live-person-dot.is-connected { background: var(--success); }
+.live-host-panel { position: fixed; z-index: 90; right: 16px; top: 68px; width: 320px; max-width: calc(100vw - 32px); max-height: calc(100dvh - 88px); overflow-y: auto; padding: 14px 18px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--toolbar); color: var(--text); box-shadow: var(--shadow); }
+.live-host-heading { display: flex; align-items: center; justify-content: space-between; }
+.live-host-heading h2 { font-size: 17px; font-weight: 600; margin: 0; letter-spacing: -.02em; }
+.live-host-icon { display: grid; place-items: center; min-width: 44px; min-height: 44px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text-muted); cursor: pointer; }
+.live-host-icon svg { width: 18px; height: 18px; }
+.live-host-icon:is(:hover,:focus-visible) { background: var(--toolbar-strong); color: var(--text); }
+.live-host-invite { display: flex; align-items: center; flex-direction: column; padding: 4px 0 16px; gap: 4px; }
+.live-host-section-title { width: 100%; padding: 0 4px 4px; color: var(--text-muted); font-size: 12px; }
+.live-host-share-actions { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 4px; }
+.live-host-qr { display: block; width: 200px; height: 200px; border-radius: 8px; }
+.live-host-copy { display: flex; align-items: center; gap: 8px; min-height: 48px; border: 0; border-radius: 8px; background: none; color: var(--accent); padding: 0 8px; cursor: pointer; }
+.live-host-copy:is(:hover,:focus-visible), .live-host-copy[aria-expanded="true"] { background: var(--toolbar-strong); }
+.live-host-copy svg { width: 17px; height: 17px; }
+.live-host-list-heading { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); padding-bottom: 7px; border-bottom: 1px solid var(--line); }
+.live-host-people { list-style: none; margin: 0; padding: 0; max-height: 188px; overflow-y: auto; }
+.live-host-people li { display: flex; align-items: center; gap: 9px; min-height: 46px; }
+.live-person-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; font-size: 14px; }
+.live-host-empty { color: var(--text-muted); font-size: 13px; }
+.live-host-remove { min-width: 44px; }
+.live-host-remove:is(:hover,:focus-visible) { color: var(--danger); }
+.live-host-muted { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 14px 0 10px; }
+.live-host-footer { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
+.live-host-primary { min-height: 48px; flex: 1; border: 0; border-radius: 9px; padding: 10px 16px; color: var(--on-accent); background: var(--accent); font: inherit; font-size: 14px; font-weight: 550; cursor: pointer; }
+.live-host-primary:disabled { opacity: .5; cursor: default; }
+.live-host-end { width: 100%; min-height: 48px; border: 1px solid #b3535a; border-radius: 9px; padding: 8px 16px; color: #fff; background: #9f3f46; font: inherit; font-size: 14px; font-weight: 550; cursor: pointer; }
+.live-host-end:is(:hover, :focus-visible):not(:disabled) { border-color: #c5646b; background: #ad4850; }
+.live-host-session-action { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.live-host-session-action svg { width: 18px; height: 18px; stroke-width: 2; }
+.live-host-error { font-size: 13px; color: var(--danger); margin-top: 12px; line-height: 1.5; }
+.live-host-error button { display: block; min-height: 44px; padding: 0; border: 0; background: none; color: var(--accent); cursor: pointer; }
+.live-switch-dialog { width: min(420px, calc(100vw - 40px)); padding: 26px; border: 1px solid var(--line); border-radius: 14px; color: var(--text); background: var(--toolbar); box-shadow: var(--shadow); }
+.live-switch-dialog::backdrop { background: #10192355; }
+.live-switch-dialog h2 { font-size: 21px; font-weight: 600; margin: 0 0 12px; letter-spacing: -.025em; }
+.live-switch-dialog p { font-size: 14px; color: var(--text-muted); margin: 0 0 26px; }
+.live-switch-dialog > div { display: flex; gap: 10px; }
+.live-switch-dialog button:not(.live-host-primary) { min-height: 48px; border: 0; border-radius: 9px; padding: 10px 14px; color: var(--text); background: var(--toolbar-strong); cursor: pointer; }
+@media (pointer: coarse) { .live-host-trigger, .live-host-icon, .live-host-copy, .live-host-error button { min-height: 48px; } .live-host-icon { min-width: 48px; } }
+.live-host-heading h2 { flex:1; }
+.live-host-modes { display:flex; gap:4px; padding:4px; border-radius:10px; background:var(--toolbar-strong); margin:4px 0 8px; }
+.live-host-modes button { display:inline-flex; align-items:center; justify-content:center; gap:6px; flex:1; min-height:44px; border:0; border-radius:7px; background:transparent; color:var(--text-muted); font:inherit; font-size:13px; cursor:pointer; white-space:nowrap; }
+.live-host-modes svg { width:18px; height:18px; flex:none; }
+.live-host-modes button[aria-pressed="true"] { background:var(--surface,#fffefa); color:var(--text); box-shadow:0 1px 4px #0001; }
+.live-host-modes button:disabled { cursor:default; }
+.live-host-recall { width:100%;justify-content:center;margin-bottom:8px;background:var(--toolbar-strong);color:var(--text); }
+.live-host-recall svg { color:var(--accent); }
+.live-clip-tool[aria-pressed="true"] { background:var(--toolbar-strong); color:var(--accent); }
+@media (pointer:coarse) { .live-host-modes button { min-height:48px; } }
+
+.live-preview-toggle { width:100%; justify-content:center; margin:0; background:var(--toolbar-strong); }

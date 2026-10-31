@@ -1,0 +1,72 @@
+{
+  "format": "teaching-workspace-presentation-state",
+  "schemaVersion": "0.2.0-concept",
+  "conceptStatus": "discussion-example",
+  "lessonId": "lesson-climate-causes-effects",
+  "presentationId": "presentation-local-2026-09-14",
+  "mode": "HELD",
+  "teacherViewport": {
+    "transient": true,
+    "boardId": "board-main",
+    "bounds": {
+      "x": -1200,
+      "y": -1500,
+      "width": 10500,
+      "height": 5900
+    }
+  },
+  "onAir": {
+    "revision": 132,
+    "activeStepId": "step-task",
+    "viewport": {
+      "boardId": "board-main",
+      "bounds": {
+        "x": 3600,
+        "y": 400,
+        "width": 1600,
+        "height": 900
+      },
+      "fit": "contain",
+      "padding": 48
+    }
+  },
+  "prepared": {
+    "revision": 148,
+    "targetStepId": "step-support",
+    "viewport": {
+      "boardId": "board-main",
+      "bounds": {
+        "x": 6700,
+        "y": -800,
+        "width": 1400,
+        "height": 900
+      },
+      "fit": "contain",
+      "padding": 48
+    }
+  },
+  "readyIndicator": {
+    "derived": true,
+    "reason": "prepared-state-differs-from-on-air"
+  },
+  "heldInputPolicy": {
+    "smartboardInputEnabled": false,
+    "writesTo": "none",
+    "publishesImmediately": false,
+    "feedbackStrategy": "read-only-in-early-presenter-slice",
+    "futureBufferedInput": "unresolved-later-ux-spike"
+  },
+  "publicPointer": {
+    "active": false,
+    "transient": true,
+    "boardPoint": null,
+    "renderOnlyInsideOnAirViewport": true
+  },
+  "transitionPolicy": {
+    "strategy": "unresolved",
+    "mustAvoidPrivateContent": true,
+    "rawTeacherPanIsPublic": false,
+    "publishTargetOnPointerRelease": true
+  },
+  "updatedAt": "2026-09-14T08:22:10+02:00"
+}

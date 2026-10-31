@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marker · vollständiger Surface-Framecheck</title>
+<div id="root"></div>
+<output id="frame-check" style="position:fixed;left:320px;top:76px;z-index:9999;pointer-events:none;background:#fff;color:#111;padding:6px;font:12px monospace">Marker ziehen: Frame-Abstände inklusive Surface/Engine messen.</output>
+<script type="module" src="/src/main.tsx"></script>
+<script type="module">
+  const output = document.getElementById('frame-check');
+  let recording = false, last = 0, intervals = [], frame;
+  const measure = (time) => {
+    if (!recording) return;
+    if (last) intervals.push(time-last);
+    last = time;
+    frame = requestAnimationFrame(measure);
+  };
+  window.addEventListener('pointerdown', event => {
+    if (!(event.target instanceof HTMLCanvasElement) || event.button !== 0) return;
+    recording = true; intervals = []; last = 0;
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(measure);
+  }, true);
+  const finish = () => {
+    if (!recording) return;
+    // Include the commit and its following paint; never modify app/engine state.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      recording = false; cancelAnimationFrame(frame);
+      const sorted = [...intervals].sort((a,b)=>a-b);
+      const p95 = sorted[Math.floor(sorted.length*.95)] ?? 0;
+      output.textContent = `${sorted.length} Frames · p95 ${p95.toFixed(1)} ms · max ${(sorted.at(-1)??0).toFixed(1)} ms · >25 ms ${sorted.filter(v=>v>25).length}. Keine Input-to-photon-Messung.`;
+    }));
+  };
+  window.addEventListener('pointerup', finish, true);
+  window.addEventListener('pointercancel', finish, true);
+</script>
+</html>

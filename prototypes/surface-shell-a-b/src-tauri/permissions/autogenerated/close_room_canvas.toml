@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-close-room-canvas"
+description = "Enables the close_room_canvas command without any pre-configured scope."
+commands.allow = ["close_room_canvas"]
+
+[[permission]]
+identifier = "deny-close-room-canvas"
+description = "Denies the close_room_canvas command without any pre-configured scope."
+commands.deny = ["close_room_canvas"]

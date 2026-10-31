@@ -1,0 +1,11 @@
+/* A4 page geometry shared by screen and native print. Typography remains package-owned. */
+@page {size:A4 portrait;margin:12mm}
+html,body{margin:0;padding:0;min-height:0;width:210mm;background:#fff}
+[data-tafelraum-page]{box-sizing:border-box;width:210mm;min-height:297mm;height:auto;margin:0;flex-shrink:0;break-inside:avoid;break-after:page;overflow:visible;background:#fff}
+[data-tafelraum-page]:last-child{break-after:auto}
+@media screen{html{overflow-x:hidden}[data-tafelraum-page]{margin-bottom:16px}[data-tafelraum-page]:last-child{margin-bottom:0}}
+/* Print uses the same 12 mm inset as the screen box, supplied by the page margin.
+   Let the fragment height flow; a 297 mm element includes the margin twice. */
+@media print{html,body{width:186mm;height:auto;overflow:visible}
+ [data-tafelraum-page]{width:186mm;height:auto;min-height:0;padding:0}}
+

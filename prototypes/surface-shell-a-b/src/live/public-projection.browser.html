@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Public projection: synthetic browser checks</title>
+<body>
+<pre id="result">Running native renderer checks…</pre>
+<script type="module">
+// Standalone synthetic fixture. Open with the prototype Vite server; no archive/API calls.
+import { convertToExcalidrawElements, exportToBlob, getCommonBounds } from '@excalidraw/excalidraw';
+import { createPublicProjector, getPublicViewport } from './public-projection.ts';
+import { sanitizeElement } from '../../../../shared/live-canvas/protocol.ts';
+
+const checks = [];
+const assert = (condition, message) => { if (!condition) throw new Error(message); };
+const check = async (name, run) => { await run(); checks.push(name); };
+const native = (skeleton) => convertToExcalidrawElements([skeleton], { regenerateIds: false })[0];
+const state = { scrollX: -10, scrollY: 20, width: 1000, height: 700, zoom: { value: 1 }, viewBackgroundColor: '#ffffff' };
+let elements = [];
+let files = {};
+const api = { getSceneElements: () => elements, getFiles: () => files, getAppState: () => state };
+
+function sourceURL(rightColor = '#0000ff') {
+  const canvas = document.createElement('canvas'); canvas.width = 200; canvas.height = 100;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ff0000'; ctx.fillRect(0, 0, 100, 100);
+  ctx.fillStyle = rightColor; ctx.fillRect(100, 0, 100, 100);
+  return canvas.toDataURL('image/png');
+}
+const source = sourceURL();
+const sourceImage = native({ type: 'image', id: 'private-image', fileId: 'private-file', x: 0, y: 0,
+  width: 200, height: 100, status: 'saved', scale: [1, 1], crop: null,
+  customData: { lessonId: 'private-lesson', archiveMaterialPath: '/private/source.png' } });
+const resetFiles = () => { files = { 'private-file': { id: 'private-file', dataURL: source, mimeType: 'image/png', created: 123 } }; };
+const cover = (patch = {}) => native({ type: 'rectangle', id: 'private-cover', x: -2, y: -2,
+  width: 104, height: 104, fillStyle: 'solid', backgroundColor: '#3e4854', strokeColor: '#3e4854',
+  roughness: 0, opacity: 100, roundness: null, customData: { role: 'image-cover', imageId: 'private-image' }, ...patch });
+const marker = native({ type: 'line', id: 'private-marker', x: 250, y: 20, width: 80, height: 20,
+  points: [[0,0],[80,0],[80,20],[0,20],[0,0]], fillStyle: 'solid', backgroundColor: '#ffee00',
+  opacity: 32, customData: { role: 'marker-ribbon', markerGeometryVersion: 2 } });
+async function pixels(blob) {
+  const bitmap = await createImageBitmap(blob);
+  const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+  const ctx = canvas.getContext('2d'); ctx.drawImage(bitmap, 0, 0); bitmap.close();
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  return { canvas, data };
+}
+const redCount = (data) => {
+  let count = 0;
+  for (let i = 0; i < data.length; i += 4) if (data[i] > 200 && data[i+1] < 80 && data[i+2] < 80 && data[i+3] > 200) count++;
+  return count;
+};
+async function checkPNG(blob) {
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  const view = new DataView(bytes.buffer);
+  let offset = 8;
+  while (offset + 12 <= bytes.length) {
+    const length = view.getUint32(offset);
+    const type = new TextDecoder().decode(bytes.slice(offset + 4, offset + 8));
+    assert(!['tEXt', 'zTXt', 'iTXt', 'eXIf'].includes(type), `PNG leaked metadata chunk ${type}`);
+    offset += 12 + length;
+  }
+}
+
+async function run() {
+  resetFiles();
+  const projector = createPublicProjector();
+  let covered;
+  await check('cover stays an opaque ordered attention element while source pixels load once', async () => {
+    elements = [sourceImage, native({ type: 'text', id: 'private-answer', x: 10, y: 20, text: 'HIDDEN ANSWER', fontSize: 8 }), cover(), marker];
+    covered = await projector.project(api);
+    assert(JSON.stringify(covered.elements.map(element => element.type)) === JSON.stringify(['image','text','rectangle','line']), 'painter order');
+    assert(covered.assets.length === 1, 'source image is rasterized exactly once');
+    assert(!/private|customData/.test(JSON.stringify(covered.elements)), 'private metadata');
+    assert(covered.elements[1].text === 'HIDDEN ANSWER', 'attention cover must not discard public content');
+    assert(covered.elements[2].opacity === 100 && covered.elements[2].fillStyle === 'solid', 'cover lost opacity');
+    const { canvas, data } = await pixels(covered.assets[0].blob);
+    assert(redCount(data) > 1000, 'underlying image was unnecessarily recomputed or removed');
+    assert(Array.from(data).some((v, i) => i % 4 === 2 && v === 255), 'uncovered blue pixels missing');
+    await checkPNG(covered.assets[0].blob);
+    document.body.append(canvas);
+  });
+  await check('camera changes and later native strokes reuse the image blob and opaque ids', async () => {
+    state.scrollX = -200; state.zoom.value = 2;
+    elements = [...elements.slice(0, -1), { ...marker, x: 260, version: marker.version + 1 }];
+    const next = await projector.project(api);
+    assert(next.assets[0].blob === covered.assets[0].blob && next.assetIds[0] === covered.assetIds[0], 'image cache miss');
+    assert(next.elements[3].id === covered.elements[3].id, 'unstable native id');
+    assert(JSON.stringify(next.viewport) === JSON.stringify(getPublicViewport(api)), 'viewport mismatch');
+  });
+  await check('crop plus rotation and both flips sends only rendered visible blue pixels', async () => {
+    elements = [{ ...sourceImage, angle: Math.PI / 5, width: 100, scale: [-1,-1],
+      crop: { x: 100, y: 0, width: 100, height: 100, naturalWidth: 200, naturalHeight: 100 } }];
+    const cropped = await projector.project(api);
+    assert(cropped.assets.length === 1, 'crop asset');
+    assert(!JSON.stringify(cropped.elements).includes('private'), 'source identity');
+    assert(!cropped.elements[0].crop, 'crop must be baked');
+    assert(redCount((await pixels(cropped.assets[0].blob)).data) === 0, 'uncropped source pixels leaked');
+    await checkPNG(cropped.assets[0].blob);
+  });
+  await check('rotated full cover and reveal reuse the same preloaded image asset', async () => {
+    const angle = Math.PI / 6;
+    const rotatedImage = { ...sourceImage, angle };
+    elements = [rotatedImage, cover({ x: -4, y: -4, width: 208, height: 108, angle })];
+    const full = await projector.project(api);
+    assert(full.elements.length === 2 && full.elements[1].type === 'rectangle', 'cover was not public geometry');
+    assert(redCount((await pixels(full.assets[0].blob)).data) > 1000, 'source image was not preloaded');
+    elements = [rotatedImage];
+    const revealed = await projector.project(api);
+    assert(revealed.assetIds[0] === full.assetIds[0] && revealed.assets[0].blob === full.assets[0].blob, 'reveal rerasterized image');
+    assert(revealed.coverTransition?.type === 'reveal', 'reveal transition missing');
+    assert(redCount((await pixels(revealed.assets[0].blob)).data) > 1000, 'reveal missing visible source');
+  });
+  await check('asset bytes invalidate cache without version bump; missing and corrupt assets fail closed', async () => {
+    elements = [sourceImage]; resetFiles();
+    const before = await projector.project(api);
+    files['private-file'] = { ...files['private-file'], dataURL: sourceURL('#00ff00') };
+    const changed = await projector.project(api);
+    assert(changed.assetIds[0] !== before.assetIds[0], 'stale asset cache');
+    files = {};
+    let rejected = false; try { await projector.project(api); } catch { rejected = true; }
+    assert(rejected, 'missing file accepted cached pixels');
+    resetFiles(); files['private-file'].dataURL = 'data:image/png;base64,broken';
+    rejected = false; try { await projector.project(api); } catch { rejected = true; }
+    assert(rejected, 'corrupt image published');
+    resetFiles(); await projector.project(api);
+  });
+  await check('media placeholders show only type and covers remain native vectors', async () => {
+    const media = native({ type: 'rectangle', id: 'private-youtube', x: 0, y: 0, width: 200, height: 100,
+      angle: Math.PI / 8, customData: { materialKind: 'youtube', sourceTitle: 'Private title', sourceUrl: 'https://private.invalid' } });
+    elements = [media];
+    const projected = await projector.project(api);
+    assert(projected.elements.some(e => e.type === 'text' && e.text === 'YouTube'), 'missing native placeholder label');
+    assert(projected.unsupported[0] === 'YouTube: Private title', 'local disclosure');
+    assert(!/Private title|sourceUrl|private.invalid/.test(JSON.stringify(projected.elements)), 'placeholder source leak');
+    const clean = projected.elements.map(sanitizeElement);
+    const box = clean.find(e => e.type === 'rectangle'); const label = clean.find(e => e.type === 'text');
+    assert(box.boundElements[0].id === label.id && label.containerId === box.id, 'placeholder binding');
+    elements = [media, cover()];
+    const first = await projector.project(api); const second = await projector.project(api);
+    assert(first.assets.length === 0 && second.assets.length === 0, 'vectors were unnecessarily rasterized');
+    assert(first.elements.at(-1).type === 'rectangle', 'attention cover missing');
+  });
+  await check('HTML without a mounted host view fails closed instead of claiming a live placeholder', async () => {
+    elements = [native({type:'rectangle',id:'missing-html',x:0,y:0,width:200,height:100,customData:{materialKind:'interactive-html'}})];
+    let rejected=false;
+    try { await projector.project(api); } catch { rejected=true; }
+    finally { projector.stop(); }
+    assert(rejected,'missing HTML view was published');
+  });
+  await check('native raster placement matches engine rendering bounds', async () => {
+    elements = [{ ...sourceImage, x: 12.3, y: -24.7, width: 173.1, height: 81.7, angle: Math.PI / 5 }];
+    const projected = await projector.project(api);
+    const raster = projected.elements[0];
+    const { canvas } = await pixels(projected.assets[0].blob);
+    assert(Math.abs(canvas.width / canvas.height - raster.width / raster.height) < 0.000001, 'raster aspect drift');
+    assert(raster.angle === 0 && raster.scale[0] === 1 && raster.scale[1] === 1, 'double rotation/flip');
+    // Also exercise the actual public wire subset through the native renderer.
+    const publicFiles = {};
+    for (const asset of projected.assets) {
+      const dataURL = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsDataURL(asset.blob); });
+      publicFiles[asset.id] = { id: asset.id, dataURL, mimeType: 'image/png', created: 0 };
+    }
+    const wireBlob = await exportToBlob({ elements: projected.elements.map(sanitizeElement), files: publicFiles,
+      appState: { exportBackground: false, exportEmbedScene: false }, exportPadding: 0 });
+    assert(wireBlob.size > 0, 'public wire subset did not render');
+  });
+  await check('crop geometry invalidates cache even without native version changes', async () => {
+    elements = [{ ...sourceImage, width: 100, crop: { x: 100, y: 0, width: 100, height: 100, naturalWidth: 200, naturalHeight: 100 } },
+      cover({ width: 54 })];
+    const before = await projector.project(api);
+    assert(redCount((await pixels(before.assets[0].blob)).data) === 0, 'cropped source pixels leaked');
+    elements = [{ ...elements[0], crop: { ...elements[0].crop, x: 0 } }, elements[1]];
+    const changed = await projector.project(api);
+    assert(before.assetIds[0] !== changed.assetIds[0], 'crop cache invalidation');
+    assert(redCount((await pixels(changed.assets[0].blob)).data) > 100, 'newly visible crop missing');
+  });
+  await check('arrow label retains its native center and binding beside a public cover', async () => {
+    const pair = convertToExcalidrawElements([{ type: 'arrow', id: 'private-arrow', x: 20, y: 200,
+      points: [[0,0],[180,50]], label: { text: 'Visible arrow label', fontSize: 16 } }], { regenerateIds: false });
+    const arrow = pair.find(e => e.type === 'arrow');
+    const label = { ...pair.find(e => e.type === 'text'), x: -900, y: -900 };
+    const map = new Map([[arrow.id, arrow], [label.id, label]]);
+    const bounds = getCommonBounds([label], map);
+    elements = [arrow, cover({ x: -10, y: -10, width: 20, height: 20 }), label];
+    const projected = await projector.project(api);
+    const publicLabel = projected.elements.find(e => e.type === 'text');
+    const publicArrow = projected.elements.find(e => e.type === 'arrow');
+    assert(publicLabel.containerId === publicArrow.id, 'public arrow binding was lost');
+    assert(Math.abs(publicLabel.x + publicLabel.width / 2 - (bounds[0] + bounds[2]) / 2) < 0.0001, 'label x moved');
+    assert(Math.abs(publicLabel.y + publicLabel.height / 2 - (bounds[1] + bounds[3]) / 2) < 0.0001, 'label y moved');
+  });
+  await check('running native mutation cannot change the captured projection during async export', async () => {
+    const moving = { ...sourceImage, x: 0 };
+    elements = [moving];
+    const pending = projector.project(api);
+    moving.x = 500;
+    const captured = await pending;
+    assert(captured.elements[0].x < 0, 'async export mixed in a newer native mutation');
+    const next = await projector.project(api);
+    assert(next.elements[0].x > 400, 'subsequent native mutation not picked up');
+  });
+  await check('large vector scenes with covers do not trigger raster work', async () => {
+    elements = [native({ type: 'rectangle', x: 0, y: 0, width: 50000, height: 30000, backgroundColor: '#ffffff', fillStyle: 'solid' }),
+      cover({ x: 20, y: 20, width: 100, height: 100 })];
+    const large = await projector.project(api);
+    assert(large.assets.length === 0 && large.elements.length === 2, 'large vectors were rasterized');
+  });
+  await check('translation reuses cropped safe image bytes while geometry and crop changes remain exact', async () => {
+    resetFiles();
+    const moving = { ...sourceImage, width: 100, angle: Math.PI / 7,
+      crop: { x: 100, y: 0, width: 100, height: 100, naturalWidth: 200, naturalHeight: 100 } };
+    elements = [moving]; const p = createPublicProjector(); const first = await p.project(api);
+    for (let step = 1; step <= 24; step++) {
+      elements = [{ ...moving, x: moving.x + step * 7, y: moving.y - step * 3, version: moving.version + step }];
+      const next = await p.project(api);
+      assert(next.assets[0].blob === first.assets[0].blob && next.assetIds[0] === first.assetIds[0], 'translation rerasterized unchanged pixels');
+      assert(Math.abs(next.elements[0].x - first.elements[0].x - step * 7) < .0001, 'translation x drift');
+      assert(Math.abs(next.elements[0].y - first.elements[0].y + step * 3) < .0001, 'translation y drift');
+    }
+    assert(redCount((await pixels(first.assets[0].blob)).data) === 0, 'cropped source leaked through fast path');
+  });
+  await check('cover geometry changes without rerasterizing the underlying image', async () => {
+    resetFiles();
+    const p = createPublicProjector();
+    elements = [sourceImage, cover({x:0,y:0,width:100,height:100})];
+    const before = await p.project(api);
+    elements = [sourceImage, cover({x:40,y:0,width:80,height:100,version:2})];
+    const after = await p.project(api);
+    assert(after.assets[0].blob === before.assets[0].blob && after.assetIds[0] === before.assetIds[0], 'cover edit rerasterized image');
+    assert(after.elements[1].x !== before.elements[1].x && after.elements[1].width !== before.elements[1].width, 'cover geometry did not update');
+  });
+  await check('wide strokes remain native vectors beside an attention cover', async () => {
+    elements = [native({type:'line',id:'wide-line',x:510,y:100,width:0,height:700,points:[[0,0],[0,700]],strokeColor:'#0000ff',strokeWidth:50,roughness:0}),
+      cover({x:900,y:900,width:40,height:40})];
+    const projected = await createPublicProjector().project(api);
+    assert(projected.assets.length === 0, 'vector stroke unexpectedly rasterized');
+    assert(projected.elements.map(element => element.type).join(',') === 'line,rectangle', 'vector painter order changed');
+  });
+  await check('viewport clips reuse the complete sanitized scene instead of cropping content', async () => {
+    resetFiles();
+    elements = [sourceImage, native({type:'text',id:'private-crossing',x:70,y:20,text:'PRIVATE TEXT CROSSING THE BORDER',fontSize:18,fontFamily:2}), cover({x:95,y:0,width:110,height:100})];
+    const result = await createPublicProjector().project(api);
+    assert(result.elements.map(element => element.type).join(',') === 'image,text,rectangle','complete ordered scene missing');
+    assert(!/private-crossing|originalText|customData/.test(JSON.stringify(result.elements.map(sanitizeElement))),'source identity or metadata leaked');
+    assert(result.elements[0].width>100,'public content is not cropped to a presentation viewport');
+  });
+  await check('image translation reuses public pixels while distant canvas content remains available', async () => {
+    resetFiles();
+    const image={...sourceImage,x:150,y:150};
+    const outside=native({type:'text',id:'outside-note',x:1400,y:100,text:'LATER CONTENT',fontSize:24});
+    elements=[image,outside];
+    const p=createPublicProjector(), first=await p.project(api);
+    assert(first.elements.length===2&&first.assets.length===1,'sanitized distant content stays in the public scene');
+    for(let i=1;i<=12;i++){
+      elements=[{...image,x:image.x+i*8,version:i+1},{...outside,text:`LATER ${i}`}];
+      const next=await p.project(api);
+      assert(next.assets[0].blob===first.assets[0].blob&&next.assetIds[0]===first.assetIds[0],'contained move rerendered pixels');
+      assert(next.elements[0].x===first.elements[0].x+i*8,'translation lost');
+      assert(next.elements.some(e=>e.type==='text'&&e.x===outside.x),'distant public element disappeared');
+    }
+  });
+  await check('cover edits retain painter order and the preloaded image asset', async () => {
+    resetFiles();
+    const image={...sourceImage,x:100,y:100,width:900,height:600};
+    const mask=cover({x:96,y:96,width:458,height:608});
+    const control=native({type:'rectangle',id:'private-control',x:1300,y:100,width:200,height:200,fillStyle:'solid',backgroundColor:'#0000ff',strokeColor:'#0000ff',strokeWidth:0,roughness:0});
+    elements=[image,control,mask];
+    const p=createPublicProjector(), first=await p.project(api);
+    assert(first.elements.map(element=>element.type).join(',')==='image,rectangle,rectangle','painter order changed');
+    assert(first.assets.length===1,'image should be the only raster asset');
+    await checkPNG(first.assets[0].blob);
+    elements=[image,control,{...mask,height:mask.height-80}];
+    const next=await p.project(api);
+    assert(next.assets[0].blob===first.assets[0].blob&&next.assetIds[0]===first.assetIds[0],'cover edit rerasterized image');
+    elements=[image,control,mask];
+    const restored=await p.project(api);
+    assert(restored.assetIds[0]===first.assetIds[0]&&restored.assets[0].blob===first.assets[0].blob,'re-cover rerasterized image');
+  });
+  return checks;
+}
+window.projectionChecks = run().then(result => {
+  document.getElementById('result').textContent = `PASS (${result.length})\n${result.join('\n')}`;
+  return { ok: true, checks: result };
+}).catch(error => {
+  document.getElementById('result').textContent = `FAIL after ${checks.length}: ${error.stack}`;
+  return { ok: false, checks, error: error.stack };
+});
+</script>
+</body>
+</html>

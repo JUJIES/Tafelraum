@@ -1,0 +1,64 @@
+{
+  "format": "teaching-workspace-command-batch",
+  "schemaVersion": "0.2.0-concept",
+  "conceptStatus": "discussion-example",
+  "batch": {
+    "id": "batch-create-second-island",
+    "lessonId": "lesson-climate-causes-effects",
+    "boardId": "board-main",
+    "origin": {
+      "type": "teacher-ui",
+      "actorId": "teacher",
+      "deviceId": "teacher-mac"
+    },
+    "mode": "apply",
+    "commands": [
+      {
+        "id": "cmd-001",
+        "type": "createText",
+        "payload": {
+          "text": "Welche Folgen lassen sich direkt beobachten?",
+          "position": {
+            "x": 6700,
+            "y": -720
+          },
+          "semanticRole": "guiding-question",
+          "audience": "both",
+          "revealState": "visible",
+          "publicationPolicy": "include"
+        }
+      },
+      {
+        "id": "cmd-002",
+        "type": "saveStepViewpoint",
+        "payload": {
+          "lessonPathId": "path-main",
+          "sectionId": "section-work",
+          "title": "Hilfestellung",
+          "viewpoint": {
+            "boardId": "board-main",
+            "bounds": {
+              "x": 6700,
+              "y": -800,
+              "width": 1400,
+              "height": 900
+            },
+            "fit": "contain",
+            "padding": 48
+          }
+        }
+      },
+      {
+        "id": "cmd-003",
+        "type": "setAudience",
+        "payload": {
+          "elementIds": [
+            "excalidraw-note-001"
+          ],
+          "audience": "teacher"
+        }
+      }
+    ]
+  }
+}
+

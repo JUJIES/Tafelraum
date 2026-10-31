@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tafelraum Canvas vorbereiten"
+  short_description: "Unterrichtsflächen zuverlässig aufbauen und anordnen"
+  default_prompt: "Nutze $tafelraum-canvas-vorbereiten, um die Unterrichtsfläche der gewünschten Stunde vorzubereiten."

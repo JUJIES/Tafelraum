@@ -1,0 +1,9 @@
+<!doctype html><html lang="de"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Auswahl – technische Vorlage</title>
+<style>*{box-sizing:border-box}body{margin:0;padding:6%;background:#fff;color:#182126;font:22px/1.5 system-ui,sans-serif}button{min-width:100px;min-height:48px;margin:8px;padding:12px;border:2px solid #45636b;border-radius:8px;background:white;color:inherit;font:inherit}button[aria-pressed=true]{background:#d9edf0}</style>
+<h1>Wähle eine Möglichkeit</h1><p>Technisches Beispiel für einen gemeinsamen Zustand.</p><button id="a" aria-pressed="false">A</button><button id="b" aria-pressed="false">B</button><p id="result" aria-live="polite">Noch keine Auswahl</p>
+<script>
+let choice=null;
+function render(){for(const id of ['a','b'])document.getElementById(id).setAttribute('aria-pressed',String(choice===id));document.getElementById('result').textContent=choice?'Auswahl: '+choice.toUpperCase():'Noch keine Auswahl';}
+window.tafelraumLive={getState(){return {choice};},applyState(value){if(!value||!['a','b',null].includes(value.choice))return;choice=value.choice;render();}};
+for(const id of ['a','b'])document.getElementById(id).addEventListener('click',()=>{choice=id;render();window.dispatchEvent(new CustomEvent('tafelraum:statechange'));});
+</script></html>

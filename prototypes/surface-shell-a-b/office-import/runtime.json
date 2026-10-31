@@ -1,0 +1,8 @@
+{
+  "version": "26.8.1",
+  "source": "https://download.documentfoundation.org/libreoffice/src/26.8.1/",
+  "mac": {
+    "arm64": {"directory":"aarch64","file":"LibreOffice_26.8.1_MacOS_aarch64.dmg","sha256":"ca074e0b13571efb30a31fc531c5f95e997030637325e5d5de92d67aefdf0dfc"},
+    "x64": {"directory":"x86_64","file":"LibreOffice_26.8.1_MacOS_x86-64.dmg","sha256":"4c7464313a529e9074400cbcdc894fc40ac4ef9421ded03b16b5a78d12cb155e"}
+  }
+}

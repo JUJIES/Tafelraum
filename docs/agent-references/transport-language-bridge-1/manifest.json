@@ -1,0 +1,18 @@
+{
+  "format": "tafelraum-interactive-html",
+  "schemaVersion": 1,
+  "id": "transport-language-bridge-1",
+  "title": "Transport Words in Context – Part 1",
+  "entry": "pages.html",
+  "print": {
+    "entry": "pages.html",
+    "page": "A4",
+    "orientation": "portrait",
+    "mode": "template",
+    "layout": "shared-pages"
+  },
+  "defaultViewport": {
+    "width": 794,
+    "height": 1123
+  }
+}

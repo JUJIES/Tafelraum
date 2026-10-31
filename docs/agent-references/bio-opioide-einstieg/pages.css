@@ -1,0 +1,237 @@
+
+:root{color-scheme:light;--ink:#173f43;--body:#293b36;--muted:#5d746b;--accent:#347553;--soft:#eef5f0;--line:#b8ccc0;--secondary:#426c83;font-family:Arial,"Segoe UI",sans-serif}
+
+*{box-sizing:border-box}
+html,body{margin:0;background:#fff;color:var(--body)}
+body{font-size:18px;line-height:1.5}
+main{width:100%}
+.page{padding:30px 36px;min-height:100vh;display:flex;flex-direction:column;background:#fff}
+.page+.page{border-top:2px solid var(--line)}
+header{padding-bottom:12px;border-bottom:2px solid var(--ink);margin-bottom:14px}
+.eyebrow{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px}
+h1{font:700 38px/1.08 Georgia,serif;letter-spacing:-.025em;color:var(--ink);margin:0 0 10px}
+h1 span{display:block;font-size:26px;margin-top:4px}
+.head-row{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.page-topic{margin:0;font-size:14px;color:var(--muted)}
+.page-count{font-size:13px;color:var(--accent);white-space:nowrap}
+h2{font-size:20px;color:var(--ink);margin:0 0 6px;line-height:1.25}
+.text-section h2{font-size:19px}
+.text-section{margin-bottom:15px}
+.text-section p{margin:0}
+.read-order,.work-order{margin:0 0 16px;padding:10px 13px;border-left:4px solid var(--accent);background:var(--soft);font-size:15px;line-height:1.4}
+.reading-text{font-size:18px;line-height:1.55;text-align:justify;text-align-last:left;hyphens:auto;-webkit-hyphens:auto}
+.text-section h2{hyphens:manual;-webkit-hyphens:manual}
+.task{margin:0 0 20px}
+.task h2{padding:7px 10px;border-left:4px solid var(--accent);background:var(--soft);font-size:21px}
+.task-number{display:inline-block;margin-right:9px;color:var(--accent)}
+.task p{margin:7px 0 10px;font-size:17px;line-height:1.4}
+.answer-label{display:block;font-size:16px;line-height:1.4;color:var(--ink);margin:7px 0 5px}
+.answer{display:block;width:100%;height:var(--answer-height);min-height:var(--answer-height);padding:10px 12px;font:17px/1.5 Arial;resize:vertical;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--body)}
+textarea:focus{outline:2px solid var(--accent);outline-offset:2px}
+.classification{width:100%;border-collapse:collapse;table-layout:fixed;font-size:16px}
+.classification th,.classification td{border:1px solid var(--line);padding:7px;vertical-align:top}
+.classification thead th{text-align:left;background:var(--soft);color:var(--ink)}
+.classification th:first-child{width:24%}
+.classification th:last-child{width:23%}
+.classification tbody th{font-weight:400;text-align:left;padding-top:12px}
+.classification textarea{width:100%;height:64px;display:block;padding:4px;border:0;font:16px/1.45 Arial;background:#fff;resize:vertical}
+blockquote{font:italic 18px/1.4 Georgia,serif;margin:10px 0;padding:0 0 0 12px;border-left:2px solid var(--secondary);color:var(--ink)}
+.cause-chain{display:grid;grid-template-columns:1fr 20px 1fr 20px 1fr;gap:5px;align-items:center}
+.cause-chain textarea{width:100%;height:76px;padding:8px;font:16px/1.35 Arial;resize:vertical;border:1px solid var(--line);border-radius:6px;background:#fff}
+.cause-chain span{text-align:center;color:var(--accent);font-size:23px}
+figure{margin:0 0 14px}
+figcaption{font-size:17px;line-height:1.3;margin-bottom:8px;color:var(--ink)}
+figcaption strong{color:var(--accent);margin-right:6px}
+figure img{display:block;width:100%;height:auto}
+.data-note{font-size:13px;line-height:1.35;margin:7px 0 4px}
+.source{font-size:11px;color:var(--muted);line-height:1.3;margin:4px 0}
+footer{font-size:10px;line-height:1.35;color:var(--muted);margin-top:auto;padding-top:12px}
+
+
+/* Bestätigte Nachsteuerung: hervorgehobener Leseauftrag, Aufgaben unverändert. */
+.read-order{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;font-size:18px;line-height:1.45}
+
+.read-order h2{font-size:22px;margin:0 0 5px}
+.read-order p{margin:0}
+
+.read-number{display:flex;align-items:center;justify-content:center;flex:0 0 34px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;font-size:20px;font-weight:800}
+
+
+/* Leseseiten: luftiger Auftakt, verwandter kompakter Fortsetzungskopf. */
+.section-start header{padding-bottom:20px;margin-bottom:24px}
+
+.section-start h1{font-size:43px;line-height:1.1;margin-bottom:14px}
+
+.section-start h1 span{font-size:27px;margin-top:8px}
+
+.section-continuation header{padding-bottom:12px;margin-bottom:18px}
+
+.section-continuation h1{font-size:29px;line-height:1.15;margin-bottom:8px}
+
+.section-continuation h1 span{font-size:20px;margin-top:4px}
+
+
+
+/* Vier Einstiegsaufgaben: größere Schrift und ruhiger Abstand statt Verdichtung. */
+.bio-opioide-material{--ink:#173f43;--body:#293b36;--muted:#5d746b;--accent:#347553;--soft:#eef5f0;--line:#b8ccc0;--secondary:#426c83;color:var(--body)}
+
+.tasks .task{margin-bottom:30px}
+.tasks .task h2{font-size:23px;padding:10px 12px}
+
+.tasks .task p,.tasks .answer-label{font-size:18px;line-height:1.45}
+
+.tasks .answer-label{margin-top:15px;margin-bottom:8px}
+/* Former print typography now shared by both media. */
+
+html,body,main{margin:0;background:#fff;width:auto;font-size:10.5pt;line-height:1.32}
+
+.page{padding:0;width:186mm;max-width:100%;height:auto;min-height:0;display:block;break-after:auto;page-break-after:auto}
+
+.page:last-child{break-after:auto;page-break-after:auto}
+.page+.page{border:0;break-before:page;page-break-before:always}
+
+header{padding-top:1mm;padding-bottom:1.5mm;border-bottom:.4mm solid var(--ink);margin-bottom:2mm;break-inside:avoid;page-break-inside:avoid}
+
+.eyebrow{display:block;font-size:8pt;line-height:1.4;letter-spacing:normal;margin:0 0 1mm}
+
+h1{font-size:16pt;margin:0 0 1.5mm}
+h1 span{display:inline;font-size:12pt;margin:0}
+h1 span::before{content:' · '}
+
+.reading h1{font-size:18pt}
+.reading h1 span{font-size:12.5pt}
+
+.head-row{gap:3mm}
+.page-topic{font-size:8.5pt}
+.page-count{font-size:8pt}
+
+
+.read-order,.work-order{background:transparent;border-left-width:.8mm;font-size:8.5pt;line-height:1.3;margin:0 0 3mm;padding:1.5mm 2.5mm}
+
+.reading .read-order{padding:1mm 2mm;margin-bottom:2mm}
+
+.reading-text,.reading .text-section{font-size:12pt;line-height:1.4}
+
+.text-section{margin-bottom:4mm;break-inside:avoid;page-break-inside:avoid}
+.text-section h2{display:block;font-size:12pt;line-height:1.3;margin:0 0 2mm}
+.text-section p{display:block}
+
+.task{margin:0 0 2mm;break-inside:avoid}
+.task h2{background:transparent;font-size:12pt;border-left-width:.8mm;padding:1mm 2mm;margin:0 0 1mm}
+.task-number{margin-right:2mm}
+
+.task p{font-size:10pt;line-height:1.25;margin:1.3mm 0 2mm}
+
+.answer-label{font-size:9.7pt;line-height:1.3;margin:2mm 0 1mm}
+
+.answer{height:var(--answer-height);min-height:var(--answer-height);padding:2mm 3mm;font-size:10.5pt;border:.3mm solid var(--line);border-radius:1.5mm;resize:none;color:transparent;overflow:hidden}
+
+.classification{font-size:10pt}
+.classification th,.classification td{padding:1.5mm;border-width:.3mm}
+.classification thead th{background:transparent;font-size:9pt}
+.classification tbody th{padding-top:2mm}
+
+.classification textarea{height:14mm;min-height:14mm;padding:0;resize:none;font-size:10pt;color:transparent;overflow:hidden}
+
+blockquote{font-size:10.5pt;line-height:1.3;margin:2mm 0;padding-left:3mm;border-left-width:.4mm}
+
+.cause-chain{grid-template-columns:1fr 4mm 1fr 4mm 1fr;gap:1.5mm}
+.cause-chain textarea{height:18mm;min-height:18mm;font-size:10pt;padding:2mm;border-width:.3mm;resize:none;color:transparent;overflow:hidden}
+.cause-chain span{font-size:15pt;transform:none}
+
+figure{margin:0 0 2mm}
+figcaption{font-size:10pt;line-height:1.25;margin-bottom:1mm}
+figure img{height:40mm;width:100%;object-fit:contain}
+
+.data-note{font-size:8pt;line-height:1.25;margin:1mm 0}
+.source{font-size:7pt;line-height:1.25;margin:1mm 0}
+
+footer{font-size:6.7pt;line-height:1.25;padding-top:2mm;margin-top:2mm}
+.reading .read-order{background:var(--soft);padding:3mm 3.5mm;margin-bottom:4mm;gap:3mm;font-size:10.5pt;line-height:1.4;break-inside:avoid;page-break-inside:avoid;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.read-order h2{font-size:12pt;margin:0 0 1mm}
+.read-number{flex-basis:7mm;width:7mm;height:7mm;font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+
+.section-start header{padding-bottom:4mm;margin-bottom:6mm}
+
+.section-start .eyebrow{margin-bottom:2mm}
+
+.section-start h1{font-size:25pt;line-height:1.08;margin-bottom:3mm}
+
+.section-start h1 span{display:block;font-size:16pt;line-height:1.2;margin-top:1.5mm}
+
+.section-start h1 span::before{content:none}
+
+.section-start .page-topic{font-size:9.5pt}
+
+.section-continuation header{padding-bottom:2.5mm;margin-bottom:4mm}
+
+.section-continuation h1{font-size:18pt;line-height:1.15;margin-bottom:2mm}
+
+.section-continuation h1 span{display:inline;font-size:12.5pt;margin:0}
+.reading-continuation .text-section{margin-bottom:3mm}
+.reading-continuation .text-section:last-child{margin-bottom:0}
+.reading-continuation footer{padding-top:1mm;margin-top:1mm}
+
+.tasks .work-order{font-size:10.5pt;line-height:1.4;padding:2mm 3mm;margin-bottom:5mm}
+
+.tasks .task{margin-bottom:5mm;break-inside:avoid;page-break-inside:avoid}
+
+.tasks .task h2{font-size:13pt;line-height:1.3;padding:1.5mm 2.5mm;margin-bottom:3mm}
+
+.tasks .task p{font-size:11pt;line-height:1.4;margin:2mm 0 4mm}
+
+.tasks .answer-label{font-size:11pt;line-height:1.4;margin:4mm 0 2mm}
+
+.tasks .classification{font-size:11pt}
+.tasks .classification th,.tasks .classification td{padding:2mm}
+
+.tasks .classification thead th{font-size:10pt}
+.tasks .classification tbody th{padding-top:3mm}
+
+.tasks .classification textarea{height:16mm;min-height:16mm;font-size:11pt}
+
+.tasks .answer{font-size:11pt}
+
+.material figure{margin-bottom:7mm}
+.material figcaption{font-size:11pt;line-height:1.4;margin-bottom:2mm}
+
+.material figure img{height:45mm}
+.material .data-note{margin-top:2mm;line-height:1.35}
+
+.tasks footer{padding-top:2mm;margin-top:2mm}
+.tasks .task:last-of-type{margin-bottom:0}
+
+/* Shared-pages revision 2026-10-20: original paper typography, identical initial geometry. */
+@page{size:A4 portrait;margin:12mm 12mm}
+html,body{margin:0;padding:0;width:210mm;min-height:0;background:#fff;color-scheme:light}
+body{display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+main:not([data-tafelraum-page]){width:210mm}
+[data-tafelraum-page]{box-sizing:border-box;position:relative;display:block;width:210mm;max-width:none;height:auto;min-height:297mm;padding:12mm 12mm;margin:0;flex-shrink:0;overflow:visible;break-before:auto;page-break-before:auto;break-inside:avoid;break-after:page;page-break-after:always;background:#fff}
+[data-tafelraum-page]+[data-tafelraum-page]{border-top:0}
+[data-tafelraum-page]:last-child{break-after:auto;page-break-after:auto}
+textarea{resize:vertical;overflow:auto}
+input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent,var(--teal,#287a78));outline-offset:2px}
+@media screen{
+ [data-tafelraum-page]{margin-bottom:16px}
+ [data-tafelraum-page]:last-child{margin-bottom:0}
+ input:not([type=radio]):not([type=checkbox]),textarea{color:var(--body,var(--ink,#203039));-webkit-text-fill-color:currentColor;font-size:11pt}
+ .choice:has(input:checked){background:#dfeeed;box-shadow:inset 0 0 0 2px var(--teal)}
+ .choice input:checked+.radio-mark{background:var(--teal);border-color:var(--teal)}
+ .choice input:checked+.radio-mark:after{content:"✓";color:white;font-size:16px;font-weight:800}
+}
+@media print{
+ html,body{width:186mm;min-height:0;height:auto;overflow:visible}
+ main:not([data-tafelraum-page]){width:186mm}
+ [data-tafelraum-page]{width:186mm;min-height:0;height:auto;padding:0;margin:0;overflow:visible}
+ input,textarea,select{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;caret-color:transparent!important;resize:none!important;box-shadow:none!important;outline:none!important}
+ input::placeholder,textarea::placeholder{color:transparent!important}
+ .choice:has(input:checked){background:transparent;box-shadow:none}
+ .choice input:checked+.radio-mark{background:white;border-color:#8299a5}
+ .choice input:checked+.radio-mark:after{content:none}
+}
+
+@media screen{textarea{resize:vertical!important;overflow:auto!important}}
+
+@media print{.tasks .classification textarea{height:16mm!important;min-height:16mm!important;max-height:16mm!important}.answer{height:var(--answer-height)!important;min-height:var(--answer-height)!important;max-height:var(--answer-height)!important}}
+
+@media print{textarea{width:100%!important;appearance:none!important;font-size:0!important}}

@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="de">
+<meta charset="utf-8" />
+<title>Cover sweep contour check</title>
+<style>
+  body { background: #1c2229; color: white; font: 14px system-ui; margin: 28px; }
+  main { display: grid; grid-template-columns: repeat(4, 220px); gap: 20px; }
+  section { position: relative; }
+  .sample { width: 200px; height: 120px; position: relative; background: #eee; color: #222; }
+  .sample > svg { position: absolute; inset: 0; }
+  .sample.is-diamond { transform: rotate(25deg); }
+  /* Freeze the real sweep halfway to inspect the silhouette at an intermediate frame. */
+  .cover-sweep { animation-delay: -90ms !important; animation-play-state: paused !important; animation-timing-function: linear !important; }
+</style>
+<main id="root"></main>
+<script type="module">
+  import React from "react";
+  import { createRoot } from "react-dom/client";
+  import { CoverSweep } from "./cover-sweep.tsx";
+  const examples = [
+    ["Rectangle", "rectangle", null, "left"],
+    ["Rounded", "rectangle", { type: 3, value: 20 }, "right"],
+    ["Ellipse", "ellipse", null, "top"],
+    ["Diamond", "diamond", null, "bottom"],
+  ];
+  createRoot(document.getElementById("root")).render(["cover", "reveal"].flatMap(mode =>
+    examples.map(([label, type, roundness, direction]) =>
+      React.createElement("section", { key: `${mode}-${label}` },
+        React.createElement("p", null, `${mode} · ${label} · ${direction}`),
+        React.createElement("div", { className: `sample${type === "diamond" ? " is-diamond" : ""}` },
+          React.createElement("span", null, "VISIBLE CONTENT · VISIBLE CONTENT"),
+          React.createElement(CoverSweep, {
+            direction, geometry: { width: 200, height: 120, strokeWidth: 5, type, roundness }, mode,
+          }),
+        ),
+      ),
+    ),
+  ));
+</script>
+</html>

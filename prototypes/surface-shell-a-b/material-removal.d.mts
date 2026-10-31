@@ -1,0 +1,2 @@
+export type MaterialRemoval = { archiveMaterialPath: string; lessonId: string; lessonIds?: string[]; elementIdsByLesson?: Record<string, string[]>; fileName: string };
+export function pruneRemovedMaterials<T extends { elements?: readonly { id: string; type: string; customData?: Record<string, unknown> | null; groupIds?: readonly string[]; containerId?: string | null; boundElements?: readonly {id: string}[] | null }[] }>(snapshot: T, removals: readonly MaterialRemoval[], lessonId: string): T;

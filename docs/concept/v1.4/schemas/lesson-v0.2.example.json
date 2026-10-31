@@ -1,0 +1,162 @@
+{
+  "format": "teaching-workspace-lesson",
+  "schemaVersion": "0.2.0-concept",
+  "conceptStatus": "discussion-example",
+  "lessonDefinition": {
+    "id": "lesson-climate-causes-effects",
+    "title": "Ursachen und Folgen des Klimawandels",
+    "subjectId": "subject-geography",
+    "unitId": "unit-climate",
+    "status": "draft",
+    "createdAt": "2026-07-27T12:00:00+02:00",
+    "updatedAt": "2026-07-27T12:00:00+02:00",
+    "defaultBoardId": "board-main",
+    "lessonPathId": "path-main",
+    "assetIds": [
+      "asset-entry-image"
+    ]
+  },
+  "boards": [
+    {
+      "id": "board-main",
+      "title": "Freies Hauptboard",
+      "renderer": "excalidraw",
+      "sceneRef": "board/scene.excalidraw",
+      "canvasMode": "potentially-infinite"
+    }
+  ],
+  "lessonPaths": [
+    {
+      "id": "path-main",
+      "lessonId": "lesson-climate-causes-effects",
+      "sectionOrder": [
+        "section-start",
+        "section-work"
+      ],
+      "unsectionedStepOrder": []
+    }
+  ],
+  "sections": [
+    {
+      "id": "section-start",
+      "lessonPathId": "path-main",
+      "title": "Start",
+      "order": 1,
+      "stepOrder": [
+        "step-image-question"
+      ],
+      "sectionViewpoint": null
+    },
+    {
+      "id": "section-work",
+      "lessonPathId": "path-main",
+      "title": "Arbeitsauftrag",
+      "order": 2,
+      "stepOrder": [
+        "step-task",
+        "step-support"
+      ],
+      "sectionViewpoint": null
+    }
+  ],
+  "steps": [
+    {
+      "id": "step-image-question",
+      "lessonPathId": "path-main",
+      "sectionId": "section-start",
+      "title": "Bild und Leitfrage",
+      "order": 1,
+      "viewpoint": {
+        "boardId": "board-main",
+        "bounds": {
+          "x": 0,
+          "y": 0,
+          "width": 1600,
+          "height": 900
+        },
+        "fit": "contain",
+        "padding": 48
+      },
+      "thumbnailRef": "thumbnails/step-image-question.webp"
+    },
+    {
+      "id": "step-task",
+      "lessonPathId": "path-main",
+      "sectionId": "section-work",
+      "title": "Arbeitsauftrag",
+      "order": 2,
+      "viewpoint": {
+        "boardId": "board-main",
+        "bounds": {
+          "x": 3600,
+          "y": 400,
+          "width": 1600,
+          "height": 900
+        },
+        "fit": "contain",
+        "padding": 48
+      },
+      "thumbnailRef": "thumbnails/step-task.webp"
+    },
+    {
+      "id": "step-support",
+      "lessonPathId": "path-main",
+      "sectionId": "section-work",
+      "title": "Hilfestellung",
+      "order": 3,
+      "viewpoint": {
+        "boardId": "board-main",
+        "bounds": {
+          "x": 6700,
+          "y": -800,
+          "width": 1400,
+          "height": 900
+        },
+        "fit": "contain",
+        "padding": 48
+      },
+      "thumbnailRef": null
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset-entry-image",
+      "mediaType": "image",
+      "originalRef": "assets/extreme-weather.png",
+      "role": "illustration",
+      "origin": {
+        "kind": "upload",
+        "system": null
+      },
+      "derived": {
+        "thumbnailRef": "assets/extreme-weather.thumbnail.webp",
+        "descriptionRef": null,
+        "ocrRef": null
+      }
+    }
+  ],
+  "elementMetadata": [
+    {
+      "elementId": "excalidraw-text-001",
+      "boardId": "board-main",
+      "semanticRole": "guiding-question",
+      "audience": "both",
+      "revealState": "visible",
+      "publicationPolicy": "include",
+      "sensitivity": "public-material",
+      "sourceAssetId": "asset-entry-image"
+    },
+    {
+      "elementId": "excalidraw-note-001",
+      "boardId": "board-main",
+      "semanticRole": "teacher-note",
+      "audience": "teacher",
+      "revealState": "visible",
+      "publicationPolicy": "exclude",
+      "sensitivity": "internal",
+      "sourceAssetId": null
+    }
+  ],
+  "lessonRuns": []
+}
+

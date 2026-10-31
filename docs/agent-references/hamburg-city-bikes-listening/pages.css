@@ -1,0 +1,125 @@
+:root { color-scheme: light; --ink:#1d3248; --muted:#52677a; --coral:#c96448; --line:#cbd9de; --mist:#eef6f5; }
+
+* { box-sizing: border-box; }
+
+html, body { margin:0; min-height:100%; }
+
+body { background:#fff; color:var(--ink); font:16px/1.32 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; }
+
+.sheet { min-height:100vh; padding:42px 50px 25px; }
+
+.heading { display:flex; justify-content:space-between; align-items:center; gap:18px; border-bottom:2px solid var(--ink); padding-bottom:17px; margin-bottom:21px; }
+
+.eyebrow { margin:0 0 6px; color:var(--coral); font-size:12px; font-weight:800; letter-spacing:.15em; }
+
+h1 { margin:0; font:700 37px/1.08 Georgia,"Times New Roman",serif; letter-spacing:-.025em; }
+
+.subhead { margin:7px 0 0; color:var(--muted); font-size:15px; }
+
+.bike-mark { width:110px; flex:none; color:#2d7980; }
+
+.assignment { display:flex; gap:12px; align-items:flex-start; padding:12px 14px; background:var(--mist); border-left:4px solid #2d7980; border-radius:4px; }
+
+.assignment-number { display:grid; place-items:center; border-radius:50%; width:27px; height:27px; flex:none; background:var(--coral); color:#fff; font-size:14px; font-weight:800; }
+
+h2 { font-size:18px; line-height:1.2; margin:0 0 3px; }
+
+.assignment p { margin:0; color:#344e60; font-size:14px; }
+
+.questions { display:grid; gap:12px; margin-top:18px; }
+
+.question { min-width:0; }
+
+.question label { display:flex; gap:12px; align-items:baseline; margin-bottom:5px; font-size:15.5px; font-weight:650; }
+
+.question label span:last-child { flex:1; }
+
+.q-number { color:var(--coral); font-size:12px; font-weight:850; letter-spacing:.06em; }
+
+textarea { display:block; width:100%; min-height:47px; padding:10px 12px; border:1.5px solid var(--line); border-radius:7px; color:var(--ink); background:#fff; resize:vertical; font-family:inherit; font-size:15px; line-height:1.3; }
+
+textarea:focus { outline:2px solid #2d7980; outline-offset:1px; }
+
+.two-answers { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+.double textarea { min-height:52px; }
+
+footer { color:#788891; font-size:10px; margin-top:17px; }
+/* Former print typography now shared by both media. */
+
+  html,body { width:auto; min-height:0; margin:0; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  body { font-size:10.5pt; }
+
+  .sheet { min-height:0; padding:0; }
+
+  .heading { margin-bottom:6mm; padding-bottom:4mm; }
+
+  .eyebrow { font-size:8pt; margin-bottom:2mm; }
+
+  h1 { font-size:23pt; }
+
+  .subhead { font-size:9.5pt; margin-top:2mm; }
+
+  .bike-mark { width:25mm; }
+
+  .assignment { padding:2.5mm 3mm; margin-bottom:5mm; }
+
+  .assignment-number { width:7mm; height:7mm; font-size:9pt; }
+
+  h2 { font-size:11pt; margin-bottom:1mm; }
+
+  .assignment p { font-size:9pt; }
+
+  .questions { gap:3.3mm; margin-top:0; }
+
+  .question { break-inside:avoid; }
+
+  .question label { font-size:10pt; margin-bottom:1.5mm; gap:3mm; }
+
+  .q-number { font-size:8.5pt; }
+
+  textarea { min-height:13mm; height:13mm; padding:2mm 3mm; border:1pt solid #a8b9bf; border-radius:1mm; resize:none; font-size:0; color:transparent; }
+
+  .double textarea { min-height:15mm; height:15mm; }
+
+  .two-answers { gap:3mm; }
+
+  footer { margin-top:5mm; font-size:7pt; }
+
+/* Shared-pages revision 2026-10-20: original paper typography, identical initial geometry. */
+@page{size:A4 portrait;margin:13mm 14mm}
+html,body{margin:0;padding:0;width:210mm;min-height:0;background:#fff;color-scheme:light}
+body{display:block;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+main:not([data-tafelraum-page]){width:210mm}
+[data-tafelraum-page]{box-sizing:border-box;position:relative;display:block;width:210mm;max-width:none;height:auto;min-height:297mm;padding:13mm 14mm;margin:0;flex-shrink:0;overflow:visible;break-before:auto;page-break-before:auto;break-inside:avoid;break-after:page;page-break-after:always;background:#fff}
+[data-tafelraum-page]+[data-tafelraum-page]{border-top:0}
+[data-tafelraum-page]:last-child{break-after:auto;page-break-after:auto}
+textarea{resize:vertical;overflow:auto}
+input:focus-visible,textarea:focus-visible{outline:2px solid var(--accent,var(--teal,#287a78));outline-offset:2px}
+@media screen{
+ [data-tafelraum-page]{margin-bottom:16px}
+ [data-tafelraum-page]:last-child{margin-bottom:0}
+ input:not([type=radio]):not([type=checkbox]),textarea{color:var(--body,var(--ink,#203039));-webkit-text-fill-color:currentColor;font-size:11pt}
+ .choice:has(input:checked){background:#dfeeed;box-shadow:inset 0 0 0 2px var(--teal)}
+ .choice input:checked+.radio-mark{background:var(--teal);border-color:var(--teal)}
+ .choice input:checked+.radio-mark:after{content:"✓";color:white;font-size:16px;font-weight:800}
+}
+@media print{
+ html,body{width:182mm;min-height:0;height:auto;overflow:visible}
+ main:not([data-tafelraum-page]){width:182mm}
+ [data-tafelraum-page]{width:182mm;min-height:0;height:auto;padding:0;margin:0;overflow:visible}
+ input,textarea,select{color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;caret-color:transparent!important;resize:none!important;box-shadow:none!important;outline:none!important}
+ input::placeholder,textarea::placeholder{color:transparent!important}
+ .choice:has(input:checked){background:transparent;box-shadow:none}
+ .choice input:checked+.radio-mark{background:white;border-color:#8299a5}
+ .choice input:checked+.radio-mark:after{content:none}
+}
+
+textarea{font-size:11pt}
+
+@media screen{textarea{resize:vertical!important;overflow:auto!important}}
+
+@media print{textarea{height:13mm!important;min-height:13mm!important;max-height:13mm!important}.double textarea{height:15mm!important;min-height:15mm!important;max-height:15mm!important}}
+
+@media print{textarea{width:100%!important;appearance:none!important;font-size:0!important}}
