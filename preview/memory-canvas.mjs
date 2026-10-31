@@ -11,7 +11,15 @@ export async function loadCanvasSnapshot(id) {
 }
 export async function saveCanvasSnapshot(id,scene) { boards.set(id,structuredClone(scene)); }
 export async function clearCanvasSnapshot(id) { boards.set(id,null); }
-export async function loadCanvasFiles(id,ids) { return Object.fromEntries(ids.filter(key=>images.get(id)?.has(key)).map(key=>[key,images.get(id).get(key)])); }
+export async function loadCanvasFiles(id,ids) {
+  const starter=id+'-picture';
+  if(ids.includes(starter) && !images.get(id)?.has(starter)){
+    const response=await fetch('/api/archive/lessons/'+encodeURIComponent(id)+'/starter-image');
+    if(!response.ok)throw Error('Starter picture unavailable');
+    await saveCanvasFiles(id,[await response.json()]);
+  }
+  return Object.fromEntries(ids.filter(key=>images.get(id)?.has(key)).map(key=>[key,images.get(id).get(key)]));
+}
 export async function saveCanvasFiles(id,files) { if(!images.has(id))images.set(id,new Map());for(const file of files)images.get(id).set(file.id,file); }
 export async function clearCanvasFiles(id) { images.delete(id); }
 export async function syncLocalCanvasStateToFileArchive(){return {savedSnapshots:0,savedAssets:0}}

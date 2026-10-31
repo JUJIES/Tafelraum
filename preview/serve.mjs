@@ -18,10 +18,10 @@ async function index(dir){
 await index(dist);
 const routes=new Map(Object.entries(JSON.parse(await readFile(path.join(root,'routes.json'),'utf8'))));
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2','.wasm':'application/wasm','.json':'application/json','.webmanifest':'application/manifest+json','.jpg':'image/jpeg','.txt':'text/plain'};
-const pagePolicy="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; frame-src 'self' blob:; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'";
+const pagePolicy="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com/embed/hyf5JF_VxwM; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'";
 createServer((req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
-  res.setHeader('Referrer-Policy','no-referrer');
+  res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
   res.setHeader('Cache-Control','no-store');
   if(!['GET','HEAD'].includes(req.method)){res.writeHead(405,{Allow:'GET, HEAD'});res.end();return}

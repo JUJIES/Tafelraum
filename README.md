@@ -6,7 +6,7 @@
 
 **[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open a lesson, try its HTML activity or send a numbered clip to Room Canvas. Reload to start fresh.
 
-![The teacher’s canvas with a survey map, two trails and a partner task beside the map](docs/images/teacher-canvas.png)
+![The teacher’s canvas with a starter picture, interactive survey map, trail worksheet and homework arranged across four lesson phases](docs/images/teacher-canvas.png)
 
 <details>
 <summary>Explore the three demo lessons</summary>
@@ -17,7 +17,7 @@
 
 ![The midnight dispatch in the teacher view, with a lighthouse illustration, three selectable records and an evidence prompt](docs/images/midnight-dispatch.png)
 
-Each lesson includes a 45-minute plan, a two-question quiz with feedback and an exit ticket. On a phone, choose **Open just the activity** in the lesson guide.
+The numbered clips follow the **warm-up, investigation, consolidation and homework**. Each board mixes editable text and shapes with a starter image and an interactive investigation. Try typing both route distances into the [trail field sheet](https://tafelraum-demo.jujies.app/api/archive/lessons/map-room/materials/interactive/trail-sheet/index.html), or open the optional NASA video on the eclipse board. On a phone, the lesson guide also lets you open each activity by itself.
 
 </details>
 
@@ -80,7 +80,7 @@ The **agent you choose** supplies the AI. Tafelraum gives it tools to work with 
 <details>
 <summary>See the classroom view</summary>
 
-![Room Canvas projecting the eclipse activity: the Moon lines up between the Sun and Earth](docs/images/room-canvas.png)
+![Room Canvas presenting the investigation clip, including the native task and the eclipse model](docs/images/room-canvas.png)
 
 Room Canvas opens a second local window. You can try both windows on one screen before connecting a projector.
 

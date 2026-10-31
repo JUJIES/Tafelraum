@@ -6,6 +6,9 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {lessons} from './lessons/content.mjs';
+import {makeBoard} from './lessons/boards.mjs';
+import {starterPicture} from './lessons/pictures.mjs';
+import {worksheet,sheetManifest} from './lessons/worksheet.mjs';
 import {makePackage} from './lessons/package.mjs';
 import {initializeEmptyArchive,createDesktopServer} from '../prototypes/surface-shell-a-b/desktop-server.mjs';
 const here=fileURLToPath(new URL('.',import.meta.url)),root=path.resolve(here,'..'),app=path.join(root,'prototypes/surface-shell-a-b');
@@ -13,22 +16,6 @@ const out=path.join(root,'output/public-preview/dist'),temp=await mkdtemp(path.j
 const require=createRequire(path.join(app,'package.json'));
 const {build}=await import(require.resolve('vite'));
 if(JSON.parse(await readFile(path.join(app,'distribution.json'))).profile!=='public')throw Error('Public checkout required');
-function scene(lesson){
-  const items = [];
-  function shape(type,x,y,width,height,extra={}) {
-    const n=items.length+1;
-    items.push({id:lesson.id+'-'+n,type,x,y,width,height,angle:0,strokeColor:'#213432',backgroundColor:'transparent',fillStyle:'solid',strokeWidth:1,strokeStyle:'solid',roughness:0,opacity:100,groupIds:[],frameId:null,roundness:null,seed:n,version:1,versionNonce:n,isDeleted:false,boundElements:[],updated:1,link:null,locked:false,...extra});
-  }
-  function text(x,y,width,label,size,color='#26352f'){
-    shape('text',x,y,width,size*1.25*label.split('\n').length,{text:label,originalText:label,fontSize:size,fontFamily:2,lineHeight:1.25,textAlign:'left',verticalAlign:'top',autoResize:false,containerId:null,strokeColor:color});
-  }
-  shape('rectangle',26,28,852,700,{strokeColor:'transparent',customData:{materialKind:'interactive-html',interactiveHtmlId:lesson.id,interactiveHtmlContentZoom:1,interactiveHtmlFrameLayout:'content',sourceEntry:'index.html',sourceLessonId:lesson.id,sourceTitle:lesson.title,archiveMaterialPath:'faecher/subject-start/reihen/series-start/stunden/'+lesson.id+'/material/interaktiv/'+lesson.id}});
-  shape('rectangle',912,50,275,305,{backgroundColor:lesson.tint,strokeColor:'transparent',roundness:{type:3,value:14}});
-  text(932,78,225,'LESSON NOTES',16,lesson.accent);
-  const notes={eclipse:['Predict','Sketch the order of\nthe three bodies.','Pair discussion','Where would a second\nobserver see daylight?'],'map-room':['Estimate','Trace both routes\nfrom camp to lookout.','Pair discussion','Which trail fits a\n25-minute limit?'],dispatch:['Notice','Which detail was\nactually observed?','Pair discussion','Can two records support\nthe same headline?']}[lesson.id];
-  text(932,118,232,notes[0],25);text(932,159,238,notes[1],17);text(932,228,238,notes[2],22);text(932,266,237,notes[3],17);
-  return {schemaVersion:1,elements:items,viewport:{scrollX:0,scrollY:0,zoom:{value:.88}},clips:[{kind:'material',id:lesson.id+'-clip',number:1,elementId:items[0].id}]};
-}
 let server;
 try {
   await initializeEmptyArchive(temp);
@@ -43,12 +30,27 @@ try {
     await writeFile(path.join(pkg,'manifest.json'),JSON.stringify({format:'tafelraum-interactive-html',schemaVersion:1,id:l.id,title:l.title,entry:'index.html',defaultViewport:{width:852,height:700}}));
     await writeFile(path.join(pkg,'index.html'),makePackage(l));
     execFileSync(process.execPath,[path.join(root,'scripts/check-interactive-material.mjs'),'--source-dir',pkg],{stdio:'inherit'});
-    await writeFile(path.join(base,'board/scene.json'),JSON.stringify(scene(l)));
+    if(l.id==='eclipse'){
+      const date='2026-10-31T00:00:00.000Z';
+      const video={id:'nasa-eclipse',title:'What Is a Solar Eclipse? · NASA Space Place',provider:'youtube',videoId:'hyf5JF_VxwM',url:'https://www.youtube.com/watch?v=hyf5JF_VxwM',createdAt:date,updatedAt:date};
+      await writeFile(path.join(base,'material/links.json'),JSON.stringify({schemaVersion:1,links:[video]}));
+    }
+    if(l.id==='map-room'){
+      const sheet=path.join(base,'material/interaktiv/trail-sheet');
+      await mkdir(sheet,{recursive:true});
+      await writeFile(path.join(sheet,'manifest.json'),JSON.stringify(sheetManifest));
+      await writeFile(path.join(sheet,'index.html'),worksheet);
+      execFileSync(process.execPath,[path.join(root,'scripts/check-interactive-material.mjs'),'--source-dir',sheet,'--require-print'],{stdio:'inherit'});
+    }
+    await writeFile(path.join(base,'board/scene.json'),JSON.stringify(makeBoard(l)));
   }
   process.chdir(app);
   await build({root:app,build:{outDir:out,emptyOutDir:true},plugins:[{
     name:'static-preview',enforce:'pre',
-    resolveId(id){if(/(?:^|\/)canvas-persistence(?:\.ts)?$/.test(id))return path.join(here,'memory-canvas.mjs')},
+    resolveId(id,importer){
+      if((id==='./YouTubeCanvasPlayer' && importer?.endsWith('/CanvasSurface.tsx')) ||
+         (id==='./RoomMediaLayer' && importer?.endsWith('/LiveViewerCanvas.tsx')))return path.join(app,'src/preview/PreviewVideo.tsx');
+      if(/(?:^|\/)canvas-persistence(?:\.ts)?$/.test(id))return path.join(here,'memory-canvas.mjs')},
     transformIndexHtml:{order:'post',handler(html){return html.replace('</head>','<script src="/preview-bootstrap.js"></script><link rel="stylesheet" href="/preview.css"></head>').replace('<div id="root">','<aside id="preview-bar"><strong>Tafelraum · Live demo</strong><span>Three lessons to try. Changes last only in this tab.</span><a href="/guide.html">Lesson guide</a><a href="/">Reset</a></aside><div id="root">')}}
   }]});
   await copyFile(path.join(here,'bootstrap.js'),path.join(out,'preview-bootstrap.js'));
@@ -59,6 +61,9 @@ try {
   const paths=['/api/archive','/api/archive/material-removals'];
   for(const l of lessons){
     const base='/api/archive/lessons/'+l.id;
+    const id=l.id+'-picture';
+    routes[base+'/starter-image']={type:'application/json',body:JSON.stringify({id,mimeType:'image/svg+xml',created:1,dataURL:'data:image/svg+xml;base64,'+Buffer.from(starterPicture(l.id)).toString('base64')})};
+    if(l.id==='map-room')paths.push(base+'/materials/interactive/trail-sheet',base+'/materials/interactive/trail-sheet/index.html');
     paths.push(base+'/board',base+'/materials',base+'/materials/interactive/'+l.id,base+'/materials/interactive/'+l.id+'/index.html');
   }
   for(const p of paths){

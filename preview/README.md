@@ -1,6 +1,6 @@
 # Public lesson preview
 
-The hosted preview uses the public Tafelraum teacher canvas and Room Canvas with three original English sample lessons. Each has a 45-minute plan, an interactive diagram or evidence set, two quiz questions and an exit ticket. Open the [lesson guide](https://tafelraum-demo.jujies.app/guide.html).
+The hosted preview uses the public Tafelraum teacher canvas and Room Canvas with three original English sample lessons. Each is an editable board with a starter picture, written tasks, an investigation and quiz, a consolidation area and homework. Four numbered clips follow the lesson phases. The map lesson adds a separate interactive field sheet with an A4 print layout; the eclipse board offers [NASA Space Place’s eclipse video](https://spaceplace.nasa.gov/eclipse-snap/en/) through an explicitly activated YouTube player. Open the [lesson guide](https://tafelraum-demo.jujies.app/guide.html).
 
 ## Run a separate preview
 

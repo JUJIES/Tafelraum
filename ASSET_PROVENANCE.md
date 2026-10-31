@@ -46,3 +46,5 @@ ihre jeweiligen Bedingungen. Technische Beispiele bleiben separat.
 ## Public preview lessons
 
 The eclipse diagram, survey map and harbour illustration are original inline SVGs drawn in [the preview lesson source](preview/lessons/illustrations.mjs). The routes, records and teaching prompts are invented examples. The README screenshots were captured from the public preview's teacher and Room windows with [the browser check](preview/check.mjs). They contain only the bundled sample lessons.
+
+The preview's starter images are original vector scenes from [pictures.mjs](preview/lessons/pictures.mjs). They appear as ordinary image objects on the board. The optional NASA Space Place video is streamed from its original [YouTube publication](https://www.youtube.com/watch?v=hyf5JF_VxwM) after activation. No video bytes or third-party thumbnails are bundled.
