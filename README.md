@@ -6,6 +6,34 @@
 
 ![The teacher’s canvas with an illustrated transport lesson, drawing tools and lesson navigation](docs/images/teacher-canvas.png)
 
+## Features at a glance
+
+### On the whiteboard
+
+| Feature | What you can do |
+| --- | --- |
+| Drawing & annotation | Write with a pen, highlight, add text and shapes, zoom in on details and undo edits. Notes drawn on an image move with it. |
+| Lesson materials | Arrange images and PDF pages beside audio, MP4 video, YouTube clips and web links. |
+| Local lesson archive | Keep boards and original materials together by class, subject, unit and lesson. Copy a lesson for another group or restore it from the trash. |
+
+### For teaching
+
+| Feature | How I use it in class |
+| --- | --- |
+| AI-assisted preparation | Ask my own agent to create an activity, add it to the right lesson and lay it out on the board before class. |
+| Room Canvas & numbered clips | Keep my overview on the laptop while the projector shows one task or diagram. Tap the next clip when the class is ready. |
+| Reveal & annotate | Cover an answer while pairs discuss it, then uncover it. A student can write on the room display and keep their working in the lesson. |
+| Interactive worksheets | Work through an HTML exercise or simulation from either window. Worksheets with a print layout can also become blank A4 handouts. |
+| Media & timing | Control a video from my laptop while it plays on the classroom display, or place a countdown timer beside a group task. |
+| Private lesson notes | Jot down who needs a follow-up next time. Student names and lesson notes stay out of the classroom display and canvas exports. |
+
+<details>
+<summary>Tools that need extra setup</summary>
+
+With the local document converter configured, Tafelraum can import a Word document as a PDF and keep the original file. With your own capture relay, you can scan a QR code on a phone and send a photo straight to the current lesson.
+
+</details>
+
 ## Why I built it
 
 I liked the way I could organise my teaching materials in OneNote. What I wanted in class was a little different. I wanted to keep a worksheet, a picture and my next question together, write over them with a pen, and show just one of them on the board without rearranging my own view.
@@ -57,17 +85,6 @@ npm start
 Open the local address printed in the terminal. Tafelraum creates an empty lesson archive on first launch. If the interface opens in German, choose **Einstellungen → Sprache → English**. For a first lesson, drop a picture onto the board and write a question next to it.
 
 Press **Ctrl+C** in the terminal to stop. Run `npm start` in the same directory next time. Your lessons stay in `local-data/public-lessons/` inside the checkout. Copy that folder before deleting or moving the checkout.
-
-<details>
-<summary>What else can I put on the board?</summary>
-
-- **Read and annotate:** bring in an image or a PDF page, mark a detail with the pen or highlighter, and uncover an answer when the class is ready.
-- **Listen and watch:** put an audio file, MP4 video or YouTube clip beside the task it belongs to.
-- **Try and practise:** use an interactive HTML worksheet or simulation from the teacher or room window. Some worksheets also include a printable A4 layout.
-- **Run an activity:** place a timer beside a group task. Course and lesson notes stay in the teacher view.
-- **Pick up next week:** reopen the lesson from its class, subject and unit. The board and its materials are kept in your local archive.
-
-</details>
 
 <details>
 <summary>How do I get updates?</summary>
