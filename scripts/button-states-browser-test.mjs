@@ -42,7 +42,7 @@ const server=await createServer({configFile:false,root:app,cacheDir:path.join(te
 });}}]});
 const results=[],errors=[];let browser;
 async function state(button){return button.evaluate(el=>{const s=getComputedStyle(el);return {outline:s.outlineStyle,background:s.backgroundColor,border:s.borderColor,color:s.color,filter:s.filter};});}
-async function settle(button){await button.evaluate(async el=>{while(el.getAnimations().some(a=>a.playState==='running'))await Promise.allSettled(el.getAnimations().map(a=>a.finished));});}
+import {settle} from './browser-animation.mjs';
 try{
  await server.listen();const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
  for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){

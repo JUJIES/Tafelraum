@@ -1,4 +1,5 @@
 // Isolated preference + real teacher/Room regression, with an empty test archive.
+import {canvasAgentPlugin,teachingAgentPlugin} from '../prototypes/surface-shell-a-b/canvas-agent-server.mjs';
 import assert from 'node:assert/strict';
 import {prepareAgentKit} from './prepare-agent-kit.mjs';
 import {createAgentKitMiddleware} from '../prototypes/surface-shell-a-b/agent-kit-server.mjs';
@@ -35,7 +36,7 @@ createRoot(document.getElementById('root')).render(React.createElement(React.Fra
 </script></body></html>`;
 const server=await createServer({configFile:false,root:app,cacheDir:path.join(temporary,'vite'),
  define:{__TAFELRAUM_VERSION__:JSON.stringify('language-test')},server:{host:'127.0.0.1',port:0,watch:{ignored:['**/agent-kit/**','**/.agent-kit-*/**']}},
- plugins:[react(),{name:'isolated-language',configureServer(vite){
+ plugins:[react(),canvasAgentPlugin(),teachingAgentPlugin(),{name:'isolated-language',configureServer(vite){
   vite.middlewares.use(createAgentKitMiddleware({kitRoot:path.join(temporary,'agent-kit')}));
   vite.middlewares.use((req,res,next)=>{
    if(req.url==='/native-language.html'){void vite.transformIndexHtml(req.url,nativeHtml).then(body=>{res.setHeader('Content-Type','text/html');res.end(body);});return;}
