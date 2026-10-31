@@ -4,7 +4,22 @@
 
 **An AI-powered local whiteboard for teaching.** Bring your own AI agent to turn a lesson idea into materials, arrange them on the board and prepare what the class will see. Then pick up the pen and teach on that same canvas.
 
-![The teacher’s canvas with an illustrated transport lesson, drawing tools and lesson navigation](docs/images/teacher-canvas.png)
+**[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open a lesson, try its HTML activity or send a numbered clip to Room Canvas. Reload to start fresh.
+
+![The teacher’s canvas with a survey map, two trails and a partner task beside the map](docs/images/teacher-canvas.png)
+
+<details>
+<summary>Explore the three demo lessons</summary>
+
+- **[The map room](https://tafelraum-demo.jujies.app/?lesson=map-room)** — Trace a ridge trail and a river trail. Use the scale to decide which one fits a 25-minute hike.
+- **[Chasing the shadow](https://tafelraum-demo.jujies.app/?lesson=eclipse)** — Move the Moon through three positions and predict which observer would see an eclipse.
+- **[The midnight dispatch](https://tafelraum-demo.jujies.app/?lesson=dispatch)** — Cross-check a harbour log, a radio note and a delivery slip. Write a headline the evidence supports.
+
+![The midnight dispatch in the teacher view, with a lighthouse illustration, three selectable records and an evidence prompt](docs/images/midnight-dispatch.png)
+
+Each lesson includes a 45-minute plan, a two-question quiz with feedback and an exit ticket. On a phone, choose **Open just the activity** in the lesson guide.
+
+</details>
 
 ## Features at a glance
 
@@ -44,9 +59,9 @@ What made AI useful to me was being able to ask for something that would be *the
 
 ## What you can ask your AI agent to do
 
-Here’s a prompt I could use with the transport lesson above:
+Here’s a follow-up I could ask for after teaching the map lesson above:
 
-> In my “Ways to travel” lesson, make a short activity for pairs. Ask students to choose between the bus and the train and give two reasons in English. Add the activity to the lesson, place it beside the transport picture and make a numbered clip that shows just the task.
+> In “The map room”, make a follow-up task for pairs: design a third route that is exactly 2.5 km long. Keep the map scale at 250 m per grid edge. Put the task beside the map and prepare a numbered clip so I can show it after we compare the first two trails.
 
 The **agent you choose** supplies the AI. Tafelraum gives it tools to work with actual lessons and boards. With the teacher window open, you can ask it to:
 
@@ -65,7 +80,7 @@ The **agent you choose** supplies the AI. Tafelraum gives it tools to work with 
 <details>
 <summary>See the classroom view</summary>
 
-![Room Canvas showing the same transport lesson without the teacher’s lesson navigation](docs/images/room-canvas.png)
+![Room Canvas projecting the eclipse activity: the Moon lines up between the Sun and Earth](docs/images/room-canvas.png)
 
 Room Canvas opens a second local window. You can try both windows on one screen before connecting a projector.
 
