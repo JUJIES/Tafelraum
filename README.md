@@ -2,7 +2,7 @@
 
 # Tafelraum
 
-A local whiteboard for teaching. Prepare a lesson on one canvas, write on it as you teach, and choose exactly which part the class sees on a second screen.
+**An AI-powered local whiteboard for teaching.** Bring your own AI agent to turn a lesson idea into materials, arrange them on the board and prepare what the class will see. Then pick up the pen and teach on that same canvas.
 
 ![The teacher’s canvas with an illustrated transport lesson, drawing tools and lesson navigation](docs/images/teacher-canvas.png)
 
@@ -11,6 +11,22 @@ A local whiteboard for teaching. Prepare a lesson on one canvas, write on it as 
 I liked the way I could organise my teaching materials in OneNote. What I wanted in class was a little different. I wanted to keep a worksheet, a picture and my next question together, write over them with a pen, and show just one of them on the board without rearranging my own view.
 
 That became Tafelraum. I build it, try it in my own lessons and change things when they get in the way. After several months of using it that way, I wanted other teachers to be able to try it too. The name is German: *Tafel* is the classroom board, *Raum* is a room.
+
+What made AI useful to me was being able to ask for something that would be *there when I opened the lesson*. A worksheet in a chat still leaves me with files to move and a board to set up. In Tafelraum, I can ask my agent to make the worksheet, put it in the right lesson and frame the first activity for the projector.
+
+## What you can ask your AI agent to do
+
+Here’s a prompt I could use with the transport lesson above:
+
+> In my “Ways to travel” lesson, make a short activity for pairs. Ask students to choose between the bus and the train and give two reasons in English. Add the activity to the lesson, place it beside the transport picture and make a numbered clip that shows just the task.
+
+The **agent you choose** supplies the AI. Tafelraum gives it tools to work with actual lessons and boards. With the teacher window open, you can ask it to:
+
+- **Organise lessons.** Find a lesson by class, subject or unit, create one when needed and attach materials to the right lesson.
+- **Make materials.** Draft a worksheet with answer fields, a quiz or an interactive HTML activity. The kit includes working examples, layout references and checks for the material format.
+- **Prepare the board.** Place materials, text and shapes, arrange them together and set up numbered clips. Open the result, move anything by hand and choose when to show each clip.
+
+**Connect your agent:** in Tafelraum, open **Settings → Connect agent → Copy starting prompt**. Paste it into an assistant that can read files and run tools on your computer. Ask it to identify the open lesson first, then give it a task like the one above. The whiteboard works without an AI account. If you use a cloud-backed assistant, its own data settings apply to what you share with it. [Agent setup and supported operations](docs/AGENT_WORKFLOW.md)
 
 ## A lesson in three moves
 
@@ -45,14 +61,11 @@ Press **Ctrl+C** in the terminal to stop. Run `npm start` in the same directory 
 <details>
 <summary>What else can I put on the board?</summary>
 
-Add images, PDF pages, audio, MP4 video and links. Interactive HTML materials can include exercises or simulations that you operate from the teacher or room window. A timer can sit beside an activity. Lessons are organised by class, subject and teaching unit.
-
-</details>
-
-<details>
-<summary>Can I use my own AI assistant?</summary>
-
-Yes. The local agent kit includes instructions and tools for finding lessons, adding materials and arranging a canvas. Canvas preparation uses the open teacher window. The board itself works without an AI account or API key. See the [agent guide](docs/AGENT_WORKFLOW.md) for setup and supported operations.
+- **Read and annotate:** bring in an image or a PDF page, mark a detail with the pen or highlighter, and uncover an answer when the class is ready.
+- **Listen and watch:** put an audio file, MP4 video or YouTube clip beside the task it belongs to.
+- **Try and practise:** use an interactive HTML worksheet or simulation from the teacher or room window. Some worksheets also include a printable A4 layout.
+- **Run an activity:** place a timer beside a group task. Course and lesson notes stay in the teacher view.
+- **Pick up next week:** reopen the lesson from its class, subject and unit. The board and its materials are kept in your local archive.
 
 </details>
 
