@@ -34,6 +34,9 @@ try{
    assert.match(await frame(page,id).getByRole('status').first().innerText(),/Correct/);
    if(id==='map-room'){
      const sheet=frame(page,'trail-sheet');
+     await sheet.getByRole('img',{name:/Topographic grid map/}).waitFor();
+     assert.equal(await sheet.getByRole('heading',{level:2}).count(),3);
+
      await sheet.getByRole('textbox',{name:'Ridge edges'}).fill('6');
      await sheet.getByText('Compare your measurements').click();
      await sheet.getByText(/6 edges = 1.5 km/).waitFor();

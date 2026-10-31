@@ -16,3 +16,7 @@ Open `http://127.0.0.1:5987/guide.html`. With Chromium installed through the app
 The build validates the HTML packages and reads only an automatically created temporary sample archive. It uses the normal public app build and substitutes a tab-memory canvas store for this preview only. The HTTP service reads compiled files from `dist/` and an explicit table of synthetic lesson responses from `routes.json`. It accepts GET and HEAD only. For hosting, copy those two outputs and `serve.mjs` to a dedicated static-service directory behind HTTPS. The normal development server and the desktop archive service are unnecessary.
 
 Drawings, preferences and exercise answers in the preview stay in the current page’s memory. The teacher and its Room window can share the current activity. Reload the teacher page to start over. The guide also links directly to each activity for smaller screens.
+
+### Worksheet design references
+
+The trail sheet uses the title hierarchy and numbered assignment bands of *Madeira Basket Sledges*, the diagram-to-answer relationship of *Bauteile des Ottomotors* and the distinct writing boxes and footer of *Words in context*. Its map is the same original survey diagram used in the lesson. The standalone sheet reflows on a phone. Clip 6 uses the portrait paper projection in the teacher and Room views.

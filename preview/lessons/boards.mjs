@@ -66,7 +66,7 @@ export function makeBoard(l) {
   text(38,627,c.result,17);
   const hasSheet=l.id==='map-room';
   if(hasSheet){
-    html(433,580,258,230,'trail-sheet','Trail field sheet');
+    html(489,573,174,246,'trail-sheet','Trail field sheet',{interactiveHtmlPageOrientation:'portrait'});
   }
   const labels=hasSheet?['6 × 250 m','÷ 1,000','× 15']:c.sketch;
   labels.forEach((label,i)=>{
