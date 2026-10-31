@@ -1,28 +1,15 @@
-# Neutrale Beispiele für lokale Tafelraum-Materialien
+# Minimal local HTML materials
 
-Diese eigenen technischen Minimalbeispiele stehen unter der Projektlizenz. Sie
-enthalten keine echten Unterrichts- oder Personendaten, keine fremden Assets und
-keine Anbieterzugänge. Sie sind Orientierung für die gemeinsame lokale Pipeline;
-keine Kopien der separat entwickelten OpenAI-/MCP-Plugins.
+These two original examples demonstrate the package contract. Copy a package into your working directory, choose a new ID and develop your material there.
 
-- `starter-worksheet/`: gewöhnliche Eingabefelder, gemeinsame initiale A4-Seite
-  für Bildschirm und leere Druckvorlage; Zustand über die bestehende Formularbrücke.
-- `starter-interactive/`: ein digitales Element mit eigenem JavaScript-Zustand,
-  `getState`/`applyState` und `tafelraum:statechange` für Lehrer/Room. Keine Druckfähigkeit.
+- [Starter worksheet](starter-worksheet/manifest.json) uses ordinary input fields and a shared A4 screen and print page. The form bridge handles its state.
+- [Starter interactive activity](starter-interactive/manifest.json) implements `getState`, `applyState` and `tafelraum:statechange` for teacher and Room Canvas. It is digital only.
 
-In einen eigenen Arbeitsordner kopieren, neue Paket-ID vergeben und Inhalt
-entwickeln. Nicht die mitgelieferte Kopie im Appbundle verändern oder ungefragt
-archivieren. Seitenränder, Farben, Aufgaben und Gestaltung sind keine universelle
-Vorgabe. Die Beispiele sind technisch validierbare Vorlagen, keine fachlich
-freigegebenen Arbeitsblätter. Die tatsächliche Ziel-Druckabnahme ist offen.
-
-Prüfen aus dem Checkout oder Agentenpaket:
+Run these checks from the checkout or agent kit root:
 
 ```sh
 node scripts/check-interactive-material.mjs --source-dir docs/agent-examples/starter-worksheet --require-print
 node scripts/check-interactive-material.mjs --source-dir docs/agent-examples/starter-interactive
 ```
 
-Für ausgearbeitete Arbeitsblattgestaltung den [Referenzindex](../agent-references/README.md)
-und seine Layoutanleitung verwenden. Diese Minimalbeispiele ergänzen den Korpus
-für Paket-/Zustandsintegration; sie ersetzen dessen visuelle Orientierung nicht.
+Use the [worksheet references](../agent-references/README.md) for visual design. The minimal examples are technically valid starting points, not classroom or print approval for a new worksheet. They are covered by the project licence and contain no personal data or third-party assets.

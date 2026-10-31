@@ -1,10 +1,5 @@
-# Historische lokale Desktopabnahme
+# Historical desktop test record
 
-Das persönliche Einzelprotokoll wird im ersten öffentlichen Quellstand nicht
-mitgeliefert. Sein bisheriger Dokumentpfad bleibt als ausdrücklicher Hinweis
-erhalten, damit historische Verweise nicht ins Leere führen.
+The original maintainer-only installation report is not distributed in this edition. This page keeps the old document path available for historical links. It does not claim a new installation or test result.
 
-Aktuelle technische Regeln stehen im [Dokumentationsindex](../../docs/implementation/README.md),
-der Einstieg in [CONTRIBUTING.md](../../CONTRIBUTING.md). Insbesondere gelten
-spätere Produktentscheidungen und Bereichsverträge vor früheren Abnahmezuständen.
-Diese Seite behauptet kein Testergebnis und keine Installation.
+Use the [engineering index](../../docs/implementation/README.md) for current contracts and [contributing](../../CONTRIBUTING.md) for setup and checks.

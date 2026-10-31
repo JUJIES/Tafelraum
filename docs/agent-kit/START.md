@@ -1,85 +1,30 @@
-# Mit Tafelraum arbeiten: Bring Your Own Agent
+# Prepare lessons with Tafelraum
 
-Du arbeitest mit dem lokalen Agentenpaket der laufenden Tafelraum-App. Das Paket
-ist eine lesbare Momentaufnahme der Projektanleitungen und derselben Prüfer/
-Befehle, kein eigenes Plugin, kein MCP-Dienst und keine zweite Materialpipeline.
-Keine global installierte Arbeitsblatt-Pluginvariante voraussetzen oder mischen.
-Die Lehrkraft bringt ihren Agenten und dessen Werkzeuge mit.
+This kit belongs to the running local app. The starting prompt from **Settings → Connect agent** identifies the app address, kit folder and Node runtime. Give it to an assistant with file and tool access on this computer.
 
-Der Startauftrag nennt die tatsächlichen Paket-/Laufzeitpfade und die Appadresse
-dieser Installation; den Archivpfad danach über `status` ermitteln. „Verbinden“
-übergibt diese Orientierung an einen lokalen Agenten mit Datei-/Werkzeugrechten.
-Es meldet keinen KI-Account an und installiert keine Erweiterung. Die gemeinsame
-Pipeline verwendet lokale CLIs; MCP wird dafür nicht benötigt.
+## First connection
 
-## Zuerst verbinden, noch nichts verändern
+1. Read `AGENTS.md` and `agent-kit.json` in this kit.
+2. Run both command-line tools with `--help`. They use Node and do not require extra npm packages.
+3. Run `scripts/tafelraum-unterricht.mjs status --url APP_URL` with the Node runtime and app URL from the prompt. Confirm the archive path. Supply it as `--archive-root` for subsequent archive operations.
+4. Run `scripts/tafelraum-canvas-agent.mjs sessions --url APP_URL`. The teacher window must be open to prepare its canvas. If multiple sessions exist, identify the intended one.
+5. Carry out the teacher’s task. Ask for the class, lesson or desired material only if the target is unclear.
 
-1. `AGENTS.md` und `agent-kit.json` in diesem Paket lesen. Die App zeigt den
-   Paketordner, ihre Adresse und die verwendbare Node-Laufzeit im Startauftrag.
-   Ein beliebiger Chat ohne lokalen Datei-/Werkzeugzugriff kann diesen Weg nicht nutzen.
-2. Im Paketordner beide CLIs mit `--help` lesen. Sie benötigen weder npm-Pakete
-   noch persönliche Plugins. Außerhalb eines Checkouts kann die im Startauftrag
-   angegebene gebündelte Node-Laufzeit statt eines globalen `node` verwendet werden.
-3. `scripts/tafelraum-unterricht.mjs status --url APP_ADRESSE` ausführen.
-   Die Antwort liefert das tatsächlich geöffnete Archiv. Kein anderes Archiv
-   still auswählen, erstellen, synchronisieren oder direkt umschreiben.
-   Für spätere Befehle `--archive-root` mit diesem bestätigten Pfad als zusätzliche
-   Zielprüfung verwenden und die Appadresse bei jedem Aufruf angeben.
-4. `scripts/tafelraum-canvas-agent.mjs sessions --url APP_ADRESSE` lesen.
-   Canvasvorbereitung braucht eine geöffnete Lehreransicht. Bei mehreren
-   Sitzungen die gewünschte auswählen; fehlende App-/Werkzeugberechtigungen offen benennen.
-5. Erst den Auftrag der Lehrkraft ausführen. Beispiel: „Erstelle ein Arbeitsblatt
-   für meine Stunde …“. Lernziel, Lerngruppe, Materialgrundlage und Ausgabeform
-   klären, soweit sie noch fehlen. Ein Erstellungsauftrag schreibt kein Archiv.
+## Choose the workflow
 
-## Anleitungen passend zur Aufgabe laden
+| Task | Instructions in this kit |
+| --- | --- |
+| Develop teaching materials | `.agents/skills/tafelraum-unterrichtsmaterial/SKILL.md` |
+| Create an HTML worksheet, quiz or activity | `.agents/skills/tafelraum-interactive-html/SKILL.md` |
+| Find or create lessons and attach materials | `.agents/skills/tafelraum-unterricht-organisieren/SKILL.md` |
+| Prepare a canvas and numbered clips | `.agents/skills/tafelraum-canvas-vorbereiten/SKILL.md` |
 
-- Material entwickeln: `.agents/skills/tafelraum-unterrichtsmaterial/SKILL.md`.
-- HTML-Arbeitsblatt, Quiz oder anderes Embed:
-  `.agents/skills/tafelraum-interactive-html/SKILL.md`.
-- Stunden suchen/anlegen und Material zuordnen:
-  `.agents/skills/tafelraum-unterricht-organisieren/SKILL.md`.
-- Canvas und Clips vorbereiten:
-  `.agents/skills/tafelraum-canvas-vorbereiten/SKILL.md`.
+Use `docs/agent-references/README.md` and its layout guide to select and **view** suitable worksheet references. The two examples in `docs/agent-examples/` demonstrate the integration contract. Copy an example into a separate working directory before changing it. Give a new package its own ID.
 
-`docs/agent-references/README.md` erschließt 13 vollständige Arbeitsblattreferenzen.
-Bei neuen Blättern deren Layoutanleitung lesen und passende Beispiele tatsächlich
-ansehen; die beiden Materialskills führen durch denselben Auswahlweg.
-`docs/agent-examples/README.md` erklärt ergänzend zwei technische Minimalbeispiele.
-Private Fallarchive und zusätzliche Modellanbieter sind keine Voraussetzung.
-Spezielle Bild-, Audio-, PDF- oder Browserwerkzeuge hängen vom Agenten ab;
-fehlende Prüfwerkzeuge nicht durch eine behauptete Freigabe ersetzen.
+## Check and deliver
 
-## Eine gemeinsame Pipeline
+Validate HTML with `scripts/check-interactive-material.mjs --source-dir PACKAGE`. Add `--require-print` for printable worksheets and inspect the actual blank print output. Review content and appearance before importing.
 
-Material in einem eigenen beschreibbaren Arbeitsordner entwickeln. Dieses
-Paket kann im signierten Appbundle liegen: Es ist kein Ausgabe- oder Archivziel.
-Neue Paket-ID wählen; Beispiele vor Änderungen in den Arbeitsordner kopieren.
+When the teacher requests archive installation, use `scripts/tafelraum-unterricht.mjs install-html --lesson LESSON --source-dir PACKAGE --mode worksheet` with the confirmed app address and archive path. Use `--mode digital` for a digital activity. Prepare the canvas and its clips if requested. Report which steps the app confirmed.
 
-HTML durch `scripts/check-interactive-material.mjs --source-dir PAKET` prüfen.
-Bei Arbeitsblättern ist zusätzlich `--require-print` verbindlich, sofern nicht
-ausdrücklich rein digital oder ein anderes Ausgabeformat bestellt wurde.
-Danach Inhalt und Browserdarstellung prüfen. Die deklarierte Druckfähigkeit
-ersetzt keine Prüfung der tatsächlichen Druckausgabe.
-
-Nur nach beauftragter Archivübernahme `scripts/tafelraum-unterricht.mjs
-install-html --lesson STUNDE --source-dir PAKET --mode worksheet|digital`
-mit Appadresse und geprüftem Archivpfad verwenden. Der bestehende additive
-Installer und dieselben Manifest-/Room-Prüfungen bleiben zuständig.
-Canvasplatzierung und Clipanlage sind ein weiterer beauftragbarer Schritt.
-Nach jedem Schritt den tatsächlich bestätigten Stand melden; Präsentation
-nicht ungefragt starten.
-
-## Daten und Grenzen
-
-Das Paket enthält keine Unterrichtsdaten und keine privaten Regeln. Es eröffnet
-keinen Fernzugriff. Namenslisten und private Stundennotizen sind kein Teil des
-normalen Organisations-/Canvas-Inspect. Ein Agent mit Dateirechten kann aber
-lokale Dateien lesen; die Lehrkraft bestimmt dessen Berechtigungen und welche
-Daten an einen externen Modellanbieter gehen. Modellunabhängigkeit bedeutet
-keine automatische Einrichtung oder Qualitätsgarantie für jedes Agentenprogramm.
-
-Codex wird im eigenen Unterrichtsworkflow des Projektentwicklers genutzt. Die
-gemeinsamen CLIs und der HTML-/Room-/Speicherablauf sind automatisiert in Chromium
-und WebKit geprüft, ohne Modellaufruf. Die Einrichtung mit Claude Code, anderen
-Agenten und lokalen Modellen ist vorgesehen, aber noch nicht separat erprobt.
+The kit contains instructions, examples and tools. Lessons belong to the app’s archive. An assistant processes files using the permissions you grant it and, for cloud models, the provider’s own data handling rules. Codex is one tested route. The Chromium and WebKit reference workflow verifies the local tools without making a model call.

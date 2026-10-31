@@ -1,61 +1,17 @@
-# Umfang des ersten öffentlichen Quellstands
+# What this source distribution contains
 
-Dieser Abgleich gilt für den bereinigten **Quellrepository-Kandidaten**. Er
-enthält keine fertige Desktop-App, `node_modules`, Cargo-Caches, LibreOffice,
-privaten Pythonlaufzeiten, Modellgewichte oder Unterrichtsarchive.
+This repository contains the public teacher canvas, lesson archive, Room Canvas, interactive material support and local agent tools. The hosted preview ships separately as compiled assets. The source tree includes neither private lesson archives nor a desktop installer, office runtime or model weights.
 
-## Tatsächlich mitgelieferte Drittbestandteile
+## Third-party material shipped in source
 
-| Gruppe | Originalbedingungen / Nachweis | Einordnung |
-| --- | --- | --- |
-| Fluent-SVG-Geometrien in den Iconkomponenten | Vollständiger MIT-Text samt Copyright in `src/icons/NOTICE.md` | Originalgeometrien behalten MIT; eigene Hostlogik wird davon getrennt behandelt. |
-| Excalidraw-/Fluent-/rrweb-Notices und Schrifttexte | Originaltexte und Herkunftsmanifeste unter `public/licenses/` | Der Quellstand enthält die Notice-Dateien, keine kopierte Excalidraw-Fontbibliothek. Die späteren Webbuilds beziehen Fonts aus der gepinnten npm-Abhängigkeit. |
-| Liberation-Originalquellen | GPL-v2-/Ausnahmetexte, SFD-Quellarchiv, Debianpatch und Deskriptor | Unveränderte Quellen und Texte bleiben unter ihren eigenen Bedingungen. Herkunft und Vergleich in Prüfstand54; keine zusätzliche Verkaufseinschränkung auf diese Quellen. |
-| PDF.js-/WASM-Notices | Sieben Originaltexte mit Versions-/Hashmanifest | Keine PDF.js-/WASM-Binaries im Quellrepository; die Buildprüfungen kontrollieren die spätere Einbindung. |
-| Node-Runtimelizenz | Vollständiger Originaltext unter `runtime-licenses/node/` | Der Node-Binärprozess wird nicht im Quellrepository mitgeliefert. |
-| LibreOffice-/DocRes-Hinweise | Gepinnte Runtime-Provenienz bzw. ursprünglicher MIT-Text | Fremde Programme/Modelle bleiben außerhalb dieses Quellumfangs; ein späteres Apppaket hat zusätzliche Pflichten. |
+| Material | Where to check it |
+| --- | --- |
+| Fluent icon geometry | The [icon notice](prototypes/surface-shell-a-b/src/icons/NOTICE.md) preserves the MIT copyright and licence. |
+| Web dependencies and fonts | Notices under `prototypes/surface-shell-a-b/public/licenses/` accompany the code and font inventories. The web build obtains Excalidraw fonts from the pinned npm dependency. |
+| Liberation fonts | The source archive, original licence and exception, Debian patch and descriptor belong together. Keep their original terms when redistributing them. |
+| PDF.js and WASM | Seven original licence texts have version and hash records. The source distribution supplies notices. The web build performs additional checks on the assets it ships. |
+| Node, LibreOffice and DocRes | The source tree includes runtime notices, pinned provenance and the original DocRes licence. Packaging an executable or models requires checking the contents of that actual distribution. |
 
-Die konkret mitgegebenen 33 Datei-/Text-/Quellnachweise sind in
-[source-distribution.json](third-party/source-distribution.json) mit SHA-256
-erfasst. `node scripts/check-source-distribution.mjs` prüft sie lesend und läuft
-auch vor den beiden Webbuilds. Zusammen mit den bestehenden PDF-/Web-/Projekt-
-Lizenzchecks schützt dies Originaltexte und die konkrete Herkunftszuordnung.
-Das zentrale [Inventar](THIRD_PARTY_NOTICES.md) führt zu den vollständigen Texten.
+The [source evidence manifest](third-party/source-distribution.json) records the selected third-party files and their SHA-256 hashes. Run `node scripts/check-source-distribution.mjs` in the repository root to verify them. See the [third-party inventory](THIRD_PARTY_NOTICES.md) and [project asset provenance](ASSET_PROVENANCE.md) for details.
 
-## Abhängigkeiten und Lizenzgrenzen
-
-Die npm-Lockfiles und `Cargo.lock` verweisen auf die aufgelösten Abhängigkeiten.
-Deren Bibliotheksquellen/Binaries sind nicht in diesen Quellkandidaten kopiert.
-Ein bloßer MPL-/LGPL-Eintrag in einer Abhängigkeit ist deshalb kein Nachweis,
-dass der Quellrepository-Upload diese Bibliothek unter den eigenen Bedingungen
-verteilen würde. Eigene MIT-/Commons-Clause-Bedingungen ersetzen keine Fremdlizenz.
-
-Für spätere gebaute Apps und Webbundles ist die tatsächlich ausgelieferte
-Zusammensetzung erneut maßgeblich. Beispielsweise bleiben MPL-Dateien unter MPL;
-bei gebauten MPL-Anteilen ist der geforderte Quellzugang zu berücksichtigen.
-Siehe die [Mozilla-FAQ](https://www.mozilla.org/en-US/MPL/2.0/FAQ/). Die vorhandenen
-Notices sind kein pauschaler Abschluss jeder künftigen Binärdistribution.
-
-## Eigene Assets und Dokumentauswahl
-
-Die eigenen Icons und das neutrale Demo sind in [ASSET_PROVENANCE.md](ASSET_PROVENANCE.md)
-zugeordnet. Das alte `desktop-shell/icon.png` ist bytegleich zum bereits erfassten
-192px-Webicon. Native Plattformicons sind bestehende Tauri-Ableitungen des
-kanonischen eigenen Motivs; keine zusätzliche fremde Bildgruppe wurde gefunden.
-
-`public-source.json` legt die öffentliche Dokumentauswahl fest. Allgemeine
-Anleitungen, Bereichsverträge, UI-Briefe und technische Entscheidungshistorie
-bleiben enthalten. Persönliche Unterrichtsfallkarten sind ausgeschlossen;
-Installationschronik und ausgewählte alte Einzelabnahmen erhalten klar bezeichnete
-öffentliche Kurzfassungen. Das private Original bleibt im Arbeitsbaum erhalten.
-
-Dieser konkrete Quellabgleich hat keinen zusätzlichen ungeklärten mitkopierten
-Fremdcode-/Bildbestand ergeben. Er ist eine begrenzte technische und dokumentierte
-Prüfung des ausgewählten Umfangs, keine Garantie für unbekannte Rechte Dritter.
-Ein späterer Upload braucht den ausdrücklichen Auftrag; diese Vorbereitung
-legt kein GitHub-Repository an und verändert die bisherige private Historie nicht.
-
-D-330: Der öffentliche Export enthält keine persönliche Lerndeck-/KI-Anbindung,
-keinen Remote-Dienst/Viewer und keinen JUJIES-Updatekanal. Gemeinsame Room-/
-Materialverträge bleiben enthalten. Funktionsauswahl und Nachweise beschreibt
-[Vertrag61](docs/implementation/61_DISTRIBUTION_BOUNDARY.md).
+The npm and Cargo lockfiles identify dependencies. Project-specific terms apply to Tafelraum’s own work. Third-party files retain their original licences and notices. Checks on this source tree do not establish the contents or licence obligations of a future binary distribution.

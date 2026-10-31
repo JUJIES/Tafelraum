@@ -1,11 +1,9 @@
-# Tafelraum-App-Icon
+# Tafelraum app icon
 
-`app-icon.png` ist die kanonische quadratische Quelldatei für das native App-Icon.
+`app-icon.png` is the square source image for the native app icon. Generate the platform-specific files under `icons/` from this image:
 
-Die plattformspezifischen Dateien unter `icons/` werden ausschließlich daraus erzeugt:
-
-```bash
+```sh
 npx tauri icon src-tauri/app-icon.png
 ```
 
-Die Quelle enthält keine Laufzeit- oder Unterrichtsdaten. Ein Programmupdate ersetzt das Icon zusammen mit dem App-Bundle; lokale Unterrichte, Materialien und Notizen bleiben außerhalb des Bundles erhalten.
+The icon contains no lesson or runtime data. It is part of the program bundle. Lesson materials and notes live outside the bundle.

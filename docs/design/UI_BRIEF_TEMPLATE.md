@@ -1,46 +1,23 @@
-# UI Brief – Vorlage
+# UI brief template
 
-Eine neue Oberfläche oder ein wesentlich neuer UI-Zustand erhält vor Mockup oder Implementierung einen kurzen Brief. Nicht benötigte Punkte entfernen; der Brief soll möglichst auf eine Seite passen.
+Write a short brief before implementing a new surface or a substantially different state. Remove unused prompts and keep the brief to about one page.
 
-## Kontext
-
-- **Oberfläche/Zustand:**
-- **Zielnutzer:**
-- **Nutzungssituation:**
-- **Eine primäre Handlung:**
-- **Eine zu prüfende Designfrage:**
+## Context
+- Surface or state
+- Intended user and situation
+- Primary action
+- Design question to test
 
 ## Scope
+- Controls or information that must be visible or reachable
+- Elements that must stay out of this surface
+- Exact visible UI copy
 
-### Muss sichtbar oder erreichbar sein
+## Content and comparison
+- Real lesson content and assets
+- Visual reference and relevant product flow
+- Variable to change and details to keep constant across variants
+- Assumptions that a screenshot or desktop test cannot verify
 
--
-
-### Darf nicht erscheinen
-
--
-
-## Exakter UI-Text
-
-Nur Strings auflisten, die im Zustand sichtbar sein dürfen.
-
--
-
-## Inhalt und Referenzen
-
-- **Reale Inhalte/Assets:**
-- **Visuelle Referenz:**
-- **Relevanter Produktflow:**
-
-## Vergleich und Invarianten
-
-- **Gezielt veränderte Variable:**
-- **Muss zwischen Varianten identisch bleiben:**
-- **Nicht durch Desktop oder Mockup validierbar:**
-
-## Abnahme
-
-- Woran ist ohne erklärenden Absatz erkennbar, was zu tun ist?
-- Welche Fehlbedienung oder Suchpause soll der Test sichtbar machen?
-- Welche Entscheidung darf erst nach Hardwaretest fallen?
-
+## Acceptance
+How will the user recognise what to do without explanatory prose? Which hesitation or mistake should the test reveal? Which decision needs a physical hardware test?

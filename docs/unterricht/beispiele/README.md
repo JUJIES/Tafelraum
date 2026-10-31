@@ -1,20 +1,5 @@
-# Unterrichtsbeispiele im öffentlichen Quellstand
+# Lesson examples in the public edition
 
-Persönliche Fallkarten, Entstehungsverläufe und Verweise auf konkrete
-Unterrichtsarchive werden im ersten öffentlichen Quellstand nicht mitgeliefert.
-Sie sind kein Bestandteil der technischen Entwicklerprüfungen und keine
-Freigabe dort verwendeter Fremdmaterialien.
+Explore the [three synthetic preview lessons](https://tafelraum-demo.jujies.app/guide.html) or browse the thirteen [worksheet layout references](../../../docs/agent-references/README.md). The references include provenance and third-party attribution. The [transport illustration](../../../prototypes/surface-shell-a-b/src/assets/demo/README.md) is a self-contained test asset.
 
-Das eigenständige neutrale Demo unter
-`prototypes/surface-shell-a-b/src/assets/demo/` bleibt enthalten. Seine Herkunft
-ist dort dokumentiert. Der Entwicklerleitfaden am Repository-Root beschreibt
-eine neue leere Testbasis; private Unterrichtsdateien sind dafür nicht nötig.
-
-Die allgemeinen Material-/Druckregeln stehen weiterhin in
-`docs/unterricht/00_ARBEITSWEISE_UNTERRICHT.md`. Diese Seite ist kein Ersatz
-für einen konkreten Beispielkorpus oder eine Materialfreigabe.
-
-Der mitgelieferte Layoutreferenzbestand unter `docs/agent-references/README.md` enthält
-13 bewusst ausgewählte aktuelle HTML-Pakete mit dokumentierter Herkunft und
-Fremdlizenzen. Seine Layoutanleitung führt neue Agenten zur passenden Auswahl
-und Sichtprüfung. Persönliche Fallverläufe bleiben separat.
+Private teaching archives and case histories are not distributed. Use a fresh test lesson when following the [local setup](../../../README.md#try-it-on-your-computer).

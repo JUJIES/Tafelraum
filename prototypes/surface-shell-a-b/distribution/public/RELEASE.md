@@ -1,40 +1,19 @@
-# Eigene Desktopfassung bauen
+# Build a desktop edition
 
-Dieser öffentliche Quellstand enthält keinen offiziellen JUJIES-Updatekanal,
-keine persönlichen Integrationen und keinen Remote-Dienst/Teilnehmerbuild.
-Room Canvas und der lokale Kern bleiben enthalten. Der Maintainer-Build und
-sein Kollegen-Updatekanal haben einen getrennten Umfang; diese Anleitung
-veröffentlicht oder installiert nichts.
+The public sources include the local teacher app and Room Canvas. They do not configure an official JUJIES binary updater or remote participant service.
 
-Für Browserstart und Tests zuerst `CONTRIBUTING.md` im Repository-Root verwenden.
-Der bisherige native Ressourcenweg ist macOS/ARM64-spezifisch. Windows/Linux
-benötigen eigene Paket-/Laufzeitabnahmen, keine zugesagte Plattformunterstützung.
-Rust/Tauri, Xcode-Werkzeuge und die versionierten lokalen Laufzeiten sind für
-native Builds zusätzlich erforderlich.
+Start with the browser setup and tests in the repository README. Native packaging additionally needs Rust, Tauri, Xcode tools and the pinned runtime resources. The packaging path has been tested on macOS ARM64. Windows and Linux builds require separate verification.
 
-Aus dem Appverzeichnis:
+From the app directory:
 
 ```sh
-node ../../scripts/check-distribution.mjs
+node ../../scripts/check-distribution.mjs public
 npm ci
 npm run prepare:desktop
 cd src-tauri
 cargo test --locked --lib
 ```
 
-`prepare:desktop` baut das Webbundle und stellt den lokalen Node-Dienst sowie
-LibreOffice mit Original-Lizenzen bereit. Fehlende LibreOffice-Buildabhängigkeiten
-werden aus der gepinnten offiziellen Quelle bezogen; persönliche Dienste oder
-Schlüssel sind nicht erforderlich. Der derzeit nachgewiesene Bundle-Node ist22.18.0;
-ein anderer Node benötigt zunächst aktualisierte vollständige Lizenznachweise.
-Die Testbefehle verwenden Node24 gemäß Entwicklerleitfaden.
+`prepare:desktop` builds the web app and prepares Node, LibreOffice and the original runtime licences. Missing LibreOffice resources are obtained from the pinned official source. The recorded bundled Node version is 22.18.0; changing it requires updated matching licence evidence. CI uses Node 24 for its tests.
 
-Mit vorbereiteten Voraussetzungen kann die Tauri-CLI anschließend ein eigenes
-Appbundle bauen. Erst einen getrennten Testbuild mit eigener Appkennung, Port
-und Archiv prüfen; die produktive Maintainerinstallation ist kein Testziel.
-Eigenes Signieren/Verteilen und eine eigene Updateinfrastruktur sind separate
-Entscheidungen. Hier sind keine persönlichen Publisher oder Signaturschlüssel
-enthalten. Unsignierte Eigenbauten sind keine offiziellen JUJIES-Pakete.
-
-`docs/implementation/61_DISTRIBUTION_BOUNDARY.md`
-und `THIRD_PARTY_NOTICES.md` im Repository-Root beschreiben Umfang und Grenzen.
+Use the Tauri CLI to create your own bundle after checking the prerequisites. Test with a separate app identifier, port and archive. Signing, redistribution and operating an update channel are separate decisions. The public repository contains no private publisher or signing keys. See the root `SOURCE_DISTRIBUTION.md` and `THIRD_PARTY_NOTICES.md` before redistributing a build.

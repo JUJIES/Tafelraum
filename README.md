@@ -108,6 +108,8 @@ Stop the local server. From an unmodified checkout, run `git pull --ff-only`, th
 
 </details>
 
+For setup, agents, worksheet design and developer guides, see the [documentation index](docs/README.md).
+
 ## Feedback and licence
 
 If something gets in the way during a lesson, I’d like to hear what you were trying to do. [Open an issue](https://github.com/JUJIES/Tafelraum/issues) with a small example you can share publicly.

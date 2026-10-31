@@ -1,34 +1,10 @@
-# Unterricht mit dem Tafelraum-Agentenpaket
+# Working with the Tafelraum agent kit
 
-Dieses Paket dient der Materialvorbereitung und Unterrichtsorganisation, nicht
-der Appentwicklung. `README.md` ist der Einstieg. Die Produktverträge und vier
-Skills im Paket sind die gemeinsame Grundlage für alle Agenten. Persönliche
-OpenAI-/MCP-/Arbeitsblattplugins sind optionale getrennte Werkzeuge, keine
-maßgebliche Variante dieser Pipeline.
+Use this kit for lesson organisation and material preparation. Begin with the kit’s README. Its four skills and local commands are shared across agents.
 
-- Paketordner nur lesen. Ein eigenes beschreibbares Arbeitsverzeichnis wählen.
-- Auftrag und tatsächlicher Archivkatalog bestimmen Ziel und Umfang. Vorhandene
-  ausdrücklich vereinbarte fachliche Regeln der Lehrkraft berücksichtigen; keine
-  fehlenden privaten Regeldateien oder historischen Unterrichtsfälle nachfordern.
-- Materialentwurf, Archivübernahme und Canvasplatzierung sind getrennte Schritte.
-  Mehrere Schritte dürfen gemeinsam beauftragt sein. Bekannte Freigaben nicht
-  wiederholt erfragen, aber aus einer Materialidee keine Archivänderung ableiten.
-- Für HTML denselben mitgelieferten Prüfer verwenden; bei Arbeitsblättern
-  `--require-print`, sofern nicht ausdrücklich anders bestellt. Technische Prüfung,
-  visuelle Prüfung und tatsächliche Druckfreigabe unterscheiden.
-- Die laufende App nennt das Archiv. Nie direkt an Canvas-/Boarddateien schreiben;
-  Organisation und Canvas über die validierten CLIs und deren normale Speicherwege.
-- Beispiele erklären Technik. Fach, Aufgaben, Layout und Schwierigkeitsgrad anhand
-  des Auftrags entwickeln. Keine zusätzlichen generellen Gestaltungspflichten erfinden.
-- Vorhandene Materialien/Quellen, private Notizen und Schlüssel erhalten. Kein
-  Dienst-/Plugin-Upload, keine Appinstallation und kein Präsentationsstart aus
-  einem Materialauftrag ableiten.
-
-Vor Operationen, die bestehende produktive Katalog-, Stunden-, Board- oder
-Materialdateien überschreiben, verschieben oder umfangreich umstrukturieren,
-zuerst den vorhandenen Backupweg verwenden und prüfen. Die mitgelieferten
-`scripts/create-archive-backup.mjs` und `scripts/verify-archive-backup.mjs` dienen
-dafür; Archivwurzel aus `status` und einen eigenen beschreibbaren Ausgabeordner
-explizit angeben. Rein additive neue Materialdateien benötigen kein Vollbackup.
-Ein Backup ist Rückfallartefakt und nie Materialquelle. Details im mitgelieferten
-`docs/implementation/03_BACKUP_UND_WIEDERHERSTELLUNG_LOKAL.md`.
+- Read the kit in place and create materials in a separate writable folder.
+- Resolve the target from the teacher’s request and the current archive. Honour agreed subject or unit rules where they exist. A fresh archive does not need private rules, historical classes or separately installed plugins.
+- Distinguish creating a draft, importing it and placing it on the canvas. Carry out actions already requested, including combined requests. A draft alone is not permission to change the archive.
+- Validate HTML with the supplied checker. For worksheets use `--require-print` unless the teacher requests a digital-only activity or another output format. Check the content, the browser rendering and the actual print output separately.
+- Use the validated organisation and canvas commands against the running app. Do not write board files directly.
+- Develop the tasks, difficulty and layout for the requested lesson. Preserve existing materials, notes and credentials. Start a presentation only when requested.
