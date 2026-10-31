@@ -35,11 +35,14 @@ try {
   await assert.rejects(access(path.join(app, '.env.local')));
   // Remove the snapshot's optional office-runtime link; no local runtime/config needed.
   await rm(path.join(source, 'local-data'), {recursive:true, force:true});
-  const guide = await readFile(path.join(source, 'CONTRIBUTING.md'), 'utf8');
-  const bootstrap = guide.match(/node --input-type=module <<'NODE'\n([\s\S]*?)\nNODE/)[1];
-  await run(process.execPath, ['--input-type=module', '-e', bootstrap], {cwd:app});
-  checks.push('Documented empty-archive bootstrap, without ignored data or fixtures');
-  const archive = path.join(source, 'local-data/dev-onboarding/archive');
+  const {startLocal} = await import(pathToFileURL(path.join(app,'start-local.mjs')).href);
+  server = await startLocal(0);
+  const archive = path.join(source, 'local-data/public-lessons');
+  const firstStatus = await (await fetch(`http://127.0.0.1:${server.httpServer.address().port}/api/archive/status`)).json();
+  assert.equal(firstStatus.archiveRoot, archive);
+  await server.close();
+  server = null;
+  checks.push('Public start command creates an isolated lesson archive in a clean checkout');
   const archiveFile = path.join(archive, 'archive.json');
   const catalog = JSON.parse(await readFile(archiveFile, 'utf8'));
   const demo = {...catalog.catalog.lessons[0], id:'lesson-demo', title:'Transport-Demo', seed:{prompt:'',showTransportImage:true}};
