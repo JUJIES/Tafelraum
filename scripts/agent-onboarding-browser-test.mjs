@@ -7,7 +7,7 @@ import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 import {access,mkdir,readFile,writeFile,copyFile,cp,rm} from 'node:fs/promises';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {snapshotBuildSource} from './snapshot-build-source.mjs';
 
 const run=promisify(execFile),repository=fileURLToPath(new URL('../',import.meta.url));
@@ -30,13 +30,13 @@ try{
  await rm(path.join(source,'docs/unterricht/beispiele'),{recursive:true,force:true});
  for(const absent of ['data','test-materials','local-data','.git'])await assert.rejects(access(path.join(source,absent)),{code:'ENOENT'});
  report.profile=JSON.parse(await readFile(path.join(app,'distribution.json'),'utf8')).profile;
- const guide=await readFile(path.join(source,'CONTRIBUTING.md'),'utf8');
- const bootstrap=guide.match(/node --input-type=module <<'NODE'\n([\s\S]*?)\nNODE/)[1];
+ const {initializeEmptyArchive}=await import(pathToFileURL(path.join(app,'desktop-server.mjs')).href);
  for(const [engineName,engine] of [['chromium',chromium],['webkit',webkit]]){
   if(selectedEngine&&engineName!==selectedEngine)continue;
   const checks=[],commands=[],result={engine:engineName,checks,commands};report.engines.push(result);
-  await run(process.execPath,['--input-type=module','-e',bootstrap],{cwd:app});
-  const archiveRoot=path.join(source,'local-data/dev-onboarding/archive');
+  const archiveRoot=path.join(source,'local-data','agent-'+engineName);
+  await initializeEmptyArchive(archiveRoot);
+  process.env.TAFELRAUM_ARCHIVE_ROOT_URL=pathToFileURL(archiveRoot).href;
   await assert.rejects(access(path.join(archiveRoot,'_rules')),{code:'ENOENT'});
   const archiveBefore=JSON.parse(await readFile(path.join(archiveRoot,'archive.json'),'utf8'));
   const seriesId=archiveBefore.catalog.series[0].id;
@@ -324,7 +324,7 @@ try{
   await assert.rejects(access(path.join(archiveRoot,'_rules')),{code:'ENOENT'});
   await context.close();await browser.close();browser=null;await server.close();server=null;
   await rm(path.join(source,'local-data'),{recursive:true,force:true});
-  await rm(path.join(app,'.env.local'));
+  
  }
  assert.deepEqual(report.errors,[]);assert.deepEqual(report.outbound,[]);report.status='passed';
  console.log(report.engines.map(result=>`${result.engine}: ${result.checks.join('\n')}`).join('\n'));
