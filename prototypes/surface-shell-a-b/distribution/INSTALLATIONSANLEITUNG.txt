@@ -1,19 +1,48 @@
-TAFELRAUM AUF DEM MAC STARTEN
+TAFELRAUM — PUBLIC EDITION
+macOS · Apple Silicon
 
-1. Einen bereits geöffneten Tafelraum mit ⌘Q vollständig beenden.
-2. ZIP-Datei vollständig entpacken.
-3. Neue Installation: Tafelraum.app auf den Schreibtisch oder in einen anderen eigenen Ordner ziehen.
-   Vorhandene Installation: Genau die bisher verwendete Tafelraum.app durch die neue ersetzen. Liegt sie im Dock und der Speicherort ist unklar, dort mit Rechtsklick auf Tafelraum → Optionen → Im Finder zeigen. Nicht zwei App-Kopien parallel behalten.
-4. Falls macOS die App wegen der Quarantäne nicht öffnet:
+This app is built from the public source commit named on its download page.
+Official Public Mac packages use their own signed GitHub update channel.
+They never install the maintainer / school-MDM edition.
 
-   a) Terminal öffnen.
-   b) Folgenden Befehl mit dem Leerzeichen am Ende eingeben, aber noch nicht Enter drücken:
+INSTALL
 
-      xattr -dr com.apple.quarantine 
+1. Extract the ZIP. It contains Tafelraum Public.app and this guide.
+2. Move Tafelraum Public.app to a permanent folder you can write to.
+   When updating, quit the existing Public app with Command-Q and replace it.
+3. Open the app from its final location.
 
-   c) Tafelraum.app aus dem Finder in das Terminalfenster ziehen. Der vollständige Pfad wird automatisch ergänzt.
-   d) Jetzt Enter drücken.
+FIRST OPEN ON MACOS
 
-5. Tafelraum.app öffnen.
+The current build is ad-hoc signed and is not Apple-notarized. After trying to
+open it, System Settings → Privacy & Security may offer Open Anyway. Only approve
+an app you trust. A managed Mac may require administrator approval.
+Apple's instructions: https://support.apple.com/en-us/102445
 
-Die App benötigt kein Administratorpasswort. Beim Ersetzen der App bleiben vorhandene Unterrichte und Materialien im getrennten lokalen Datenordner dieses Macs erhalten. Auf einem neuen Mac ohne vorhandenen Tafelraum-Datenordner startet die App mit einem frischen Unterrichtsbereich. Das ZIP enthält keine Unterrichtsdaten. Updates werden nur nach einer bewussten Bestätigung installiert.
+UPDATES
+
+The official Public app checks on startup and periodically in the background.
+It offers a new public version for confirmation; it does not silently install.
+You can also use Settings → Version and updates. The download page and GitHub
+Releases remain available for manual replacement. Your lesson archive is stored
+separately from the app and is retained during ordinary Public app updates.
+An update cannot bypass macOS ownership or management restrictions.
+
+SOURCE OR SELF-BUILT VERSIONS
+
+A GitHub source ZIP is source code, not an installer. Use the README to run it
+from source. Default self-built public apps have no official automatic updates,
+so your own changes are not overwritten by an official release.
+
+IMPORTANT FOR THE EARLY PUBLIC 0.1.88 PACKAGE
+
+It had no updater and used the old Tafelraum app identity. Install the new Public
+app manually once. It has a separate archive in:
+  ~/Library/Application Support/app.jujies.tafelraum.public/unterrichtsarchiv/
+The earlier app's archive remains untouched at:
+  ~/Library/Application Support/app.jujies.tafelraum/unterrichtsarchiv/
+If you already have lessons there, keep that folder and arrange a deliberate
+migration before removing the old app. Never merge a live full-edition archive
+into Public or overwrite an existing Public archive. There is no silent migration.
+
+Windows and Intel Mac packages are not included in this Apple Silicon download.

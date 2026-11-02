@@ -633,3 +633,11 @@ Nachtrag31.10.2026: Design- und Sprachdropdown zeigen eine36px hohe sichtbare
 Fläche, mittig in der48px-Einstellungszeile. Das native Select behält seine48px
 aktive Höhe; Hintergrund, Kontur, Hover und Fokus zeichnen sich an der flacheren
 Fläche. Beide Profile nutzen dieselbe Darstellung und Reihenfolge.
+
+
+## Official public desktop updates (2026-11-02)
+
+Delivery comes from the native build, independently of the feature profile.
+Official public and colleagues apps both use the existing Version and updates
+entry, hint, confirmation and presentation deferral. Manual public builds keep
+Version only. No new toolbar button, channel switch or second settings flow.

@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "channels": {
+    "mdm": {
+      "profile": "personal",
+      "downloadPage": "https://updates.jujies.app/tafelraum/download/",
+      "latestManifest": "https://updates.jujies.app/tafelraum/latest.json",
+      "versionedManifest": "https://updates.jujies.app/tafelraum/releases/{version}/download.json",
+      "updater": true,
+      "instructions": "German colleague/MDM guide; targeted quarantine command",
+      "sourceRule": "The same signed full-edition bundle must be installed and approved locally, packaged for manual download and published to the colleague updater together."
+    },
+    "public": {
+      "profile": "public",
+      "downloadPage": "https://updates.jujies.app/tafelraum-public/download/",
+      "latestManifest": "https://updates.jujies.app/tafelraum-public/latest.json",
+      "versionedManifest": "https://updates.jujies.app/tafelraum-public/releases/{version}/download.json",
+      "updater": true,
+      "instructions": "English public-edition installation guide",
+      "sourceRule": "The app package must come from a clean, published public Git commit. Its GitHub release and Beelink manual-download pointer belong to that same release.",
+      "updaterManifest": "https://github.com/JUJIES/Tafelraum/releases/latest/download/latest.json",
+      "binaryHosting": "GitHub Releases"
+    }
+  },
+  "releaseRules": [
+    "Builds and local installations do not advance any public link.",
+    "Upload immutable versioned files and verify SHA-256 before moving latest.",
+    "The MDM landing page follows the updater latest.json; it has no independent latest pointer.",
+    "Public latest.json is the signed Public release manifest, never the colleagues updater configuration.",
+    "Keep older versioned files available; never replace different bytes under an existing version.",
+    "Record a release as complete only after verifying every required public link and its source/profile/version."
+  ]
+}

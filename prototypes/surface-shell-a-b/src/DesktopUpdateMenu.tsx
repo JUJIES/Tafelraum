@@ -11,12 +11,14 @@ type UpdateOverview = {
   currentVersion: string;
   availableVersion: string | null;
   phase: DesktopUpdatePhase;
+  updateChannel: "manual" | "colleagues" | "public";
 };
 
 const initialOverview: UpdateOverview = {
   currentVersion: __TAFELRAUM_VERSION__,
   availableVersion: null,
   phase: "idle",
+  updateChannel: "manual",
 };
 
 export function useDesktopUpdate(presenting: boolean) {
@@ -26,10 +28,10 @@ export function useDesktopUpdate(presenting: boolean) {
   const [error, setError] = useState<string | null>(null);
   const promptedVersions = useRef(new Set<string>());
   const desktopApp = isTauri();
-  const updatesEnabled = distribution.officialUpdates;
+  const updatesEnabled = desktopApp ? ["public", "colleagues"].includes(overview.updateChannel) : distribution.officialUpdates;
 
   useEffect(() => {
-    if (!desktopApp || !updatesEnabled) return;
+    if (!desktopApp) return;
     let active = true;
     let stopListening = () => {};
     let latestEvent: UpdateOverview | null = null;
@@ -50,7 +52,7 @@ export function useDesktopUpdate(presenting: boolean) {
       active = false;
       stopListening();
     };
-  }, [desktopApp, updatesEnabled]);
+  }, [desktopApp]);
 
   useEffect(() => {
     if (presenting) {

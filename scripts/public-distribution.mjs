@@ -5,6 +5,7 @@ import path from 'node:path';
 const app='prototypes/surface-shell-a-b';
 export const publicAdapters=Object.freeze({
  'distribution.json':'distribution.json',
+ 'distribution/INSTALLATIONSANLEITUNG.txt':'INSTALLATIONSANLEITUNG.txt',
  'src/DistributionSettings.tsx':'DistributionSettings.tsx',
  'ai-settings-extension.mjs':'ai-settings-extension.mjs',
  'live-canvas-provisioning.mjs':'live-canvas-provisioning.mjs',
@@ -34,8 +35,13 @@ export async function selectPublicDistribution(destination){
  }
  const editJson=async(file,change)=>{const data=JSON.parse(await readFile(path.join(base,file),'utf8'));change(data);await writeFile(path.join(base,file),JSON.stringify(data,null,2)+'\n');replaced.push(app+'/'+file);};
  await editJson('src-tauri/tauri.conf.json',config=>{
+  config.identifier="app.jujies.tafelraum.public";
+  config.productName="Tafelraum Public";
   delete config.plugins?.updater;
   config.bundle.createUpdaterArtifacts=false;
+ });
+ await editJson('src-tauri/capabilities/default.json',config=>{
+  config.remote.urls=config.remote.urls.map(url=>url.replace(':49317/',':49318/'));
  });
  // Every removed personal test has a public absence test in distribution.test.mjs.
  await editJson('package.json',pkg=>{

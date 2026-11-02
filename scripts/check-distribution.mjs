@@ -3,6 +3,7 @@ import {readFile,access} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {personalOnlyFiles,publicAdapters} from './public-distribution.mjs';
+import {readDesktopRelease} from './desktop-release-config.mjs';
 export async function checkDistribution(repository){
  const root=path.join(repository,'prototypes/surface-shell-a-b');
  const profile=JSON.parse(await readFile(path.join(root,'distribution.json'),'utf8'));
@@ -10,6 +11,8 @@ export async function checkDistribution(repository){
  const personal=profile.profile==='personal';
  assert.equal(profile.officialUpdates,personal);assert.equal(profile.remoteCanvas,personal);
  const config=JSON.parse(await readFile(path.join(root,'src-tauri/tauri.conf.json'),'utf8'));
+ await readDesktopRelease(repository, null);
+ if(!personal) await readDesktopRelease(repository, JSON.parse(await readFile(path.join(root,'src-tauri/tauri.public-release.conf.json'),'utf8')));
  assert.equal(Boolean(config.plugins?.updater?.endpoints?.length),personal);
  assert.equal(config.bundle.createUpdaterArtifacts,personal);
  if(personal){

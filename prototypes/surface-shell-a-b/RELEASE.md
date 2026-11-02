@@ -1,19 +1,53 @@
-# Build a desktop edition
+# Build a public desktop app
 
-The public sources include the local teacher app and Room Canvas. They do not configure an official JUJIES binary updater or remote participant service.
+Official downloads: [Public Mac app](https://updates.jujies.app/tafelraum-public/download/)
+· [GitHub releases](https://github.com/JUJIES/Tafelraum/releases/latest).
+Each package includes the English installation guide. The public edition has
+no colleagues updater or personal integrations. Room Canvas remains included.
 
-Start with the browser setup and tests in the repository README. Native packaging additionally needs Rust, Tauri, Xcode tools and the pinned runtime resources. The packaging path has been tested on macOS ARM64. Windows and Linux builds require separate verification.
+For browser setup and tests, start with CONTRIBUTING.md at the repository root.
+The verified native target is macOS / Apple Silicon. Windows, Linux and Intel
+packages require separate validation. Native builds additionally require Rust,
+Xcode tools and the pinned local runtimes; the verified bundled Node is22.18.0.
 
 From the app directory:
 
 ```sh
-node ../../scripts/check-distribution.mjs public
+node ../../scripts/check-distribution.mjs
 npm ci
 npm run prepare:desktop
 cd src-tauri
 cargo test --locked --lib
+cd ..
+npm exec tauri build -- --target aarch64-apple-darwin --bundles app
 ```
 
-`prepare:desktop` builds the web app and prepares Node, LibreOffice and the original runtime licences. Missing LibreOffice resources are obtained from the pinned official source. The recorded bundled Node version is 22.18.0; changing it requires updated matching licence evidence. CI uses Node 24 for its tests.
+`prepare:desktop` builds the web app and prepares Node and LibreOffice with their
+original licenses. It does not need personal credentials. Test native builds with
+a separate app identifier, port and temporary archive; never use a live teaching
+archive as the test target. A custom build is not an official JUJIES release.
 
-Use the Tauri CLI to create your own bundle after checking the prerequisites. Test with a separate app identifier, port and archive. Signing, redistribution and operating an update channel are separate decisions. The public repository contains no private publisher or signing keys. See the root `SOURCE_DISTRIBUTION.md` and `THIRD_PARTY_NOTICES.md` before redistributing a build.
+For a reproducible manual ZIP, start from a clean committed public checkout.
+From the repository root:
+
+```sh
+node scripts/package-desktop-download.mjs /absolute/path/Tafelraum.app /absolute/path/new-release-directory 0.1.88 PUBLIC_COMMIT_SHA
+node scripts/verify-desktop-download.mjs /absolute/path/new-release-directory public 0.1.88
+```
+
+Replace the example version and SHA with that exact source release. The packager
+checks source cleanliness, embedded public profile, app version, ARM64 binary and
+codesign. It includes the English guide and writes download.json with hashes.
+This step creates local files only. Official GitHub/Beelink publication is a
+separate maintainer action under docs/RELEASE_WORKFLOW.md. Signing and notarization
+are separate concerns; an ad-hoc signature does not provide Apple notarization.
+
+
+## Official Public Mac packages
+
+Default source builds have manual updates. Official public packages use
+`npm exec tauri build -- --config src-tauri/tauri.public-release.conf.json --bundles app --target aarch64-apple-darwin`.
+This requires the official private update-signing key, which is not distributed.
+The public key and channel configuration are in the repository for review.
+The official bundle is Tafelraum Public.app; it uses a separate archive and
+port49318. Read the included installation guide before migrating from0.1.88.

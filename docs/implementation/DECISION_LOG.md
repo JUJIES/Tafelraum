@@ -5,3 +5,13 @@ The public repository starts with an independently reviewed source snapshot. The
 ## Public documentation language
 
 English is the working language for public guides. The [documentation index](../README.md) directs teachers and contributors to the English entry points. Detailed German implementation records keep stable paths, and teaching examples retain their classroom language.
+
+
+## 2026-11-02 – separate official public and colleagues delivery
+
+Public source contains the shared updater; its default build remains manual.
+Official public Mac releases enable an independently signed GitHub update lane.
+Public app identity/port/archive are separate from the unchanged colleagues lane.
+Large public files are served by GitHub; fixed Beelink links remain entry points.
+No silent full-archive migration or cross-edition updates. Operational rules and
+verification contract: [65](65_DESKTOP_RELEASE_CHANNELS.md).

@@ -4,6 +4,8 @@
 
 **An AI-powered local whiteboard for teaching.** Bring your own AI agent to turn a lesson idea into materials, arrange them on the board and prepare what the class will see. Then pick up the pen and teach on that same canvas.
 
+**[Download the Public Mac app](https://updates.jujies.app/tafelraum-public/download/)** · Apple Silicon · Automatic public updates · [GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
+
 **[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open a lesson, try its HTML activity or send a numbered clip to Room Canvas. Reload to start fresh.
 
 ![The teacher’s canvas with a starter picture, interactive survey map, trail worksheet and homework arranged across four lesson phases](docs/images/teacher-canvas.png)
@@ -88,7 +90,9 @@ Room Canvas opens a second local window. You can try both windows on one screen 
 
 ## Try it on your computer
 
-This first public edition runs from source in a browser. You need Git and Node.js 22.18 or newer, with npm. Open a terminal and run:
+Choose the ready-to-use **[Public Mac app](https://updates.jujies.app/tafelraum-public/download/)** for Apple Silicon, or run from source below. The Mac ZIP includes the app and installation guide; future public app updates are offered in the app. Downloading GitHub's source ZIP does not install an app.
+
+To run from source in a browser, you need Git and Node.js 22.18 or newer, with npm. Open a terminal and run:
 
 ```sh
 git clone https://github.com/JUJIES/Tafelraum.git
@@ -104,7 +108,9 @@ Press **Ctrl+C** in the terminal to stop. Run `npm start` in the same directory 
 <details>
 <summary>How do I get updates?</summary>
 
-Stop the local server. From an unmodified checkout, run `git pull --ff-only`, then `npm ci` and `npm start` in the app directory. This repository distributes source. There is no desktop installer or automatic binary update channel for this edition.
+**Public Mac app:** official packages check for new public releases at startup and periodically in the background. Confirm an update when ready, or use **Settings → Version and updates**. Downloads are served by GitHub. You can also replace the app manually using the [download page](https://updates.jujies.app/tafelraum-public/download/). The app has its own archive and never uses the school/colleagues update channel. Early0.1.88 users need one manual installation; read the migration note in the included guide.
+
+**Running from source:** stop the local server. From an unmodified checkout, run `git pull --ff-only`, then `npm ci` and `npm start` in the app directory. Default self-built desktop apps also use manual updates, preserving your own changes. [Build and release details](prototypes/surface-shell-a-b/RELEASE.md).
 
 </details>
 

@@ -1,0 +1,13 @@
+{
+  "bundle": {
+    "createUpdaterArtifacts": true
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkyQzkzMDlDRTQwOENCOUEKUldTYXl3amtuRERKa2ovR01VTzhRcGxEaExTdlIyUy9wbTMwdUFKRG1FL0ZLei9rOWhPRXFyWWIK",
+      "endpoints": [
+        "https://github.com/JUJIES/Tafelraum/releases/latest/download/latest.json"
+      ]
+    }
+  }
+}

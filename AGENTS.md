@@ -7,3 +7,16 @@ Use the local teacher canvas, lesson archive, Room Canvas and agent kit as the s
 Start with the [README](README.md) and [contributing guide](CONTRIBUTING.md). For UI changes read the [style guide](docs/design/00_UI_UX_STYLEGUIDE.md) and the relevant brief. For materials and canvas preparation use the repository-local skills. Test through the normal entry point and update the relevant guide when behaviour changes.
 
 Write public guides, README files and GitHub-facing instructions in English. Keep commands, identifiers and paths exact. Preserve upstream licence notices and the intended language of classroom examples. Label links to German technical records so readers can identify their language before opening them.
+
+
+## Official desktop delivery channels (2026-11-02)
+
+Before desktop builds, updates or download operations read
+[contract65](docs/implementation/65_DESKTOP_RELEASE_CHANNELS.md). Product profile
+and delivery channel are separate: public source defaults to manual updates;
+official Public Mac packages use the public GitHub update lane. Colleagues retain
+the existing full-edition lane. Never switch an installed app between editions or
+copy archives implicitly. Official public releases must include signed updater
+artifacts and matching GitHub/download indexes, not just the source push or ZIP.
+Public GitHub README offers public source and public Mac package; the full MDM
+package is a separate school distribution, not the public repository's default app.

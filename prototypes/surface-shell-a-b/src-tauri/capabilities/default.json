@@ -2,10 +2,13 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "Berechtigungen der lokalen Tafelraum-App",
-  "windows": ["main", "room-canvas"],
+  "windows": [
+    "main",
+    "room-canvas"
+  ],
   "remote": {
     "urls": [
-      "http://127.0.0.1:49317/*",
+      "http://127.0.0.1:49318/*",
       "http://127.0.0.1:5173/*"
     ]
   },
@@ -16,10 +19,10 @@
     "allow-desktop-update-overview",
     "allow-request-desktop-update-check",
     "allow-print-desktop-webview",
-    "allow-open-external-web-url"
-    ,"allow-open-room-canvas"
-    ,"allow-close-room-canvas"
-    ,"allow-confirm-desktop-persistence"
-    ,"allow-set-ui-language"
+    "allow-open-external-web-url",
+    "allow-open-room-canvas",
+    "allow-close-room-canvas",
+    "allow-confirm-desktop-persistence",
+    "allow-set-ui-language"
   ]
 }

@@ -11,6 +11,7 @@ npm run build
 
 rm -rf "$resources_dir"
 mkdir -p "$resources_dir/web" "$resources_dir/server" "$resources_dir/runtime"
+node "$project_dir/../../scripts/desktop-release-config.mjs" "$resources_dir/server/desktop-release.json"
 node "$project_dir/../../scripts/prepare-agent-kit.mjs" "$resources_dir/agent-kit"
 ditto "$project_dir/dist" "$resources_dir/web"
 cp "$project_dir/distribution.json" \

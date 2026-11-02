@@ -114,8 +114,10 @@ test('public distribution removes personal implementations and Remote service; l
  await f.file(app+'/viewer/index.html','private participant fixture');
  await f.file(app+'/public/apps/lerndeck.svg','synthetic icon');
  await f.file(app+'/src-tauri/tauri.conf.json',JSON.stringify({plugins:{updater:{endpoints:['https://private-fixture.invalid/latest.json'],pubkey:'synthetic-public-key'}},bundle:{createUpdaterArtifacts:true}}));
+ await f.file(app+'/src-tauri/capabilities/default.json',JSON.stringify({remote:{urls:['http://127.0.0.1:49317/*','http://127.0.0.1:5173/*']}}));
  await f.file(app+'/public/licenses/tafelraum/provenance.json',JSON.stringify({assets:[{source:app+'/public/apps/lerndeck.svg'},{source:'core.svg'}]}));
  await f.file(app+'/package.json',JSON.stringify({scripts:{test:'node --test distribution.test.mjs personal-ai-key.test.mjs', 'test:live':'node --test src/live/live-host.test.ts core.test.ts','build:live':'private-viewer-build'}}));
+ for(const file of ['distribution/desktop-channels.json','src-tauri/tauri.public-release.conf.json'])await f.file(app+'/'+file,await readFile(new URL('../'+app+'/'+file,import.meta.url),'utf8'));
  const report=await preparePublicSource(f.repository,f.destination);
  const read=async file=>JSON.parse(await readFile(path.join(f.destination,app,file),'utf8'));
  assert.deepEqual(await read('distribution.json'),{schemaVersion:1,profile:'public',officialUpdates:false,embeddedApps:[],remoteCanvas:false});

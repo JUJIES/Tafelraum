@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "personal": {
+    "identifier": "app.jujies.tafelraum",
+    "port": 49317,
+    "channel": "colleagues",
+    "endpoint": "https://updates.jujies.app/tafelraum/latest.json",
+    "publicKey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU5QjQ4RDY4REYxRDg1MDIKUldRQ2hSM2ZhSTIwV1JlTGZpVnBzanlBM08rK0hlZUNFK1dhTFVKeE5vbWM4ZjZxclQxbTdId0YK"
+  },
+  "public": {
+    "identifier": "app.jujies.tafelraum.public",
+    "port": 49318,
+    "channel": "public",
+    "endpoint": "https://github.com/JUJIES/Tafelraum/releases/latest/download/latest.json",
+    "publicKey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkyQzkzMDlDRTQwOENCOUEKUldTYXl3amtuRERKa2ovR01VTzhRcGxEaExTdlIyUy9wbTMwdUFKRG1FL0ZLei9rOWhPRXFyWWIK"
+  }
+}

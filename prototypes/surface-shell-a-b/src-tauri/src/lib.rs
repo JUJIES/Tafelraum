@@ -29,13 +29,11 @@ use persistence_exit::{PersistenceExit, confirm_desktop_persistence};
 #[cfg(target_os = "macos")]
 mod room_fullscreen;
 
-#[cfg(not(debug_assertions))]
-const LOCAL_PORT: u16 = 49_317;
+mod desktop_release;
+use desktop_release::DesktopRelease;
 
-// Compile-time distribution selection; never a preference from a lesson/profile.
-fn official_updates_enabled() -> bool {
-    serde_json::from_str::<serde_json::Value>(include_str!("../../distribution.json"))
-        .ok().and_then(|value| value["officialUpdates"].as_bool()).unwrap_or(false)
+fn official_updates_enabled(app: &AppHandle) -> bool {
+    app.state::<DesktopRelease>().updates_enabled()
 }
 
 struct ServerProcess(Mutex<Option<Child>>);
@@ -60,6 +58,7 @@ struct UpdateOverview {
     current_version: String,
     available_version: Option<String>,
     phase: &'static str,
+    update_channel: &'static str,
 }
 
 impl UpdateState {
@@ -115,6 +114,7 @@ impl UpdateState {
                 .ok()
                 .and_then(|version| version.clone()),
             phase,
+            update_channel: app.state::<DesktopRelease>().channel,
         }
     }
 
@@ -184,7 +184,7 @@ fn available_update_label(version: &str) -> String {
 }
 
 fn check_for_updates(app: AppHandle, manual: bool) {
-    if !official_updates_enabled() { return; }
+    if !official_updates_enabled(&app) { return; }
     log_update(&app, format!("Updateprüfung gestartet (manuell={manual})."));
     let update_state = app.state::<UpdateState>();
     if !update_state.begin_check() {
@@ -364,7 +364,7 @@ fn open_room_canvas(app: AppHandle, channel: String) -> Result<(), String> {
     #[cfg(debug_assertions)]
     let base = "http://127.0.0.1:5173";
     #[cfg(not(debug_assertions))]
-    let base = "http://127.0.0.1:49317";
+    let base = format!("http://127.0.0.1:{}", app.state::<DesktopRelease>().port);
     let url = Url::parse(&format!("{base}/room.html?channel={channel}"))
         .map_err(|error| error.to_string())?;
     // Only choose a display automatically when the main window has one unambiguous alternative.
@@ -418,15 +418,8 @@ fn validate_external_web_url(url: &str) -> Result<Url, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{validate_external_web_url,official_updates_enabled};
+    use super::{validate_external_web_url};
 
-    #[test]
-    fn updater_is_bound_to_the_compiled_distribution() {
-        let profile: serde_json::Value = serde_json::from_str(include_str!("../../distribution.json")).unwrap();
-        assert_eq!(official_updates_enabled(), profile["profile"] == "personal");
-        let config: serde_json::Value = serde_json::from_str(include_str!("../tauri.conf.json")).unwrap();
-        assert_eq!(official_updates_enabled(), config["plugins"]["updater"]["endpoints"].as_array().is_some_and(|endpoints| !endpoints.is_empty()));
-    }
 
     #[test]
     fn external_links_allow_only_http_and_https() {
@@ -442,7 +435,7 @@ fn install_menu(app: &tauri::App) -> tauri::Result<()> {
     let check_updates =
         MenuItemBuilder::with_id("check-updates", "Nach Updates suchen …").build(app)?;
     let mut app_menu = SubmenuBuilder::new(app, "Tafelraum").about_with_text("Über Tafelraum", None).separator();
-    if official_updates_enabled() { app_menu = app_menu.item(&check_updates); }
+    if official_updates_enabled(app.handle()) { app_menu = app_menu.item(&check_updates); }
     let app_menu = app_menu.text("open-data", "Lokalen Datenordner öffnen")
         .separator()
         .quit_with_text("Tafelraum beenden")
@@ -473,6 +466,7 @@ fn install_menu(app: &tauri::App) -> tauri::Result<()> {
 #[cfg(not(debug_assertions))]
 fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
     let handle = app.handle().clone();
+    let local_port = app.state::<DesktopRelease>().port;
     let resource_dir = app.path().resource_dir()?;
     let data_root = app.path().app_data_dir()?;
     let log_dir = app.path().app_log_dir()?;
@@ -493,7 +487,7 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
         .arg("--archive-root")
         .arg(archive_root)
         .arg("--port")
-        .arg(LOCAL_PORT.to_string())
+        .arg(local_port.to_string())
         .arg("--parent-pid")
         .arg(std::process::id().to_string())
         .stdin(Stdio::null())
@@ -510,7 +504,7 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
         let mut reader = BufReader::new(stdout);
         let mut line = String::new();
         let ready = reader.read_line(&mut line).is_ok()
-            && line.trim() == format!("TAFELRAUM_READY {LOCAL_PORT}");
+            && line.trim() == format!("TAFELRAUM_READY {local_port}");
         if !ready {
             show_message(
                 &handle,
@@ -523,7 +517,7 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
         let window_handle = handle.clone();
         let _ = handle.run_on_main_thread(move || {
             if let Some(window) = window_handle.get_webview_window("main") {
-                if let Ok(url) = format!("http://127.0.0.1:{LOCAL_PORT}/").parse() {
+                if let Ok(url) = format!("http://127.0.0.1:{local_port}/").parse() {
                     let _ = window.navigate(url);
                 }
             }
@@ -549,6 +543,9 @@ fn stop_local_server(app: &AppHandle) {
 }
 
 pub fn run() {
+    let context = tauri::generate_context!();
+    let release = DesktopRelease::from_config(context.config()).expect("Invalid desktop delivery configuration");
+    let updates_enabled = release.updates_enabled();
     let builder = tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _, _| {
             if let Some(window) = app.get_webview_window("main") {
@@ -558,6 +555,7 @@ pub fn run() {
             }
         }))
         .plugin(tauri_plugin_dialog::init())
+        .manage(release)
         .manage(UpdateState::new())
         .manage(UiLanguage::default())
         .manage(PersistenceExit::default())
@@ -587,9 +585,9 @@ pub fn run() {
             _ => {}
         });
 
-    let builder = if official_updates_enabled() { builder.plugin(tauri_plugin_updater::Builder::new().build()) } else { builder };
+    let builder = if updates_enabled { builder.plugin(tauri_plugin_updater::Builder::new().build()) } else { builder };
     let app = builder
-        .build(tauri::generate_context!())
+        .build(context)
         .expect("Tafelraum konnte nicht aufgebaut werden");
     app.run(|handle, event| {
         match &event {
@@ -620,7 +618,7 @@ pub fn run() {
             RunEvent::WindowEvent {
                 event: tauri::WindowEvent::Focused(true),
                 ..
-            } if handle.state::<UpdateState>().should_check_automatically() => {
+            } if official_updates_enabled(handle) && handle.state::<UpdateState>().should_check_automatically() => {
                 check_for_updates(handle.clone(), false)
             }
             _ => {}

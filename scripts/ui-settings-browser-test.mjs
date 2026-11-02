@@ -1,6 +1,4 @@
-import {settle} from './browser-animation.mjs';
 // Isolated preference + real teacher/Room regression, with an empty test archive.
-import {canvasAgentPlugin,teachingAgentPlugin} from '../prototypes/surface-shell-a-b/canvas-agent-server.mjs';
 import assert from 'node:assert/strict';
 import distribution from '../prototypes/surface-shell-a-b/distribution.json' with {type:'json'};
 import {prepareAgentKit} from './prepare-agent-kit.mjs';
@@ -30,7 +28,7 @@ await writeFile(archiveFile,JSON.stringify(fixture));
 await prepareAgentKit(repository,path.join(temporary,'agent-kit'));
 const server=await createServer({configFile:false,root:app,cacheDir:path.join(temporary,'vite'),
  define:{__TAFELRAUM_VERSION__:JSON.stringify('settings-test')},server:{host:'127.0.0.1',port:0,watch:{ignored:['**/agent-kit/**','**/.agent-kit-*/**']}},
- plugins:[react(),canvasAgentPlugin(),teachingAgentPlugin(),{name:'isolated-language',configureServer(vite){
+ plugins:[react(),{name:'isolated-language',configureServer(vite){
   vite.middlewares.use(createAgentKitMiddleware({kitRoot:path.join(temporary,'agent-kit')}));
   vite.middlewares.use((req,res,next)=>{
    if(req.url?.startsWith('/api/')&&!req.url.startsWith('/api/archive')){
@@ -42,9 +40,9 @@ const server=await createServer({configFile:false,root:app,cacheDir:path.join(te
 const checks=[],errors=[];let browser;
 async function assertButtonStates(page,button){
  const inspect=el=>{const s=getComputedStyle(el);return {outline:s.outlineStyle,background:s.backgroundColor,color:s.color,border:s.borderColor,filter:s.filter};};
- await page.mouse.move(0,0);await page.keyboard.press('Tab');await button.focus();await settle(button);
+ await page.mouse.move(0,0);await page.keyboard.press('Tab');await button.focus();await button.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
  const focused=await button.evaluate(inspect);assert.equal(focused.outline,'none');
- await button.evaluate(el=>el.blur());await button.hover();await settle(button);
+ await button.evaluate(el=>el.blur());await button.hover();await button.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
  assert.deepEqual(await button.evaluate(inspect),focused,await button.textContent());
 }
 
@@ -76,7 +74,7 @@ try {
    assert.notEqual(await shadow.evaluate(el=>getComputedStyle(el).boxShadow),'none');
    await page.getByRole('heading',{name:'Verbindungen',exact:true}).waitFor();
    const themeControl=page.getByRole('combobox',{name:theme==='dark'?'Dunkles Design':'Helles Design',exact:true});
-   await settle(page.locator('.settings-popover'));
+   await page.locator('.settings-popover').evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
    const target=await themeControl.boundingBox();assert.ok(target.height>=48,JSON.stringify(target));
    const language=page.getByRole('combobox',{name:'Sprache',exact:true});
    const languageTarget=await language.boundingBox();assert.ok(languageTarget.height>=48,JSON.stringify(languageTarget));
@@ -111,10 +109,10 @@ try {
     await page.keyboard.press('Tab');await close.focus();
     assert.equal(await close.evaluate(el=>el===document.activeElement),true);
     await page.mouse.move(0,0);
-    await settle(close);
+    await close.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
     const keyboardSurface=await close.evaluate(el=>getComputedStyle(el).backgroundColor);
     assert.notEqual(keyboardSurface,'rgba(0, 0, 0, 0)','keyboard focus remains visible');
-    await close.hover();await settle(close);
+    await close.hover();await close.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
     assert.equal(await close.evaluate(el=>getComputedStyle(el).backgroundColor),keyboardSurface,'hover and keyboard use the same surface');
     await page.screenshot({path:path.join(output,`${name}-${theme}-agent-button-states.png`),animations:'disabled'});
     await page.keyboard.press('Enter');assert.equal(await connection.isVisible(),false);
@@ -177,9 +175,9 @@ try {
 
   // Mock only the native IPC boundary; exercise the real settings, hook and dialog.
   const native=await browser.newContext({viewport:{width:1440,height:1000}});
-  await native.addInitScript(()=>{
+  await native.addInitScript(({channel})=>{
    window.isTauri=true;window.testHandlers={};window.testCommands=[];
-   window.testOverview={currentVersion:'settings-test',availableVersion:null,phase:'idle'};
+   window.testOverview={currentVersion:'settings-test',availableVersion:null,phase:'idle',updateChannel:channel};
    window.__TAURI_INTERNALS__={metadata:{currentWindow:{label:'main'},currentWebview:{label:'main'}},transformCallback:fn=>fn,invoke:async(cmd,args)=>{
     window.testCommands.push(cmd);
     if(cmd==='plugin:event|listen'){window.testHandlers[args.event]=args.handler;return 1;}
@@ -189,8 +187,8 @@ try {
     return null;
    }};
    window.__TAURI_EVENT_PLUGIN_INTERNALS__={unregisterListener:()=>{}};
-   window.testEmitUpdate=payload=>{window.testOverview=payload;window.testHandlers['tafelraum-update-overview']?.({payload});};
-  });
+   window.testEmitUpdate=payload=>{payload={...window.testOverview,...payload};window.testOverview=payload;window.testHandlers['tafelraum-update-overview']?.({payload});};
+  },{channel:distribution.officialUpdates?'colleagues':'manual'});
   const nativePage=await native.newPage();nativePage.setDefaultTimeout(20000);
   nativePage.on('pageerror',error=>errors.push(name+' native boundary: '+error.message));
   await nativePage.goto(origin+'/?dev=1');
@@ -202,16 +200,16 @@ try {
    await nativePage.evaluate(()=>window.testUpdateError=true);
    await nativeDialog.getByRole('button',{name:'Nach Updates suchen',exact:true}).click();await nativeDialog.getByText('Synthetic update failure',{exact:true}).waitFor();
    await nativeDialog.getByRole('button',{name:'Schließen',exact:true}).click();
-   await nativePage.evaluate(()=>window.testEmitUpdate({currentVersion:'settings-test',availableVersion:'0.2.0',phase:'idle'}));
+   await nativePage.evaluate(()=>window.testEmitUpdate({currentVersion:'settings-test',availableVersion:'0.2.0',phase:'idle',updateChannel:'colleagues'}));
    await nativeDialog.waitFor();await nativePage.locator('.settings-update-dot').waitFor();
    await nativePage.screenshot({path:path.join(output,name+'-available-update.png'),animations:'disabled'});
    await nativeDialog.getByRole('button',{name:'Später',exact:true}).click();
-   await nativePage.evaluate(()=>window.testEmitUpdate({currentVersion:'settings-test',availableVersion:'0.2.0',phase:'idle'}));
+   await nativePage.evaluate(()=>window.testEmitUpdate({currentVersion:'settings-test',availableVersion:'0.2.0',phase:'idle',updateChannel:'colleagues'}));
    await nativeSettings.click();await nativePage.getByRole('button',{name:versionLabel,exact:true}).click();await nativeDialog.waitFor();
    assert.equal(await nativePage.evaluate(()=>window.testCommands.filter(cmd=>cmd==='desktop_update_overview').length),subscriptions,'settings toggles must not restart the native subscription');
    await nativePage.keyboard.press('Escape');
   }else{
-   assert.equal(await nativePage.evaluate(()=>window.testCommands.some(cmd=>cmd==='desktop_update_overview'||cmd==='request_desktop_update_check')),false);
+   assert.equal(await nativePage.evaluate(()=>window.testCommands.some(cmd=>cmd==='request_desktop_update_check')),false);
    assert.equal(await nativePage.locator('.settings-update-dot').count(),0);
   }
   await native.close();
@@ -222,18 +220,20 @@ try {
     window.__TAURI_INTERNALS__={transformCallback:fn=>fn,invoke:async(cmd,args)=>{
      if(cmd==='plugin:event|listen'){window.testHandlers[args.event]=args.handler;return 1;}
      if(cmd==='plugin:app|version')return 'settings-test';
-     if(cmd==='desktop_update_overview')return {currentVersion:'settings-test',availableVersion:null,phase:'idle'};
+     if(cmd==='desktop_update_overview')return {currentVersion:'settings-test',availableVersion:null,phase:'idle',updateChannel:'colleagues'};
     }};
    });
    const test=await fixture.newPage();await test.goto(origin+'/src/desktop-update-prompt.browser.html');
    await test.waitForFunction(()=>window.setPresenting&&window.emitUpdate);
    await test.evaluate(()=>window.setPresenting(true));
-   await test.evaluate(()=>window.emitUpdate({currentVersion:'settings-test',availableVersion:'0.3.0',phase:'idle'}));
+   await test.evaluate(()=>window.emitUpdate({currentVersion:'settings-test',availableVersion:'0.3.0',phase:'idle',updateChannel:'colleagues'}));
    assert.equal(await test.getByRole('dialog').count(),0);
-   await test.evaluate(()=>window.setPresenting(false));await test.getByRole('dialog').waitFor();
-   await test.getByRole('button',{name:'Später',exact:true}).click();
+   assert.equal(await test.evaluate(()=>window.updateCheckRequests??0),0);
+   await test.evaluate(()=>window.setPresenting(false));await test.waitForFunction(()=>window.lastOfferedVersion==='0.3.0');
    await test.evaluate(()=>{window.setPresenting(true);});await test.evaluate(()=>window.setPresenting(false));
-   assert.equal(await test.getByRole('dialog').count(),0);await fixture.close();
+   assert.equal(await test.evaluate(()=>window.updateCheckRequests),1);
+   await test.evaluate(()=>window.emitUpdate({currentVersion:'settings-test',availableVersion:'0.4.0',phase:'idle',updateChannel:'colleagues'}));
+   await test.waitForFunction(()=>window.lastOfferedVersion==='0.4.0' && window.updateCheckRequests===2);await fixture.close();
   }
   checks.push(`${name}: ${distribution.profile}, grouped settings, theme control, light/dark and narrow/short windows, keyboard return, Room collapse/reopen, native update lifecycle or public absence`);
   await browser.close();browser=null;

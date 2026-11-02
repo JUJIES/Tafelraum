@@ -403,5 +403,10 @@
     "Kompaktere Werkzeugleiste mit direktem Zugriff auf Material, Apps und Widgets.",
     "Zeiger und Clipaufnahme bei Präsentieren; Inhalt finden bei den Canvasaktionen.",
     "Anpassung der Kopfzeile an schmale Fenster und neutrales Einklappen der Werkzeugleiste."
+  ],
+  "0.1.89": [
+    "Official Public Mac app now checks for signed public updates from GitHub.",
+    "Public app identity, local port and archive are separate from the colleagues edition.",
+    "Source builds remain manual by default."
   ]
 }

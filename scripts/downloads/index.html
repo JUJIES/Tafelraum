@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tafelraum downloads</title>
+<style>
+:root{font:17px/1.6 system-ui,sans-serif;color:#183647;background:#f7f5ef}body{margin:0;padding:9vh 24px}main{max-width:650px;margin:auto}small{color:#526d72}h1{font-size:clamp(34px,7vw,52px);line-height:1.15;margin:12px 0 24px}a{color:#205c62}#download{display:inline-block;padding:13px 22px;background:#205c62;color:white;border-radius:10px;text-decoration:none;font-weight:650}section{border-top:1px solid #cbd5d1;margin-top:32px;padding-top:20px}.muted{color:#526d72;font-size:14px;overflow-wrap:anywhere}[hidden]{display:none!important}
+</style>
+<main><small id="edition">Tafelraum</small><h1 id="title">Download Tafelraum</h1><p id="status">Loading the released version…</p><p><a id="download" hidden>Download for Mac · Apple Silicon</a></p><p id="guide"></p><p class="muted" id="source"></p><section><p id="details"></p><details><summary id="verify">Verify download</summary><p class="muted" id="hash"></p></details><a id="history" href="../releases/">Version archive</a></section></main>
+<script>
+(async()=>{
+ const mdm=location.pathname.startsWith('/tafelraum/'),root=new URL('../',location.href);
+ const text=(id,value)=>document.getElementById(id).textContent=value;
+ document.documentElement.lang=mdm?'de':'en';
+ text('edition',mdm?'Kollegen / MDM · Vollfassung':'Public Edition · Public Git source');
+ text('title',mdm?'Tafelraum herunterladen':'Download Tafelraum');
+ text('status',mdm?'Freigegebene Version wird geladen…':'Loading the released version…');
+ text('details',mdm?'Das ZIP enthält die App und eure MDM-Installationsanleitung mit dem auf Tafelraum begrenzten Quarantäne-Befehl. Beim Aktualisieren die bisherige Kollegen-App ersetzen.':'The ZIP contains the public-edition app and its English installation guide. Official Public Mac packages offer signed public updates from GitHub. The colleagues update channel is separate.');
+ text('verify',mdm?'Prüfsumme anzeigen':'Show checksum');
+ const history=document.getElementById('history');history.textContent=mdm?'Ältere Versionen':'Older releases';
+ try{
+  const latestResponse=await fetch(new URL('latest.json?check='+Date.now(),root),{cache:'no-store'});if(!latestResponse.ok)throw Error('unavailable');
+  const latest=await latestResponse.json(),version=latest.version;
+  if(!/^\d+\.\d+\.\d+(?:-[\w.-]+)?$/.test(version))throw Error('invalid');
+  const manifestURL=new URL('releases/'+version+'/download.json',root);
+  const response=await fetch(manifestURL,{cache:'no-store'});if(!response.ok)throw Error('unavailable');
+  const d=await response.json(),channel=mdm?'mdm':'public';
+  if(d.version!==version||d.channel!==channel||d.profile!==(mdm?'personal':'public')||!/^[a-f0-9]{64}$/.test(d.sha256)||d.filename!==('Tafelraum-'+(mdm?'MDM':'Public')+'-'+version+'-macOS-arm64.zip')||(!mdm&&!/^[a-f0-9]{40}$/.test(d.sourceCommit)))throw Error('invalid');
+  const expectedPublic='https://github.com/JUJIES/Tafelraum/releases/download/v'+version+'/'+d.filename;
+  if(!mdm&&d.url&&d.url!==expectedPublic)throw Error('invalid download destination');
+  const file=mdm?new URL(d.filename,manifestURL):new URL(expectedPublic),button=document.getElementById('download');
+  button.href=file.href;button.hidden=false;button.textContent=mdm?'Version '+version+' für Mac herunterladen':'Download '+version+' for Mac';
+  text('status',mdm?'Freigegebene Vollfassung '+version+' · macOS / Apple Silicon':'Public release '+version+' · macOS / Apple Silicon');
+  const guide=document.createElement('a');guide.href=new URL('INSTALLATIONSANLEITUNG.txt',manifestURL).href;guide.textContent=mdm?'MDM-Installationsanleitung lesen':'Read the installation guide';document.getElementById('guide').append(guide);
+  text('source',mdm?'Entspricht dem freigegebenen Kollegen-Update. Persönliche Unterrichtsdaten sind nicht im Paket enthalten.':'Built from the published public source release.');
+  if(!mdm){const a=document.createElement('a');a.href='https://github.com/JUJIES/Tafelraum/tree/'+d.sourceCommit;a.textContent='Source on GitHub';document.getElementById('source').append(document.createTextNode(' '),a);}
+  text('hash','SHA-256: '+d.sha256);
+ }catch{ text('status',mdm?'Der Download ist gerade nicht verfügbar. Bitte später erneut versuchen oder die Lehrkraft fragen.':'No public desktop download is available right now. Please try again later.');}
+})();
+</script></html>

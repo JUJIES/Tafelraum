@@ -17,13 +17,14 @@
         async invoke(command, args) {
           if (command === "plugin:app|version") return "0.1.45";
           if (command === "desktop_update_overview") {
-            return { currentVersion: "0.1.45", availableVersion: null, phase: "idle" };
+            return { currentVersion: "0.1.45", availableVersion: null, phase: "idle", updateChannel: window.testUpdateChannel ?? "colleagues" };
           }
           if (command === "plugin:event|listen") {
             window.emitUpdate = (overview) => callbacks.get(args.handler)?.({ payload: overview });
             return 1;
           }
           if (command === "request_desktop_update_check") {
+            window.lastOfferedVersion = args?.availableVersion;
             window.updateCheckRequests = (window.updateCheckRequests ?? 0) + 1;
             return;
           }

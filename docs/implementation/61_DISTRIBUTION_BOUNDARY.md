@@ -136,3 +136,11 @@ gepflegt und unverändert exportiert. Einstellungen zeigen je Profil
 -befehle. `npm run test:ui-settings` prüft beide Profile mit demselben Browserflow.
 Der lokale Kandidat unter `output/ui-settings-public-final/source/` enthält
 diese Änderungen; kein Git-Remote, Upload oder installierter Appaustausch.
+
+
+## Superseding updater boundary (2026-11-02)
+
+The earlier blanket ban on public updating is superseded by
+[contract65](65_DESKTOP_RELEASE_CHANNELS.md). Public default builds remain manual;
+the official public desktop build enables its own GitHub updater. The colleagues
+key, endpoint and identity must never be used for a public update.
