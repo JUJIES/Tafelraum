@@ -39,6 +39,7 @@ export function useDesktopUpdate(presenting: boolean) {
       latestEvent = event.payload;
       if (active) setOverview(event.payload);
     }).then(async (unlisten) => {
+      if (!active) { unlisten(); return; }
       stopListening = unlisten;
       const [version, currentOverview] = await Promise.all([
         getVersion(),
@@ -61,12 +62,16 @@ export function useDesktopUpdate(presenting: boolean) {
   }, [presenting]);
 
   useEffect(() => {
-    if (!desktopApp || !overview.availableVersion || !shouldOpenAutomaticUpdatePrompt(
-      overview.availableVersion, promptedVersions.current, overview.phase, presenting,
-    )) return;
-    promptedVersions.current.add(overview.availableVersion);
-    setOpen(true);
-  }, [desktopApp, overview.availableVersion, overview.phase, presenting]);
+    const version = overview.availableVersion;
+    if (!desktopApp || !updatesEnabled || !version) return;
+    if (overview.phase === "awaitingConfirmation") promptedVersions.current.add(version);
+    if (!shouldOpenAutomaticUpdatePrompt(version, promptedVersions.current, overview.phase, presenting)) return;
+    promptedVersions.current.add(version);
+    void invoke("request_desktop_update_check", { availableVersion: version }).catch(() => {
+      setError(t("Die Updateprüfung konnte nicht gestartet werden."));
+      setOpen(true);
+    });
+  }, [desktopApp, updatesEnabled, overview.availableVersion, overview.phase, presenting]);
 
   async function checkForUpdates() {
     if (!desktopApp || !updatesEnabled || overview.phase !== "idle") return;

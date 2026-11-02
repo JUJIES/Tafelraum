@@ -15,3 +15,9 @@ Public app identity/port/archive are separate from the unchanged colleagues lane
 Large public files are served by GitHub; fixed Beelink links remain entry points.
 No silent full-archive migration or cross-edition updates. Operational rules and
 verification contract: [65](65_DESKTOP_RELEASE_CHANNELS.md).
+
+
+Native release follow-up: Public0.1.90 aligns the older public updater with
+the full edition's shared confirmation, cached Update object and six-hour
+background check. Public0.1.89 remains immutable. No unrelated canvas/agent
+working changes are included.

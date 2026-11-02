@@ -867,5 +867,8 @@
   "Updateprüfung nicht möglich": "Could not check for updates",
   "Tafelraum konnte nicht starten": "Tafelraum could not start",
   "Der lokale Tafelraum-Dienst konnte nicht geöffnet werden. Details stehen im lokalen Protokollordner.": "The local Tafelraum service could not be opened. Details are in the local log folder.",
-  "Über Tafelraum": "About Tafelraum"
+  "Über Tafelraum": "About Tafelraum",
+  "Tafelraum {0} ist verfügbar. Möchtest du das Update installieren und Tafelraum neu starten?": "Tafelraum {0} is available. Install the update and restart Tafelraum?",
+  "Tafelraum aktualisieren": "Update Tafelraum",
+  "Installieren (empfohlen)": "Install (recommended)"
 }

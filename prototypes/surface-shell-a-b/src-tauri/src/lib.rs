@@ -19,7 +19,7 @@ use tauri::{
     AppHandle, Emitter, Manager, RunEvent, WebviewUrl, WebviewWindowBuilder, Wry,
 };
 use tauri_plugin_dialog::{DialogExt, MessageDialogButtons, MessageDialogKind};
-use tauri_plugin_updater::UpdaterExt;
+use tauri_plugin_updater::{Update, UpdaterExt};
 use url::Url;
 mod ui_language;
 use ui_language::{UiLanguage, set_ui_language};
@@ -49,7 +49,7 @@ const AUTOMATIC_UPDATE_INTERVAL: Duration = Duration::from_secs(6 * 60 * 60);
 struct UpdateState {
     phase: AtomicU8,
     last_check: Mutex<Option<Instant>>,
-    available_version: Mutex<Option<String>>,
+    available_update: Mutex<Option<Update>>,
 }
 
 #[derive(Clone, serde::Serialize)]
@@ -66,7 +66,7 @@ impl UpdateState {
         Self {
             phase: AtomicU8::new(UPDATE_IDLE),
             last_check: Mutex::new(None),
-            available_version: Mutex::new(None),
+            available_update: Mutex::new(None),
         }
     }
 
@@ -93,9 +93,9 @@ impl UpdateState {
         self.phase.store(phase, Ordering::Release);
     }
 
-    fn set_available_version(&self, version: Option<String>) {
-        if let Ok(mut available_version) = self.available_version.lock() {
-            *available_version = version;
+    fn set_available_update(&self, update: Option<Update>) {
+        if let Ok(mut available_version) = self.available_update.lock() {
+            *available_version = update;
         }
     }
 
@@ -109,10 +109,10 @@ impl UpdateState {
         UpdateOverview {
             current_version: app.package_info().version.to_string(),
             available_version: self
-                .available_version
+                .available_update
                 .lock()
                 .ok()
-                .and_then(|version| version.clone()),
+                .and_then(|entry| entry.as_ref().map(|update| update.version.clone())),
             phase,
             update_channel: app.state::<DesktopRelease>().channel,
         }
@@ -202,97 +202,22 @@ fn check_for_updates(app: AppHandle, manual: bool) {
             Ok(Some(update)) => {
                 let version = update.version.clone();
                 app.state::<UpdateState>()
-                    .set_available_version(Some(version.clone()));
+                    .set_available_update(Some(update.clone()));
                 log_update(&app, format!("Update {version} gefunden."));
                 if !manual {
                     app.state::<UpdateState>().set_phase(UPDATE_IDLE);
                     set_update_menu(&app, available_update_label(&version), true);
                     emit_update_overview(&app);
-                    log_update(&app, "Update wartet auf die manuelle Prüfung im App-Menü.");
+                    log_update(&app, "Update steht zur Bestätigung im Lehrerfenster bereit.");
                     return;
                 }
-                app.state::<UpdateState>()
-                    .set_phase(UPDATE_AWAITING_CONFIRMATION);
-                set_update_menu(&app, available_update_label(&version), false);
-                emit_update_overview(&app);
-                let release_notes = update.body.clone().unwrap_or_default();
-                let message = if release_notes.trim().is_empty() {
-                    format!(
-                        "Tafelraum {version} ist verfügbar. Jetzt installieren und neu starten?"
-                    )
-                } else {
-                    format!("Tafelraum {version} ist verfügbar.\n\n{release_notes}\n\nJetzt installieren und neu starten?")
-                };
-                let install_app = app.clone();
-                let dialog = app
-                    .dialog()
-                    .message(message)
-                    .title(format!("Update {version}"))
-                    .kind(MessageDialogKind::Info)
-                    .buttons(MessageDialogButtons::YesNo);
-                let dialog = if let Some(window) = app.get_webview_window("main") {
-                    dialog.parent(&window)
-                } else {
-                    dialog
-                };
-                dialog.show(move |accepted| {
-                    log_update(
-                        &install_app,
-                        format!("Updatedialog beantwortet (installieren={accepted})."),
-                    );
-                    if !accepted {
-                        install_app.state::<UpdateState>().set_phase(UPDATE_IDLE);
-                        set_update_menu(&install_app, available_update_label(&version), true);
-                        emit_update_overview(&install_app);
-                        return;
-                    }
-                    install_app
-                        .state::<UpdateState>()
-                        .set_phase(UPDATE_INSTALLING);
-                    set_update_menu(&install_app, "Update wird installiert …", false);
-                    emit_update_overview(&install_app);
-                    tauri::async_runtime::spawn(async move {
-                        log_update(&install_app, "Updatedownload gestartet.");
-                        let mut owns_persistence = false;
-                        let install_result: Result<(), String> = async {
-                            let bytes = update.download(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
-                            if install_app.state::<PersistenceExit>().busy.swap(true, Ordering::SeqCst) {
-                                return Err("Ein Speicherabschluss läuft bereits.".into());
-                            }
-                            owns_persistence = true;
-                            persistence_exit::flush(&install_app).await?;
-                            update.install(bytes).map_err(|e| e.to_string())
-                        }.await;
-                        if let Err(error) = install_result {
-                            if owns_persistence {
-                                persistence_exit::release(&install_app);
-                                install_app.state::<PersistenceExit>().busy.store(false, Ordering::SeqCst);
-                            }
-                            log_update(
-                                &install_app,
-                                format!("Updateinstallation fehlgeschlagen: {error}"),
-                            );
-                            install_app.state::<UpdateState>().set_phase(UPDATE_IDLE);
-                            set_update_menu(&install_app, available_update_label(&version), true);
-                            emit_update_overview(&install_app);
-                            show_message(
-                                &install_app,
-                                "Update nicht installiert",
-                                format!("Tafelraum konnte nicht aktualisiert werden: {error}"),
-                                MessageDialogKind::Error,
-                            );
-                            return;
-                        }
-                        log_update(&install_app, "Update installiert; App wird neu gestartet.");
-                        install_app.state::<PersistenceExit>().approved.store(true, Ordering::SeqCst);
-                        install_app.restart();
-                    });
-                });
+                app.state::<UpdateState>().set_phase(UPDATE_AWAITING_CONFIRMATION);
+                confirm_update(app, update);
             }
             Ok(None) => {
                 log_update(&app, "Kein Update gefunden.");
                 app.state::<UpdateState>().set_phase(UPDATE_IDLE);
-                app.state::<UpdateState>().set_available_version(None);
+                app.state::<UpdateState>().set_available_update(None);
                 set_update_menu(&app, "Nach Updates suchen …", true);
                 emit_update_overview(&app);
                 if manual {
@@ -322,14 +247,97 @@ fn check_for_updates(app: AppHandle, manual: bool) {
     });
 }
 
+fn confirm_update(app: AppHandle, update: Update) {
+    let version = update.version.clone();
+    set_update_menu(&app, available_update_label(&version), false);
+    emit_update_overview(&app);
+    let message = ui_language::translate(&app, "Tafelraum {0} ist verfügbar. Möchtest du das Update installieren und Tafelraum neu starten?").replace("{0}", &version);
+    let install_app = app.clone();
+    let dialog = app
+        .dialog()
+        .message(message)
+        .title(ui_language::translate(&app, "Tafelraum aktualisieren"))
+        .kind(MessageDialogKind::Info)
+        .buttons(MessageDialogButtons::OkCancelCustom(
+            ui_language::translate(&app, "Installieren (empfohlen)"),
+            ui_language::translate(&app, "Später"),
+        ));
+    let dialog = if let Some(window) = app.get_webview_window("main") {
+        dialog.parent(&window)
+    } else {
+        dialog
+    };
+    dialog.show(move |accepted| {
+        log_update(
+            &install_app,
+            format!("Updatedialog beantwortet (installieren={accepted})."),
+        );
+        if !accepted {
+            install_app.state::<UpdateState>().set_phase(UPDATE_IDLE);
+            set_update_menu(&install_app, available_update_label(&version), true);
+            emit_update_overview(&install_app);
+            return;
+        }
+        install_app
+            .state::<UpdateState>()
+            .set_phase(UPDATE_INSTALLING);
+        set_update_menu(&install_app, "Update wird installiert …", false);
+        emit_update_overview(&install_app);
+        tauri::async_runtime::spawn(async move {
+            log_update(&install_app, "Updatedownload gestartet.");
+            let mut owns_persistence = false;
+            let install_result: Result<(), String> = async {
+                let bytes = update.download(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
+                if install_app.state::<PersistenceExit>().busy.swap(true, Ordering::SeqCst) {
+                    return Err("Ein Speicherabschluss läuft bereits.".into());
+                }
+                owns_persistence = true;
+                persistence_exit::flush(&install_app).await?;
+                update.install(bytes).map_err(|e| e.to_string())
+            }.await;
+            if let Err(error) = install_result {
+                if owns_persistence {
+                    persistence_exit::release(&install_app);
+                    install_app.state::<PersistenceExit>().busy.store(false, Ordering::SeqCst);
+                }
+                log_update(
+                    &install_app,
+                    format!("Updateinstallation fehlgeschlagen: {error}"),
+                );
+                install_app.state::<UpdateState>().set_phase(UPDATE_IDLE);
+                set_update_menu(&install_app, available_update_label(&version), true);
+                emit_update_overview(&install_app);
+                show_message(
+                    &install_app,
+                    "Update nicht installiert",
+                    format!("Tafelraum konnte nicht aktualisiert werden: {error}"),
+                    MessageDialogKind::Error,
+                );
+                return;
+            }
+            log_update(&install_app, "Update installiert; App wird neu gestartet.");
+            install_app.state::<PersistenceExit>().approved.store(true, Ordering::SeqCst);
+            install_app.restart();
+        });
+    });
+}
+
 #[tauri::command]
 fn desktop_update_overview(app: AppHandle) -> UpdateOverview {
     app.state::<UpdateState>().overview(&app)
 }
 
 #[tauri::command]
-fn request_desktop_update_check(app: AppHandle) {
-    check_for_updates(app, true);
+fn request_desktop_update_check(window: tauri::WebviewWindow, app: AppHandle, available_version: Option<String>) {
+    if !official_updates_enabled(&app) || window.label() != "main" { return; }
+    let Some(version) = available_version else { check_for_updates(app, true); return; };
+    let state = app.state::<UpdateState>();
+    let update = state.available_update.lock().ok().and_then(|entry| entry.clone());
+    if let Some(update) = update.filter(|update| update.version == version) {
+        if state.phase.compare_exchange(UPDATE_IDLE, UPDATE_AWAITING_CONFIRMATION, Ordering::AcqRel, Ordering::Relaxed).is_ok() {
+            confirm_update(app, update);
+        }
+    }
 }
 
 #[tauri::command]
@@ -614,7 +622,16 @@ pub fn run() {
         }
         #[cfg(not(debug_assertions))]
         match &event {
-            RunEvent::Ready => check_for_updates(handle.clone(), false),
+            RunEvent::Ready if official_updates_enabled(handle) => {
+                check_for_updates(handle.clone(), false);
+                let app = handle.clone();
+                std::thread::spawn(move || loop {
+                    std::thread::sleep(Duration::from_secs(60));
+                    if app.state::<UpdateState>().should_check_automatically() {
+                        check_for_updates(app.clone(), false);
+                    }
+                });
+            }
             RunEvent::WindowEvent {
                 event: tauri::WindowEvent::Focused(true),
                 ..

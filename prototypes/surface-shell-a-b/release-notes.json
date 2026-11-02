@@ -408,5 +408,9 @@
     "Official Public Mac app now checks for signed public updates from GitHub.",
     "Public app identity, local port and archive are separate from the colleagues edition.",
     "Source builds remain manual by default."
+  ],
+  "0.1.90": [
+    "Public and colleagues apps now use the same startup/background update confirmation flow.",
+    "Public updates remain independently signed and hosted on GitHub; source builds stay manual."
   ]
 }

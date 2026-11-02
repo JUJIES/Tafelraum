@@ -13,7 +13,7 @@ Update veröffentlicht. Die installierte App und ihre Daten werden nicht geände
 | Lerndeck | bestehende Registrierung, direkt beim Öffnen verfügbar | keine Registrierung, Appauswahl oder Verbindungseinstellung; Icon ausgeschlossen |
 | Experimenteller Modellanschluss für HTML | bestehende Keyverwaltung, Provider und freigegebene Satzprüfung | keine Keyverwaltung/-UI, Providerimplementierung oder aktive HTML-Modellbrücke |
 | Remote Canvas | bestehender persönlicher Weg | keine Auswahl, Einrichtung oder Wiederverbindung; kein Remote-Dienst/Teilnehmerbuild |
-| Offizieller JUJIES-Updater | bestehender signierter Kanal | kein Kanal/Public Key in der Tauri-Konfiguration, keine Prüfung/Installation oder Updateaktion |
+| Official desktop updater | Existing signed colleagues channel | Manual by default; official Public Mac packages use a separate signed GitHub channel (contract65) |
 
 Die Satzprüfung war ein erster Test des persönlichen Modellanschlusses für
 HTML-Embeds, keine allgemeine KI-Funktion. Ein späterer öffentlicher Anschluss
@@ -53,9 +53,9 @@ Protokoll- und Geometriedateien bleiben enthalten. Der historische Name
 `test:live` umfasst deshalb weiterhin lokale Room-/Projektionsprüfungen.
 
 Native Updatebefehle prüfen das beim Kompilieren eingebettete Profil vor jeder
-Aktion. Das Updater-Plugin wird nur im persönlichen Profil registriert; dort
-bleiben Signaturprüfung und geordneter Speicherabschluss unverändert. Öffentlich
-zeigt die Versionsanzeige nur die Version. Kein umschaltbarer Nutzerschalter.
+Aktion. Official native builds register the updater for their own channel; default
+public source builds remain manual. Signature verification and orderly save
+completion remain shared. No user-facing switch between product editions.
 
 ## Verbindliche Arbeitsregel je Repository (D-331, ergänzt31.10.2026)
 

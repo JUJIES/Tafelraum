@@ -7,7 +7,7 @@ const require=createRequire(app+'package.json');
 const {createServer}=await import(require.resolve('vite'));
 const {default:react}=await import(require.resolve('@vitejs/plugin-react'));
 const {chromium,webkit}=require('playwright');
-const server=await createServer({configFile:false,root:app,plugins:[react()],define:{__TAFELRAUM_VERSION__:JSON.stringify('channel-test')},server:{host:'127.0.0.1',port:0}});
+const server=await createServer({configFile:false,root:app,plugins:[react()],define:{__TAFELRAUM_VERSION__:JSON.stringify('channel-test')},server:{host:'127.0.0.1',port:0,watch:{ignored:['**/src-tauri/target/**','**/desktop-resources/**']}}});
 const output=new URL('../output/desktop-update-channels/',import.meta.url);await mkdir(output,{recursive:true});
 const checks=[];let browser;
 try {
