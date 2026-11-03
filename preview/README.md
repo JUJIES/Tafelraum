@@ -10,6 +10,6 @@ Deploy dist/, routes.json and serve.mjs to the dedicated static preview service.
 
 ### High-zoom rendering
 
-Large native shapes use viewport-bounded SVG shadow filters. The 48px screen-space margin covers the existing blur and offset; rotated viewport corners are mapped into each shape's local SVG coordinates. Offscreen shadows allocate no filter. This preserves the shadow, scene data and exports while avoiding zoom-dependent filter bitmaps several times larger than the object.
+Rectangular shapes reuse the native CSS box-shadow rendering path already used by image materials. This avoids Safari rasterising a large SVG SourceAlpha even when the filter is clipped. Ellipse and diamond shadows retain viewport-bounded SVG filters and bounded SVG viewports. The 48px screen-space margin covers the existing blur and offset; rotated viewport corners are mapped into each shape's local SVG coordinates. Offscreen shadows allocate no filter. This preserves the shadow, scene data and exports while avoiding zoom-dependent filter bitmaps several times larger than the object.
 
 Run node preview/check-zoom.mjs [ORIGIN] for a repeatable WebKit/Chromium zoom sequence at Retina density. It reports frame timing and verifies bounded filter regions. Timings depend on hardware; initial frames may still be slower. Geometry coverage is tested in src/canvas/shape-shadow-region.test.ts.

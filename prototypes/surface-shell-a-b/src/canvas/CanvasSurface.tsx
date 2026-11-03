@@ -6620,24 +6620,42 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
             />
           ))}
           {shapeShadowFrames.map(frame => {
+            // Use the same native box-shadow path as image materials for boxes.
+            // WebKit rasterises large SVG SourceAlpha shapes before filter clipping.
+            if (frame.shapeType === "rectangle") return <div
+              className="material-shadow-frame"
+              key={`shape-shadow-${frame.elementId}`}
+              style={{
+                left: frame.centerX, top: frame.centerY,
+                width: frame.width, height: frame.height,
+                borderRadius: frame.cornerRadius,
+                opacity: frame.opacity * (theme === "dark" ? 1 : 0.48),
+                transform: `translate(-50%, -50%) rotate(${frame.angle}rad)`,
+                boxShadow: "0 8px 22px rgba(0,0,0,.34), 0 2px 5px rgba(0,0,0,.24)",
+              }}
+            />;
             const region = shapeShadowRegion(frame, {
               width: rootRef.current?.clientWidth ?? frame.width,
               height: rootRef.current?.clientHeight ?? frame.height,
             });
             if (!region.width || !region.height) return null;
+            const dx = region.x + region.width / 2 - frame.width / 2;
+            const dy = region.y + region.height / 2 - frame.height / 2;
+            const c = Math.cos(frame.angle), sn = Math.sin(frame.angle);
             const filterId = `shape-shadow-filter-${frame.elementId}`;
             return <svg
               className="shape-shadow-frame"
-              height={frame.height}
+              height={region.height}
               key={`shape-shadow-${frame.elementId}`}
               style={{
-                left: frame.centerX,
+                left: frame.centerX + dx * c - dy * sn,
                 opacity: frame.opacity * (theme === "dark" ? 1 : 0.48),
-                top: frame.centerY,
+                top: frame.centerY + dx * sn + dy * c,
+                overflow: "hidden",
                 transform: `translate(-50%, -50%) rotate(${frame.angle}rad)`,
               }}
-              viewBox={`0 0 ${frame.width} ${frame.height}`}
-              width={frame.width}
+              viewBox={`${region.x} ${region.y} ${region.width} ${region.height}`}
+              width={region.width}
             >
               <defs>
                 <filter id={filterId} filterUnits="userSpaceOnUse" x={region.x} y={region.y} width={region.width} height={region.height} colorInterpolationFilters="sRGB">
