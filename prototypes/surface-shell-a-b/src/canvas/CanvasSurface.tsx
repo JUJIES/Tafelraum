@@ -1,3 +1,4 @@
+import { shapeShadowRegion } from "./shape-shadow-region";
 import { t, useUiLocale, uiLanguageTag } from "../i18n";
 import { displaySize, createImageElements, createAudioElement, createVideoElement, createInteractiveHtmlElement, createEmbeddedAppElement, createYouTubeElement, createCanvasLinkElements } from "./material-elements";
 import { createCanvasAgent } from "./canvas-agent";
@@ -6619,6 +6620,11 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
             />
           ))}
           {shapeShadowFrames.map(frame => {
+            const region = shapeShadowRegion(frame, {
+              width: rootRef.current?.clientWidth ?? frame.width,
+              height: rootRef.current?.clientHeight ?? frame.height,
+            });
+            if (!region.width || !region.height) return null;
             const filterId = `shape-shadow-filter-${frame.elementId}`;
             return <svg
               className="shape-shadow-frame"
@@ -6634,7 +6640,7 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
               width={frame.width}
             >
               <defs>
-                <filter id={filterId} x="-100%" y="-100%" width="300%" height="300%" colorInterpolationFilters="sRGB">
+                <filter id={filterId} filterUnits="userSpaceOnUse" x={region.x} y={region.y} width={region.width} height={region.height} colorInterpolationFilters="sRGB">
                   <feGaussianBlur in="SourceAlpha" stdDeviation="11" result="wide" />
                   <feOffset in="wide" dy="8" result="wideOffset" />
                   <feComponentTransfer in="wideOffset" result="wideAlpha"><feFuncA type="linear" slope="0.34" /></feComponentTransfer>

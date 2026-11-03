@@ -29,3 +29,7 @@ Release based on the previous delivered edition, adding only pinned headless
 Office resource selection, ZIP metadata/compression improvements and release
 metadata. DOCX conversion code, fonts, dictionaries, archive format and updater
 identity/key/endpoint remain unchanged. Verification: DOCX contract39.
+
+## 2026-11-03 – Bound public canvas shadow rasterisation to the viewport
+
+Safari/WebKit zoom stalls were isolated to the native shape SVG shadows, including with HTML, video and clip layers removed. The old -100%/300% filter region scaled with the entire zoomed shape. Shadow filters now use screen-space user units, intersect the rotated viewport with the shape, and retain 48px blur/offset support. Invisible shadows allocate no filter. No scene/persistence/agent/export format or new dependency. Four geometry tests, public typecheck/build, preview Room/reset tests and comparative WebKit/Chromium zoom measurements cover the change. This is a public source/hosted-preview correction; no native package or colleagues update is implied.
