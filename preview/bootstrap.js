@@ -1,8 +1,7 @@
 // Only loaded by the static preview. No lesson, preference or answer survives a reload.
 {
   const entries = new Map([['tafelraum-ui-language-v1','en']]);
-  const requested = new URL(location.href).searchParams.get('lesson');
-  entries.set('surface-lab-active-lesson',['eclipse','map-room','dispatch'].includes(requested)?requested:'eclipse');
+  entries.set('surface-lab-active-lesson','volcanoes');
   const memory = {get length(){return entries.size},getItem:k=>entries.get(k)??null,setItem:(k,v)=>entries.set(String(k),String(v)),removeItem:k=>entries.delete(k),clear:()=>entries.clear(),key:i=>[...entries.keys()][i]??null};
   Object.defineProperty(window,'localStorage',{value:memory});
   Object.defineProperty(window,'sessionStorage',{value:memory});

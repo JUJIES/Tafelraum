@@ -5,11 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {lessons} from './lessons/content.mjs';
-import {makeBoard} from './lessons/boards.mjs';
-import {starterPicture} from './lessons/pictures.mjs';
-import {worksheet,sheetManifest} from './lessons/worksheet.mjs';
-import {makePackage} from './lessons/package.mjs';
+const lessons=[{id:'volcanoes',title:'Volcanoes — Why live so close?'}];
 import {initializeEmptyArchive,createDesktopServer} from '../prototypes/surface-shell-a-b/desktop-server.mjs';
 const here=fileURLToPath(new URL('.',import.meta.url)),root=path.resolve(here,'..'),app=path.join(root,'prototypes/surface-shell-a-b');
 const out=path.join(root,'output/public-preview/dist'),temp=await mkdtemp(path.join(tmpdir(),'tafelraum-preview-'));
@@ -20,29 +16,19 @@ let server;
 try {
   await initializeEmptyArchive(temp);
   const file=path.join(temp,'archive.json'),archive=JSON.parse(await readFile(file,'utf8')),template=archive.catalog.lessons[0];
-  archive.classes[0].label='Demo classroom';archive.catalog.subjects[0].label='Learning studio';archive.catalog.series[0].label='Field investigations';
+  archive.classes[0].label='Year 7';archive.catalog.subjects[0].label='Geography';archive.catalog.series[0].label='Living with volcanoes';
   archive.catalog.lessons=lessons.map(l=>({...template,id:l.id,title:l.title}));archive.catalog.lessonOrderBySeriesId['series-start']=lessons.map(l=>l.id);
   await writeFile(file,JSON.stringify(archive));
-  for(const l of lessons){
-    const base=path.join(temp,'faecher/subject-start/reihen/series-start/stunden',l.id);
-    const pkg=path.join(base,'material/interaktiv',l.id);
-    await mkdir(pkg,{recursive:true});await mkdir(path.join(base,'board'),{recursive:true});
-    await writeFile(path.join(pkg,'manifest.json'),JSON.stringify({format:'tafelraum-interactive-html',schemaVersion:1,id:l.id,title:l.title,entry:'index.html',defaultViewport:{width:852,height:700}}));
-    await writeFile(path.join(pkg,'index.html'),makePackage(l));
-    execFileSync(process.execPath,[path.join(root,'scripts/check-interactive-material.mjs'),'--source-dir',pkg],{stdio:'inherit'});
-    if(l.id==='eclipse'){
-      const date='2026-10-31T00:00:00.000Z';
-      const video={id:'nasa-eclipse',title:'What Is a Solar Eclipse? · NASA Space Place',provider:'youtube',videoId:'hyf5JF_VxwM',url:'https://www.youtube.com/watch?v=hyf5JF_VxwM',createdAt:date,updatedAt:date};
-      await writeFile(path.join(base,'material/links.json'),JSON.stringify({schemaVersion:1,links:[video]}));
-    }
-    if(l.id==='map-room'){
-      const sheet=path.join(base,'material/interaktiv/trail-sheet');
-      await mkdir(sheet,{recursive:true});
-      await writeFile(path.join(sheet,'manifest.json'),JSON.stringify(sheetManifest));
-      await writeFile(path.join(sheet,'index.html'),worksheet);
-      execFileSync(process.execPath,[path.join(root,'scripts/check-interactive-material.mjs'),'--source-dir',sheet,'--require-print'],{stdio:'inherit'});
-    }
-    await writeFile(path.join(base,'board/scene.json'),JSON.stringify(makeBoard(l)));
+  const base=path.join(temp,'faecher/subject-start/reihen/series-start/stunden/volcanoes');
+  await mkdir(path.join(base,'board'),{recursive:true});
+  await copyFile(path.join(here,'lessons/volcanoes/board.json'),path.join(base,'board/scene.json'));
+  await mkdir(path.join(base,'material/interaktiv'),{recursive:true});
+  await copyFile(path.join(here,'lessons/volcanoes/links.json'),path.join(base,'material/links.json'));
+  for(const id of ['volcanoes-field-sheet','volcanoes-teacher-answers']){
+    const src=path.join(here,'lessons/volcanoes',id),dest=path.join(base,'material/interaktiv',id);
+    await mkdir(dest,{recursive:true});
+    for(const name of ['index.html','manifest.json','style.css'])await copyFile(path.join(src,name),path.join(dest,name));
+    execFileSync(process.execPath,[path.join(root,'scripts/check-interactive-material.mjs'),'--source-dir',dest,'--require-print'],{stdio:'inherit'});
   }
   process.chdir(app);
   await build({root:app,build:{outDir:out,emptyOutDir:true},plugins:[{
@@ -51,7 +37,7 @@ try {
       if((id==='./YouTubeCanvasPlayer' && importer?.endsWith('/CanvasSurface.tsx')) ||
          (id==='./RoomMediaLayer' && importer?.endsWith('/LiveViewerCanvas.tsx')))return path.join(app,'src/preview/PreviewVideo.tsx');
       if(/(?:^|\/)canvas-persistence(?:\.ts)?$/.test(id))return path.join(here,'memory-canvas.mjs')},
-    transformIndexHtml:{order:'post',handler(html){return html.replace('</head>','<script src="/preview-bootstrap.js"></script><link rel="stylesheet" href="/preview.css"></head>').replace('<div id="root">','<aside id="preview-bar"><strong>Tafelraum · Live demo</strong><span>Three lessons to try. Changes last only in this tab.</span><a href="/guide.html">Lesson guide</a><a href="/">Reset</a></aside><div id="root">')}}
+    transformIndexHtml:{order:'post',handler(html){return html.replace('</head>','<script src="/preview-bootstrap.js"></script><link rel="stylesheet" href="/preview.css"></head>').replace('<div id="root">','<aside id="preview-bar"><strong>Tafelraum · Live demo</strong><span>Try the lesson from the video. Changes last only in this tab.</span><a href="/guide.html">Lesson guide</a><a href="/">Reset</a></aside><div id="root">')}}
   }]});
   await copyFile(path.join(here,'bootstrap.js'),path.join(out,'preview-bootstrap.js'));
   await copyFile(path.join(here,'preview.css'),path.join(out,'preview.css'));
@@ -59,12 +45,10 @@ try {
   server=await createDesktopServer({archiveRoot:temp,webRoot:out});
   const origin='http://127.0.0.1:'+server.address().port, routes={};
   const paths=['/api/archive','/api/archive/material-removals'];
-  for(const l of lessons){
-    const base='/api/archive/lessons/'+l.id;
-    const id=l.id+'-picture';
-    routes[base+'/starter-image']={type:'application/json',body:JSON.stringify({id,mimeType:'image/svg+xml',created:1,dataURL:'data:image/svg+xml;base64,'+Buffer.from(starterPicture(l.id)).toString('base64')})};
-    if(l.id==='map-room')paths.push(base+'/materials/interactive/trail-sheet',base+'/materials/interactive/trail-sheet/index.html');
-    paths.push(base+'/board',base+'/materials',base+'/materials/interactive/'+l.id,base+'/materials/interactive/'+l.id+'/index.html');
+  const api='/api/archive/lessons/volcanoes';
+  paths.push(api+'/board',api+'/materials');
+  for(const id of ['volcanoes-field-sheet','volcanoes-teacher-answers']){
+    paths.push(api+'/materials/interactive/'+id,api+'/materials/interactive/'+id+'/index.html',api+'/materials/interactive/'+id+'/style.css');
   }
   for(const p of paths){
     const res=await fetch(origin+p);if(!res.ok)throw Error(p+' '+res.status);

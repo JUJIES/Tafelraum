@@ -5,10 +5,10 @@ import { RoomMediaLayer as RoomMedia } from '../live/RoomMediaLayer';
 
 function Invitation({style, load}: {style: CSSProperties; load: () => void}) {
   return <div className="preview-film" style={style}>
-    <span>NASA SPACE PLACE · 2 MIN</span>
-    <strong>What Is a Solar Eclipse?</strong>
+    <span>USGS · KĪLAUEA</span>
+    <strong>Kīlauea Volcano — Fissure 8</strong>
     <button type="button" onClick={load}>▶ Load YouTube video</button>
-    <a href="https://www.youtube.com/watch?v=hyf5JF_VxwM" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
+    <a href="https://www.youtube.com/watch?v=Av_NEjoeyUM" target="_blank" rel="noopener noreferrer">Watch on YouTube ↗</a>
   </div>;
 }
 export function YouTubeCanvasPlayer(props: ComponentProps<typeof Player>) {

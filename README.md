@@ -4,7 +4,7 @@
 
 **[Download the Public Mac app](https://updates.jujies.app/tafelraum-public/download/)** · Apple Silicon · Automatic public updates · [GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
 
-**[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open a lesson, try its HTML activity or send a numbered clip to Room Canvas. Reload to start fresh.
+**[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
 
 [![Watch Tafelraum: From chat to classroom. A 2:34 demo of an AI agent preparing a lesson, with teacher and student views side by side.](docs/images/agent-demo.jpg)](https://youtu.be/nBQukVA6Bxg)
 
@@ -13,17 +13,13 @@
 See a new lesson appear in the library, its materials arrive and the canvas take shape. Then switch numbered clips while keeping separate teacher and classroom views.
 
 <details>
-<summary>Explore the three demo lessons</summary>
+<summary>Try the lesson shown in the video</summary>
 
-![The teacher’s canvas with a starter picture, interactive survey map, trail worksheet and homework arranged across four lesson phases](docs/images/teacher-canvas.png)
+**[Volcanoes — Why live so close?](https://tafelraum-demo.jujies.app/?lesson=volcanoes)** is the complete Year 7 geography lesson from the film: a USGS YouTube starter, a fictional family case, a printable HTML worksheet, separate teacher answers, native canvas tasks, consolidation and transfer.
 
-- **[The map room](https://tafelraum-demo.jujies.app/?lesson=map-room)** — Trace a ridge trail and a river trail. Use the scale to decide which one fits a 25-minute hike.
-- **[Chasing the shadow](https://tafelraum-demo.jujies.app/?lesson=eclipse)** — Move the Moon through three positions and predict which observer would see an eclipse.
-- **[The midnight dispatch](https://tafelraum-demo.jujies.app/?lesson=dispatch)** — Cross-check a harbour log, a radio note and a delivery slip. Write a headline the evidence supports.
+Open **Present → Room Canvas → Start**, then switch clips 1–4. Clip 2 opens just the worksheet. You can also open the [worksheet](https://tafelraum-demo.jujies.app/api/archive/lessons/volcanoes/materials/interactive/volcanoes-field-sheet/index.html) or [teacher answers](https://tafelraum-demo.jujies.app/api/archive/lessons/volcanoes/materials/interactive/volcanoes-teacher-answers/index.html) on their own.
 
-![The midnight dispatch in the teacher view, with a lighthouse illustration, three selectable records and an evidence prompt](docs/images/midnight-dispatch.png)
-
-The numbered clips follow the **warm-up, investigation, consolidation and homework**. Each board mixes editable text and shapes with a starter image and an interactive investigation. Try typing both route distances into the [trail field sheet](https://tafelraum-demo.jujies.app/api/archive/lessons/map-room/materials/interactive/trail-sheet/index.html), or open the optional NASA video on the eclipse board. On a phone, the lesson guide also lets you open each activity by itself.
+Changes stay in the current tab. Reload to restore the example. Agent connections and importing your own materials require a local installation.
 
 </details>
 
@@ -65,9 +61,9 @@ What made AI useful to me was being able to ask for something that would be *the
 
 ## What you can ask your AI agent to do
 
-Here’s a follow-up I could ask for after teaching the map lesson above:
+Here’s a follow-up I could ask for after teaching the volcanoes lesson above:
 
-> In “The map room”, make a follow-up task for pairs: design a third route that is exactly 2.5 km long. Keep the map scale at 250 m per grid edge. Put the task beside the map and prepare a numbered clip so I can show it after we compare the first two trails.
+> In “Volcanoes — Why live so close?”, add a follow-up task for pairs: compare a farmer and a hotel worker. Ask how their reasons for staying might differ. Put it beside the worksheet and prepare a clip for our discussion.
 
 The **agent you choose** supplies the AI. Tafelraum gives it tools to work with actual lessons and boards. With the teacher window open, you can ask it to:
 

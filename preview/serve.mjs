@@ -18,7 +18,7 @@ async function index(dir){
 await index(dist);
 const routes=new Map(Object.entries(JSON.parse(await readFile(path.join(root,'routes.json'),'utf8'))));
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.woff2':'font/woff2','.wasm':'application/wasm','.json':'application/json','.webmanifest':'application/manifest+json','.jpg':'image/jpeg','.txt':'text/plain'};
-const pagePolicy="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com/embed/hyf5JF_VxwM; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'";
+const pagePolicy="default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com/embed/Av_NEjoeyUM; worker-src 'self' blob:; media-src 'self' blob: data:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'";
 createServer((req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');
   res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
@@ -29,7 +29,7 @@ createServer((req,res)=>{
   const route=routes.get(url),file=files.get(url==='/'?'/index.html':url);
   if(!route&&!file){res.writeHead(404);res.end();return}
   const type=route?.type || types[path.extname(file)] || 'application/octet-stream';
-  if(type.startsWith('text/html'))res.setHeader('Content-Security-Policy',route?"sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'":pagePolicy);
+  if(type.startsWith('text/html'))res.setHeader('Content-Security-Policy',route?"sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'":pagePolicy);
   res.writeHead(200,{'Content-Type':type});
   if(req.method==='HEAD'){res.end();return}
   if(route){res.end(route.body);return}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "links": [
+    {
+      "id": "49b7f964-b01a-4061-b8a4-4b5a28936af6",
+      "kind": "link",
+      "provider": "youtube",
+      "url": "https://www.youtube.com/watch?v=Av_NEjoeyUM",
+      "videoId": "Av_NEjoeyUM",
+      "title": "YouTube · Av_NEjoeyUM",
+      "createdAt": "2026-11-01T19:15:55.541Z",
+      "updatedAt": "2026-11-01T19:15:55.541Z"
+    }
+  ]
+}
