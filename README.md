@@ -1,5 +1,3 @@
-<p align="center"><img src="prototypes/surface-shell-a-b/public/icons/tafelraum-192.png" alt="" width="76"></p>
-
 # Tafelraum
 
 **An AI-powered local whiteboard for teaching.** Bring your own AI agent to turn a lesson idea into materials, arrange them on the board and prepare what the class will see. Then pick up the pen and teach on that same canvas.
