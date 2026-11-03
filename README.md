@@ -2,6 +2,8 @@
 
 **An AI-powered local whiteboard for teaching.** Bring your own AI agent to turn a lesson idea into materials, arrange them on the board and prepare what the class will see. Then pick up the pen and teach on that same canvas.
 
+**AI is optional.** Use Tafelraum on its own as a local whiteboard for lessons, workshops and training sessions. Bring your own materials, draw and present without connecting an agent.
+
 **[Download the Public Mac app](https://updates.jujies.app/tafelraum-public/download/)** · Apple Silicon · Automatic public updates · [GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
 
 **[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
@@ -58,6 +60,8 @@ I liked the way I could organise my teaching materials in OneNote. What I wanted
 That became Tafelraum. I build it, try it in my own lessons and change things when they get in the way. After several months of using it that way, I wanted other teachers to be able to try it too. The name is German: *Tafel* is the classroom board, *Raum* is a room.
 
 What made AI useful to me was being able to ask for something that would be *there when I opened the lesson*. A worksheet in a chat still leaves me with files to move and a board to set up. In Tafelraum, I can ask my agent to make the worksheet, put it in the right lesson and frame the first activity for the projector.
+
+**Less friction between an idea and a usable lesson.** I want to focus on what my students should learn, which tasks will help them and how we will discuss the results. Keeping materials, the canvas and presentation together, with an agent able to work across them, helps me get from those decisions to a lesson I can teach more quickly. The teaching decisions stay with me.
 
 ## What you can ask your AI agent to do
 
