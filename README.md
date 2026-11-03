@@ -8,10 +8,16 @@
 
 **[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open a lesson, try its HTML activity or send a numbered clip to Room Canvas. Reload to start fresh.
 
-![The teacher’s canvas with a starter picture, interactive survey map, trail worksheet and homework arranged across four lesson phases](docs/images/teacher-canvas.png)
+[![Watch Tafelraum: From chat to classroom. A 2:34 demo of an AI agent preparing a lesson, with teacher and student views side by side.](docs/images/agent-demo.jpg)](https://youtu.be/nBQukVA6Bxg)
+
+**[Watch the 2:34 demo — From chat to classroom](https://youtu.be/nBQukVA6Bxg)** · English narration and captions.
+
+See a new lesson appear in the library, its materials arrive and the canvas take shape. Then switch numbered clips while keeping separate teacher and classroom views.
 
 <details>
 <summary>Explore the three demo lessons</summary>
+
+![The teacher’s canvas with a starter picture, interactive survey map, trail worksheet and homework arranged across four lesson phases](docs/images/teacher-canvas.png)
 
 - **[The map room](https://tafelraum-demo.jujies.app/?lesson=map-room)** — Trace a ridge trail and a river trail. Use the scale to decide which one fits a 25-minute hike.
 - **[Chasing the shadow](https://tafelraum-demo.jujies.app/?lesson=eclipse)** — Move the Moon through three positions and predict which observer would see an eclipse.
