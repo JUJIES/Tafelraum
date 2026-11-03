@@ -1,4 +1,8 @@
 {
+  "0.1.91": [
+    "Smaller offline Mac package: unnecessary LibreOffice help and icon resources removed; fonts and DOCX conversion retained.",
+    "More compact ZIP downloads; existing lessons and update channel remain unchanged."
+  ],
   "0.1.87": [
     "Clipnummern sind besser lesbar, wachsen beim Hineinzoomen nicht weiter und schrumpfen beim Herauszoomen mit dem Canvas."
   ],

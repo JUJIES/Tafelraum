@@ -144,3 +144,44 @@ Original bytegleich, Deduplizierung und Fehlerfall korrekt, alle 17.684 Ressourc
 unverändert und Codesign gültig. Kein neuer `soffice`-Diagnosebericht nach diesem
 Lauf. Der Dialog allein belegt daher keinen Absturz des installierten Importwegs;
 die historischen Probeabstürze bleiben als solche dokumentiert.
+
+
+## Headless resource selection · 2026-11-03 (both editions, development only)
+
+The original signed LibreOffice26.8.1 cache remains untouched. During desktop
+resource preparation, `scripts/prepare-headless-office.mjs` copies it into a new
+`desktop-resources/runtime/libreoffice/` and omits the offline help and additional
+icon archives. Four bitmap themes (Sukapura/Colibre, light/dark) remain as defaults
+and fallbacks. All fonts, dictionaries, templates, gallery content, executable
+code, filters and libraries remain. No converter download or Office installation
+is introduced on users' machines. The converter API and archive format are unchanged.
+
+The selection is pinned to26.8.1 and must be reviewed on a version change. It
+refuses existing/linked destinations, renews the selected app's outer signature
+and verifies nested signatures. `selection.json` records the omitted resources
+and sizes. Original root/nested notices remain; the omitted help-icon notice is
+copied unchanged to `notices/help-COPYING-ICONS`. The normal runtime-notice checks
+and final Tauri signing remain mandatory. Selection never modifies an installed
+app or its data. The shared ZIP packager also uses compression level9 and omits
+build-machine extended attributes/resource forks; extraction must still pass
+deep/strict codesign. Download quarantine handling is unchanged.
+
+Reproduction: run `node --test scripts/prepare-headless-office.test.mjs` and,
+on macOS with Poppler available,
+`node scripts/headless-office-qa.mjs ORIGINAL_OFFICE_APP SELECTED_OFFICE_APP FIXTURE_DIRECTORY NEW_OUTPUT`.
+Neutral fixtures come from `scripts/create-office-import-fixtures.py`. This
+comparison validates DOCX, runs the real sandboxed converter and compares every
+rendered page and extracted text. `office-import-package-qa.mjs APP [OUTPUT]`
+additionally tests bundled Node/converter, temporary archive, original retention,
+deduplication, invalid-file rejection, unchanged resources and bundle signatures.
+Run it with that app's bundled Node. Never use a classroom archive for this check.
+
+Local evidence: `output/office-size-2026-11-03/` in the maintainer workspace.
+Four baseline/selected documents (five pages) matched pixel-for-pixel and in text.
+Isolated package probes use the existing personal0.1.92/public0.1.90 programs with
+only their generated converter resources replaced and renewed test signatures;
+they are not newly compiled releases or installation candidates. Both source
+profiles pass28 focused tests. Installed/published apps remain unchanged; Apple
+Silicon only, no new Intel/managed-Mac or real native updater acceptance claimed.
+
+Measured public ZIP probe (same0.1.90 program): 401,117,403 → 311,228,129 bytes, saving 22.41%. Extracted deep/strict codesign passed. 9,371 retained files/symlinks match; the renewed launcher signature is the only binary-byte change, and removing signatures from disposable launcher copies produces identical SHA-256. The standard development previews were not switched: personal5173 is stopped, public5174 still has its pre-existing incomplete source mapping. This task has no browser/UI changes.

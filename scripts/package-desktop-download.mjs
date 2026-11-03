@@ -56,7 +56,9 @@ export async function packageDownload(root,{bundle,output,version,sourceCommit,i
  try{
   execFileSync('ditto',[bundle,path.join(stage,bundleName)]);
   await writeFile(path.join(stage,identity.instructions),guide);
-  execFileSync('ditto',['-c','-k','--sequesterRsrc','.',zip],{cwd:stage});
+  // Finder applies quarantine on download. Build-machine xattrs/resource forks
+  // are not app contents and need not be duplicated into __MACOSX entries.
+  execFileSync('ditto',['-c','-k','--norsrc','--noextattr','--noacl','--zlibCompressionLevel','9','.',zip],{cwd:stage});
   const listing=execFileSync('unzip',['-Z1',zip],{encoding:'utf8',maxBuffer:16*1024*1024});
   assert.ok(listing.split('\n').includes(identity.instructions));
   assert.doesNotMatch(listing,/Contents\/Resources\/desktop-resources\/(unterrichtsarchiv|personal-notes|live-canvas\.json|mobile-capture\.json|document-image\.json)|(?:^|\/)notes\.json$|\.(pkl|safetensors)$/im);

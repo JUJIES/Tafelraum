@@ -3617,7 +3617,7 @@ dependencies = [
 
 [[package]]
 name = "tafelraum"
-version = "0.1.90"
+version = "0.1.91"
 dependencies = [
  "base64 0.22.1",
  "minisign-verify",

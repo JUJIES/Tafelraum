@@ -21,3 +21,11 @@ Native release follow-up: Public0.1.90 aligns the older public updater with
 the full edition's shared confirmation, cached Update object and six-hour
 background check. Public0.1.89 remains immutable. No unrelated canvas/agent
 working changes are included.
+
+
+## 2026-11-03 – smaller desktop package 0.1.91
+
+Release based on the previous delivered edition, adding only pinned headless
+Office resource selection, ZIP metadata/compression improvements and release
+metadata. DOCX conversion code, fonts, dictionaries, archive format and updater
+identity/key/endpoint remain unchanged. Verification: DOCX contract39.

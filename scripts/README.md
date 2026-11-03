@@ -17,3 +17,6 @@ Run these scripts from the repository root unless a command specifies the app di
 | Inspect a font source | [Liberation source check](verify-liberation-source.py) uses Python and fontTools; the normal app startup does not need it. |
 
 The public [preview build](../preview/README.md) has its own read-only hosting procedure. Interface language, settings and neutral button states have dedicated npm checks (`test:ui-language`, `test:ui-settings`, `test:button-states`). See the [source distribution guide](../SOURCE_DISTRIBUTION.md) for the distinction between source and packaged runtime evidence.
+
+
+Headless Office selection: `prepare-headless-office.mjs`; pixel/text parity: `headless-office-qa.mjs`. Build-time only, vendor cache untouched. See DOCX contract39.
