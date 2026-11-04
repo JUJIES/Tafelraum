@@ -6,7 +6,7 @@
 
 **[Download the Public Mac app](https://updates.jujies.app/tafelraum-public/download/)** · Apple Silicon · Automatic public updates · [GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
 
-**[Try the live demo](https://tafelraum-demo.jujies.app/guide.html)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
+**[Try the live demo](https://tafelraum-demo.jujies.app/?lesson=volcanoes)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
 
 [![Watch Tafelraum: From chat to classroom. A 2:34 demo of an AI agent preparing a lesson, with teacher and student views side by side.](docs/images/agent-demo.jpg)](https://youtu.be/nBQukVA6Bxg)
 
