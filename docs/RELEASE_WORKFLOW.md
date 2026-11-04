@@ -99,7 +99,7 @@ resume the same verified version. Do not invent another version or overwrite
 different files to hide the partial state. Preserve successful asset uploads.
 Each channel's completion requires a download-publication-proof.json receipt.
 
-## Initial activation
+## Historical initial activation
 
 The initial MDM download reuses the already released 0.1.90 app unchanged; its
 ZIP now includes the MDM guide. It does not publish the locally installed0.1.92.

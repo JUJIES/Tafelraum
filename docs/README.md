@@ -10,6 +10,7 @@
 | Understand the HTML format | [Minimal packages](agent-examples/README.md) |
 | Understand or change the application | [Current architecture](ARCHITECTURE.md) · [Contributing](../CONTRIBUTING.md) · [Browser tests](../scripts/BROWSER_TESTS.md) |
 | Run the browser source edition on Windows | [Windows source setup and checks](WINDOWS_SOURCE.md) |
+| Install on Windows or check its tested scope | [Windows installation guide](../prototypes/surface-shell-a-b/distribution/public/WINDOWS-INSTALLATION.txt) · [Windows QA](WINDOWS_QA.md) |
 | Keep Mac/Windows builds and releases aligned | [Release matrix](RELEASE_MATRIX.md) · [Release workflow](RELEASE_WORKFLOW.md) |
 | Change a control or screen | [UI style guide](design/00_UI_UX_STYLEGUIDE.md) · [Brief template](design/UI_BRIEF_TEMPLATE.md) |
 | Look up a command | [Script catalogue](../scripts/README.md) |

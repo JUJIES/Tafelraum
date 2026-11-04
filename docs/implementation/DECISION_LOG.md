@@ -87,3 +87,13 @@ lesson's canvas session after reload/material refresh. A rendered HTML frame and
 the teaching connection can precede canvas-port registration. One shared bounded
 readiness helper replaces the two existing loops and the premature array access.
 Chromium/WebKit reference flows pass; no runtime app or packaged kit change.
+
+The settings browser fixture likewise uses the existing canvas/teaching broker
+plugins, as the language fixture already does. Its generic optional-service
+response is not a valid host-registration response and previously caused
+`sessions/undefined/poll` requests, including intermittent WebKit teardown errors.
+Keep the page-error assertion; correct the fixture instead of suppressing errors.
+Focus/hover animation waits settle cancellation as well as completion, while
+retaining the assertions on final computed styles. First-lesson and architecture
+entry points now describe both published platforms rather than the earlier
+Windows packaging plan.
