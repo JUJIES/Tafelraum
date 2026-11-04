@@ -31,10 +31,13 @@ from matching version numbers.
 | Installer/updater | First install, preserved archive, orderly exit, actual previous-to-candidate update and rejected bad signature using isolated QA identity |
 | User-facing setup/capability | README, first lesson, data guide and platform installation guide as applicable; release notes |
 | Shared canvas/Room code used by the hosted demo | Review demo applicability, run its constrained demo/Room checks, then deliberately deploy it or record its older source and the reason for deferral |
-| Docs only | Links/content checks; no implicit rebuild/relabel of an unchanged binary |
+| Repository docs or test harness only | Links/content checks or the affected tests; no implicit rebuild/relabel of an unchanged app |
 
-Main may contain newer documentation than the latest desktop build. Keep the
-desktop source commit identifiable. Preserve historical migration versions.
+Main may contain newer repository documentation or test-harness corrections than
+the latest desktop build. Keep the desktop source commit identifiable. Docs
+included in the packaged Agent Kit count as resources, not repository-only
+changes; verify the closed kit selection before classifying a follow-up. Preserve
+historical migration versions.
 
 `node scripts/check-public-versions.mjs` checks the source version surfaces and
 release notes. Its regression checks run in both Mac and Windows CI. Both CI jobs run the
