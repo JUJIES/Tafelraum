@@ -49,7 +49,7 @@ Changes stay in the current tab. Reload to restore the example. Agent connection
 <details>
 <summary>Tools that need extra setup</summary>
 
-With the local document converter configured, Tafelraum can import a Word document as a PDF and keep the original file. With your own capture relay, you can scan a QR code on a phone and send a photo straight to the current lesson.
+The Mac desktop package includes a local Word-to-PDF converter and keeps the original document. DOCX conversion is currently unavailable on Windows; source builds need the documented Mac runtime setup. With your own capture relay, you can scan a QR code on a phone and send a photo straight to the current lesson.
 
 </details>
 

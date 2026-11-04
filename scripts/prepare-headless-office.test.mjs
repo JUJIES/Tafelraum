@@ -37,7 +37,7 @@ test('unknown vendor version, existing destinations and linked resource roots ar
   assert.equal(await readFile(original, 'utf8'), 'preserve');
   const linked = path.join(f.root, 'linked/desktop-resources');
   await mkdir(path.dirname(linked));
-  await symlink(f.resources, linked);
+  await symlink(f.resources, linked, process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(prepareHeadlessOffice(f.source, linked, officeSelection), /must not be symlinked/);
 });
 
@@ -45,6 +45,6 @@ test('a linked runtime directory cannot redirect preparation into another tree',
   const f = await fixture(t);
   const elsewhere = path.join(f.root, 'elsewhere');
   await mkdir(elsewhere);
-  await symlink(elsewhere, path.join(f.resources, 'runtime'));
+  await symlink(elsewhere, path.join(f.resources, 'runtime'), process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(prepareHeadlessOffice(f.source, f.resources, officeSelection), /Runtime directory must not be linked/);
 });

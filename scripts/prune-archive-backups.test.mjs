@@ -73,10 +73,20 @@ test("metadata path traversal and symlinked backups are refused before deletion"
   await writeFile(metadataPath, JSON.stringify({ ...original, archiveDirectoryName: "../archive-0" }));
   await assert.rejects(pruneArchiveBackups(output, { apply: true }), /Ungültige Backup-Metadaten/);
   await writeFile(metadataPath, JSON.stringify(original));
-  await rm(newest);
-  await symlink(backups[0][0], newest);
-  await assert.rejects(pruneArchiveBackups(output, { apply: true }), /Ungültige Backupdatei/);
-  assert.ok((await readFile(backups[0][0])).length);
+  await t.test('file symlink protection when link creation is permitted', async t => {
+    await rm(newest);
+    try {
+      await symlink(backups[0][0], newest, 'file');
+    } catch (error) {
+      if (process.platform === 'win32' && error.code === 'EPERM' && error.syscall === 'symlink') {
+        t.skip('Windows denied file-symlink creation (EPERM); link protection requires another host');
+        return;
+      }
+      throw error;
+    }
+    await assert.rejects(pruneArchiveBackups(output, { apply: true }), /Ungültige Backupdatei/);
+    assert.ok((await readFile(backups[0][0])).length);
+  });
 });
 
 test("an existing retention lock prevents concurrent deletion", async (t) => {

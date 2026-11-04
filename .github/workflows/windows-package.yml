@@ -4,10 +4,19 @@ on:
   workflow_dispatch:
   push:
     branches: ['codex/**']
-    paths: ['.github/workflows/windows-package.yml']
+    paths:
+      - '.github/workflows/windows-package.yml'
+      - 'scripts/windows-build-receipt.mjs'
+      - 'scripts/stage-windows-desktop.mjs'
+      - 'scripts/desktop-node-runtime.json'
+      - 'prototypes/surface-shell-a-b/src-tauri/**'
 
 permissions:
   contents: read
+
+concurrency:
+  group: windows-package-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   package:

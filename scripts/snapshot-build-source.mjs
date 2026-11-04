@@ -56,7 +56,7 @@ export async function snapshotBuildSource(repository, destination, { includeLoca
     try { await lstat(source); } catch (error) { if (error.code === 'ENOENT') continue; throw error; }
     const target = path.join(destination, relative);
     await mkdir(path.dirname(target), { recursive: true });
-    await symlink(source, target, 'dir');
+    await symlink(source, target, process.platform === 'win32' ? 'junction' : 'dir');
   }
   return { destination, files };
 }

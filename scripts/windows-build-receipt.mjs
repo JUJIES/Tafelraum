@@ -28,7 +28,8 @@ assert.equal(delivery.version,version);assert.equal(delivery.sourceCommit,source
 const pins=JSON.parse(await readFile(path.join(root,'scripts/desktop-node-runtime.json'),'utf8'));
 validateWindowsBuildReceipt(receipt,{version,sourceCommit},pins.platforms['win32-x64']);
 assert.equal(binary.subarray(0,2).toString(),'MZ');
-await mkdir(output);
+await mkdir(path.dirname(path.resolve(output)),{recursive:true});
+await mkdir(output); // Refuse replacing an earlier candidate.
 await copyFile(installer,path.join(output,`Tafelraum-Public-${version}-Windows-x64-setup.exe`));
 await copyFile(path.join(app,'distribution/public/WINDOWS-INSTALLATION.txt'),path.join(output,'WINDOWS-INSTALLATION.txt'));
 await writeFile(path.join(output,'windows-build.json'),JSON.stringify(receipt,null,2)+'\n');

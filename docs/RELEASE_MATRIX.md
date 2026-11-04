@@ -37,7 +37,11 @@ Main may contain newer documentation than the latest desktop build. Keep the
 desktop source commit identifiable. Preserve historical migration versions.
 
 `node scripts/check-public-versions.mjs` checks the source version surfaces and
-release notes. Its regression checks run in both Mac and Windows CI.
+release notes. Its regression checks run in both Mac and Windows CI. Both CI jobs run the
+complete shared unit suite. Directory-link tests use Windows junctions; only
+file-link subtests may skip after an actual Windows EPERM capability failure,
+with the missing coverage reported explicitly. Never skip other assertions in
+their parent tests or enable system-wide link privileges just to obtain green tests.
 
 ## Acceptance and release set
 

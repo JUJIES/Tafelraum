@@ -87,9 +87,20 @@ test('corrupt private files are not overwritten; symlinks and encoded traversal 
   assert.equal((await api('classes/course/students')).status, 422);
   assert.equal((await api('classes/course/students', { students: [], requestId: 'no' }, null)).status, 422);
   assert.equal(await readFile(target, 'utf8'), '{broken');
-  await rm(target); await symlink(path.join(root, 'archive.json'), target);
-  assert.equal((await api('classes/course/students')).status, 403);
   assert.equal((await api('classes/..%2Farchive/students')).status, 400);
+  await t.test('file symlink protection when link creation is permitted', async t => {
+    await rm(target);
+    try {
+      await symlink(path.join(root, 'archive.json'), target, 'file');
+    } catch (error) {
+      if (process.platform === 'win32' && error.code === 'EPERM' && error.syscall === 'symlink') {
+        t.skip('Windows denied file-symlink creation (EPERM); link protection requires another host');
+        return;
+      }
+      throw error;
+    }
+    assert.equal((await api('classes/course/students')).status, 403);
+  });
 });
 test('structured query filters, pagination, undated records and readonly CLI use the same domain', async t => {
   const { api, root, people } = await fixture(t); const { students } = await people();

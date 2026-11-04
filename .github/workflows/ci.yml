@@ -42,8 +42,9 @@ jobs:
         run: npm --prefix prototypes/surface-shell-a-b run typecheck:live
       - name: Test Room and presentation contracts
         run: npm --prefix prototypes/surface-shell-a-b run test:live
-      - name: Test archive and release contracts
-        run: node --test scripts/check-public-versions.test.mjs scripts/public-release-set.test.mjs scripts/macos-qa-config.test.mjs scripts/windows-qa-config.test.mjs scripts/windows-installer-qa.test.mjs scripts/windows-server-entry.test.mjs scripts/windows-runtime.test.mjs scripts/desktop-node-runtime.test.mjs scripts/desktop-release-config.test.mjs scripts/agent-kit.test.mjs prototypes/surface-shell-a-b/archive-server.test.mjs
+      - name: Test shared app, archive and platform contracts
+        run: npm --prefix prototypes/surface-shell-a-b test
+
       - name: Install Chromium
         working-directory: prototypes/surface-shell-a-b
         run: npx playwright install chromium

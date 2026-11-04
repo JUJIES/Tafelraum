@@ -60,7 +60,10 @@ test('generator preserves unknown folders and symlink destinations',async()=>{
   const target=path.join(temp,'user-folder');await mkdir(target);await writeFile(path.join(target,'keep.txt'),'keep');
   await assert.rejects(prepareAgentKit(repository,target),/ohne Agentenpaket-Marker/);
   assert.equal(await readFile(path.join(target,'keep.txt'),'utf8'),'keep');
-  const link=path.join(temp,'link');await symlink(target,link,'dir');await assert.rejects(prepareAgentKit(repository,link),/kein erzeugter Ordner/);
+  const link=path.join(temp,'link');
+  await symlink(target,link,process.platform==='win32'?'junction':'dir');
+  await assert.rejects(prepareAgentKit(repository,link),/kein erzeugter Ordner/);
+  assert.equal(await readFile(path.join(target,'keep.txt'),'utf8'),'keep');
  }finally{await rm(temp,{recursive:true,force:true});}
 });
 

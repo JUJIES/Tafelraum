@@ -74,3 +74,10 @@ checks, immutable artifacts, docs and deliberately independent full/demo states.
 CI checks Mac/Windows source and produces a bounded Windows installer receipt.
 Node pins are platform-specific to retain macOS12 compatibility. Full edition,
 its installed app and colleagues update channel are separate release decisions.
+
+Final Windows validation additionally found ordinary-user directory-symlink
+limitations in the source-snapshot helper and an incomplete synthetic platform
+fixture. Directory junctions now follow the existing Windows pattern; file-link
+security subtests skip only on actual Windows EPERM. The rest of their assertions
+remain active. Full unit suites run in both CI jobs. The installer receipt creates
+its parent output folder but still refuses replacement of an existing candidate.
