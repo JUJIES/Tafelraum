@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import distribution from '../prototypes/surface-shell-a-b/distribution.json' with {type:'json'};
 import {prepareAgentKit} from './prepare-agent-kit.mjs';
 import {createAgentKitMiddleware} from '../prototypes/surface-shell-a-b/agent-kit-server.mjs';
+import {canvasAgentPlugin,teachingAgentPlugin} from '../prototypes/surface-shell-a-b/canvas-agent-server.mjs';
 import {createRequire} from 'node:module';
 import {mkdir,mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
@@ -28,7 +29,7 @@ await writeFile(archiveFile,JSON.stringify(fixture));
 await prepareAgentKit(repository,path.join(temporary,'agent-kit'));
 const server=await createServer({configFile:false,root:app,cacheDir:path.join(temporary,'vite'),
  define:{__TAFELRAUM_VERSION__:JSON.stringify('settings-test')},server:{host:'127.0.0.1',port:0,watch:{ignored:['**/agent-kit/**','**/.agent-kit-*/**']}},
- plugins:[react(),{name:'isolated-language',configureServer(vite){
+ plugins:[react(),canvasAgentPlugin(),teachingAgentPlugin(),{name:'isolated-language',configureServer(vite){
   vite.middlewares.use(createAgentKitMiddleware({kitRoot:path.join(temporary,'agent-kit')}));
   vite.middlewares.use((req,res,next)=>{
    if(req.url?.startsWith('/api/')&&!req.url.startsWith('/api/archive')){
@@ -38,11 +39,12 @@ const server=await createServer({configFile:false,root:app,cacheDir:path.join(te
   vite.middlewares.use(createArchiveMiddleware(path.join(temporary,'archive')));
  }}]});
 const checks=[],errors=[];let browser;
+// Focus/hover can cancel a CSS transition; still assert the resulting computed styles.
 async function assertButtonStates(page,button){
  const inspect=el=>{const s=getComputedStyle(el);return {outline:s.outlineStyle,background:s.backgroundColor,color:s.color,border:s.borderColor,filter:s.filter};};
- await page.mouse.move(0,0);await page.keyboard.press('Tab');await button.focus();await button.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
+ await page.mouse.move(0,0);await page.keyboard.press('Tab');await button.focus();await button.evaluate(el=>Promise.allSettled(el.getAnimations().map(a=>a.finished)));
  const focused=await button.evaluate(inspect);assert.equal(focused.outline,'none');
- await button.evaluate(el=>el.blur());await button.hover();await button.evaluate(el=>Promise.all(el.getAnimations().map(a=>a.finished)));
+ await button.evaluate(el=>el.blur());await button.hover();await button.evaluate(el=>Promise.allSettled(el.getAnimations().map(a=>a.finished)));
  assert.deepEqual(await button.evaluate(inspect),focused,await button.textContent());
 }
 
@@ -74,7 +76,7 @@ try {
    assert.notEqual(await shadow.evaluate(el=>getComputedStyle(el).boxShadow),'none');
    await page.getByRole('heading',{name:'Verbindungen',exact:true}).waitFor();
    const themeControl=page.getByRole('combobox',{name:theme==='dark'?'Dunkles Design':'Helles Design',exact:true});
-   await page.locator('.settings-popover').evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
+   await page.locator('.settings-popover').evaluate(el=>Promise.allSettled(el.getAnimations().map(animation=>animation.finished)));
    const target=await themeControl.boundingBox();assert.ok(target.height>=48,JSON.stringify(target));
    const language=page.getByRole('combobox',{name:'Sprache',exact:true});
    const languageTarget=await language.boundingBox();assert.ok(languageTarget.height>=48,JSON.stringify(languageTarget));
@@ -109,10 +111,10 @@ try {
     await page.keyboard.press('Tab');await close.focus();
     assert.equal(await close.evaluate(el=>el===document.activeElement),true);
     await page.mouse.move(0,0);
-    await close.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
+    await close.evaluate(el=>Promise.allSettled(el.getAnimations().map(animation=>animation.finished)));
     const keyboardSurface=await close.evaluate(el=>getComputedStyle(el).backgroundColor);
     assert.notEqual(keyboardSurface,'rgba(0, 0, 0, 0)','keyboard focus remains visible');
-    await close.hover();await close.evaluate(el=>Promise.all(el.getAnimations().map(animation=>animation.finished)));
+    await close.hover();await close.evaluate(el=>Promise.allSettled(el.getAnimations().map(animation=>animation.finished)));
     assert.equal(await close.evaluate(el=>getComputedStyle(el).backgroundColor),keyboardSurface,'hover and keyboard use the same surface');
     await page.screenshot({path:path.join(output,`${name}-${theme}-agent-button-states.png`),animations:'disabled'});
     await page.keyboard.press('Enter');assert.equal(await connection.isVisible(),false);

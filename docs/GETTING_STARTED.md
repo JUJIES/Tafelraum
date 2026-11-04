@@ -9,12 +9,15 @@ that you can share, and a question such as “What do you notice?”
 | --- | --- | --- |
 | [Online demo](https://tafelraum-demo.jujies.app/?lesson=volcanoes) | A browser; no account or installation | Example lessons; reload restores the example. Your own imports and agent connections are unavailable. |
 | [Public Mac app](https://updates.jujies.app/tafelraum-public/download/) | Apple Silicon Mac; follow the guide in the ZIP | Your archive is saved separately from the app. Official packages offer public updates. |
+| [Public Windows app](https://updates.jujies.app/tafelraum-public/download/) | Windows x64; select Windows and run the installer | Your archive is saved separately from the program. Official packages offer the same public update channel. |
 | [Run from source](../README.md#try-it-on-your-computer) | Git, Node.js and npm | Your archive lives in the checkout. `npm start` runs the browser app, not an installer. |
 
 The Mac package is ad-hoc signed and **not Apple-notarized**. Read its included
 guide before first opening it. A managed computer may require administrator help.
-Native Windows packaging is still under local test; see
-[Windows source setup and test limits](WINDOWS_SOURCE.md).
+The Windows installer has no Authenticode publisher certificate and may trigger
+an unknown-publisher/SmartScreen warning. Read the [Windows installation guide](../prototypes/surface-shell-a-b/distribution/public/WINDOWS-INSTALLATION.txt)
+and [tested scope and limits](WINDOWS_QA.md). DOCX conversion is available only in
+the Mac package; images, PDFs and HTML materials work on both platforms.
 
 If controls appear in German, select **Einstellungen → Sprache → English**.
 Lesson and material titles keep their original language.

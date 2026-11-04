@@ -89,13 +89,15 @@ current Windows acceptance work.
 ## Desktop delivery and Windows status
 
 Source profile and delivery channel are different. Source/self-built apps default
-to manual updates. Official Public Mac packages use the public GitHub updater;
+to manual updates. Official Public Mac and Windows packages use the public GitHub updater;
 the full-edition colleagues channel is separate. Mac and Windows need separate
 binaries; a public update manifest can select artifacts by platform.
 
-Windows evidence and unaccepted packaging work live in
-[Windows source checks](WINDOWS_SOURCE.md) and [native readiness](WINDOWS_NATIVE_PLAN.md).
-A passing native test does not establish installer, clean-machine or real-update
-acceptance. Do not present a QA identity as a published Windows release.
+Public0.1.92 provides Mac ARM64 and Windows x64 packages from the same frozen
+source commit. Installed Windows, Room, save/restart and isolated updater
+acceptance are recorded in [Windows QA](WINDOWS_QA.md). The [source checks](WINDOWS_SOURCE.md)
+and [historical native plan](WINDOWS_NATIVE_PLAN.md) retain earlier findings;
+they do not supersede that acceptance record. Clean-machine, physical stylus and
+other untested hardware scenarios remain limits, not implied coverage.
 Read [release workflow](RELEASE_WORKFLOW.md) and [channel contract65](implementation/65_DESKTOP_RELEASE_CHANNELS.md)
 before build/delivery changes. Publishing is a separate authorised action.
