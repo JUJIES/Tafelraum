@@ -1,6 +1,6 @@
 # Tafelraum release and download workflow
 
-2026-11-02. This is a release contract, not permission to publish a working tree.
+Updated 2026-11-04. This is a release contract, not permission to publish a working tree.
 An explicit colleagues-update or public-release request includes all corresponding
 downloads below. A local build/install never advances a public pointer.
 
@@ -32,10 +32,13 @@ Fixed links:
 The corresponding /releases/ pages retain older versioned packages.
 
 Machine-readable channel definitions: scripts/downloads/release-policy.json.
-The shared packager validates the embedded distribution profile, app version,
+The Mac packager validates the embedded distribution profile, app version,
 ARM64 binary and codesign, includes the correct guide, rejects private runtime
 files and verifies the extracted ZIP. download.json binds version, edition,
 filename, ZIP hash/size, guide hash and (for Public) the source commit.
+The Windows receipt and `windows-download.json` bind the x64 installer to the
+same version/source, runtime pin, hash and platform guide. The complete-set guard
+requires both platform manifests and update targets before publication.
 
 ## Colleagues release
 
@@ -61,19 +64,25 @@ silently publish it just to refresh a download page.
 1. Review/test the public source and release version. Commit/push the intended
    public source as explicitly authorized, preserving existing public content.
    Build from a clean checkout of that exact published commit.
-2. Build the official public native bundle using tauri.public-release.conf.json,
-   with its separate public updater and no personal integrations. Package it with scripts/package-desktop-download.mjs and the
-   exact source commit. Do not rename a full-edition bundle to claim Public.
+2. Build Mac ARM64 and Windows x64 from that same clean commit, using their
+   official Public configurations and separate Public updater identity. The
+   maintainer's Mac builder packages the signed bundle; the manually dispatched
+   Windows candidate workflow uploads the unchanged installer and build receipt.
+   Assemble and sign the Windows updater on the signing host, then validate the
+   complete two-platform set as described in [the release matrix](RELEASE_MATRIX.md).
+   Do not rename a full-edition or QA bundle to claim Public.
 3. The maintainer's scripts/publish-public-desktop.mjs SOURCE RELEASE_DIRECTORY
    performs a read-only preflight. Add --publish only on an authorized release.
    It checks the published main commit and stages a GitHub draft release.
-4. Upload the versioned ZIP, guide, download manifest, signed update archive,
-   signature and Tauri latest.json. Existing assets are
+4. Upload both platform downloads, guides, manifests, updater files/signatures
+   and one Tauri latest.json containing both platform targets. Existing assets are
    immutable: a retry must match their GitHub SHA-256 digests and source commit.
    Publish the GitHub release, then publish small metadata/guides on Beelink.
    Public binary downloads use GitHub; historical Beelink binary links redirect
    to the matching GitHub asset.
-5. Verify the public download, guide, hashes and source commit. Record both URLs.
+5. Verify both public downloads, guides, hashes, signatures and source commit,
+   plus the platform choices on the stable download page. Record publication
+   receipts and confirm that the colleagues channel has not changed.
    Neither a source push alone nor a successful app build completes this flow.
 
 Official server/colleagues publishers remain in the maintainer workspace;
