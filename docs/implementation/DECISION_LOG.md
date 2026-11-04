@@ -81,3 +81,9 @@ fixture. Directory junctions now follow the existing Windows pattern; file-link
 security subtests skip only on actual Windows EPERM. The rest of their assertions
 remain active. Full unit suites run in both CI jobs. The installer receipt creates
 its parent output folder but still refuses replacement of an existing candidate.
+
+Repository-only CI follow-up: the browser onboarding flow now waits for the exact
+lesson's canvas session after reload/material refresh. A rendered HTML frame and
+the teaching connection can precede canvas-port registration. One shared bounded
+readiness helper replaces the two existing loops and the premature array access.
+Chromium/WebKit reference flows pass; no runtime app or packaged kit change.

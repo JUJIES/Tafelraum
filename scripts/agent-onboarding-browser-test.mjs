@@ -62,6 +62,16 @@ try{
   }
   const teaching=(...args)=>cli('tafelraum-unterricht.mjs',args);
   const canvas=(action,session,extra=[],options={})=>cli('tafelraum-canvas-agent.mjs',[action,...(session?['--session',session]:[]),...extra],options);
+  // A restored HTML frame or refreshed material list can precede canvas-port registration.
+  const waitForCanvasSession=async lessonId=>{
+   let sessions=[];
+   for(let tries=0;tries<50;tries++){
+    sessions=(await canvas('sessions')).filter(item=>item.lessonId===lessonId);
+    if(sessions.length===1)return sessions[0].id;
+    await new Promise(resolve=>setTimeout(resolve,100));
+   }
+   assert.equal(sessions.length,1,`Canvas session was not ready for lesson ${lessonId}`);
+  };
   assert.match(await teaching('--help'),/create --series/);
   assert.match(await cli('tafelraum-canvas-agent.mjs',['--help']),/validate --file/);
   const status=await teaching('status');assert.equal(status.archiveRoot,archiveRoot);
@@ -122,12 +132,7 @@ try{
   assert.equal(digest(await readFile(path.join(archiveRoot,materials.basis.archivePath,materialPath))),digest(bytes));
   checks.push('Public demo image prepared and checked, then imported additively with source bytes preserved and no duplicates');
   const opened=await teaching('open','--lesson',lessonId);assert.equal(opened.context.lessonId,lessonId);assert.equal(opened.context.ready,true);
-  let sessions;
-  for(let tries=0;tries<50;tries++){
-   sessions=(await canvas('sessions')).filter(session=>session.lessonId===lessonId);
-   if(sessions.length===1)break;await new Promise(resolve=>setTimeout(resolve,100));
-  }
-  assert.equal(sessions.length,1);let session=sessions[0].id;
+  let session=await waitForCanvasSession(lessonId);
   let inspected=await canvas('inspect',session);assert.equal(inspected.ok,true);assert.equal(inspected.lessonId,lessonId);assert.equal(inspected.state.objects.length,0);
   assert.equal(inspected.materials[0].path,materialPath);
   const commandFile=path.join(work,'canvas.json');
@@ -160,10 +165,7 @@ try{
   checks.push('Live teacher confirmed native text, archived image, shape and two clips; replay creates no duplicate, stale revision is rejected');
   await page.reload();
   await waitForTeacher();
-  for(let tries=0;tries<50;tries++){
-   sessions=(await canvas('sessions')).filter(item=>item.lessonId===lessonId);if(sessions.length===1)break;await new Promise(resolve=>setTimeout(resolve,100));
-  }
-  assert.equal(sessions.length,1);session=sessions[0].id;
+  session=await waitForCanvasSession(lessonId);
   let restored;
   for(let tries=0;tries<50;tries++){
    restored=await canvas('inspect',session);
@@ -252,7 +254,7 @@ try{
   await teaching('install-html','--lesson',lessonId,'--source-dir',worksheetSource,'--mode','worksheet');
   const worksheet=(await teaching('materials','--lesson',lessonId)).materials.find(item=>item.path.includes('starter-worksheet'));
   assert.ok(worksheet);
-  sessions=(await canvas('sessions')).filter(item=>item.lessonId===lessonId);session=sessions[0].id;
+  session=await waitForCanvasSession(lessonId);
   inspected=await canvas('inspect',session);
   await writeFile(commandFile,JSON.stringify({type:'apply',expectedRevision:inspected.state.revision,operations:[{type:'material',key:'worksheet',path:worksheet.path,x:1100,y:160}]}));
   const worksheetPlaced=await canvas('apply',session,['--file',commandFile,'--request-id','worksheet-ready-place']);
