@@ -4,19 +4,24 @@
 An explicit colleagues-update or public-release request includes all corresponding
 downloads below. A local build/install never advances a public pointer.
 
+For coordinated Mac/Windows development and the first combined public release,
+follow [the release matrix](RELEASE_MATRIX.md). Both platform artifacts and their matching guides/metadata must pass the
+complete release-set checks before advancing the stable feed.
+
 ## Two editions, three delivery surfaces
 
 | Edition | Source | Distribution |
 | --- | --- | --- |
 | Colleagues / MDM | Approved personal/full edition, identical to the locally tested signed bundle | Automatic updater AND manual ZIP on Beelink |
-| Public | Clean, published public Git commit | Git source/tag + GitHub release package AND public manual ZIP on Beelink |
+| Public | Clean, published public Git commit | Git source/tag + GitHub app/update files AND stable Beelink download page/metadata |
 
 MDM is the full edition with a school-specific German installation guide, not
-a third source fork. Public uses its own English guide and its own GitHub updater in official Mac
+a third source fork. Public uses its own English guide and its own GitHub updater in official desktop
 packages; source builds default to manual updates. It never consumes the
-colleagues updater. Both ZIPs include Tafelraum.app and their installation guide.
-Currently supported download target: macOS / Apple Silicon. Ad-hoc signing is
-not Apple notarization. No Windows or Intel package is implied.
+colleagues updater. Mac ZIPs include the app and guide; Windows uses a per-user NSIS installer
+and separate guide. Public targets are macOS Apple Silicon and Windows x64.
+Ad-hoc Mac signing is not Apple notarization; the Windows installer has no
+Authenticode certificate. Intel Mac and Windows ARM are not supported packages.
 
 Fixed links:
 
@@ -109,3 +114,13 @@ The maintainer uses scripts/build-public-release.mjs SOURCE NEW_RELEASE_DIRECTOR
 for a clean signed build, then scripts/publish-public-desktop.mjs for publication.
 Public download counts come from GitHub asset statistics; Beelink logs cover only
 origin traffic and cannot count all cache hits.
+
+
+### Redirect-aware colleagues verification (2026-11-03)
+
+The existing MDM binary URLs with a version query may return a canonical302
+redirect. Download verification must follow HTTPS redirects and hash/verify the
+final bytes. The maintainer publisher now uses curl with `-L`; a302 response body
+is not a package and must never be reported as an artifact mismatch. Failed or
+incomplete transfers still block completion. Do not overwrite a published version
+to repair a verification-client error. The signed package and channel stay unchanged.

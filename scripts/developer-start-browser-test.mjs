@@ -19,7 +19,7 @@ const require = createRequire(path.join(repository, 'prototypes/surface-shell-a-
 const {chromium} = process.argv[2]
   ? await import(pathToFileURL(path.resolve(process.argv[2])).href)
   : require('playwright');
-const {createServer, preview} = await import(require.resolve('vite'));
+const {createServer, preview} = await import(pathToFileURL(require.resolve('vite')).href);
 const originalCwd = process.cwd();
 const environment = {...process.env};
 // This test must never inherit an archive or private provisioning from the shell.
@@ -35,28 +35,30 @@ try {
   await assert.rejects(access(path.join(app, '.env.local')));
   // Remove the snapshot's optional office-runtime link; no local runtime/config needed.
   await rm(path.join(source, 'local-data'), {recursive:true, force:true});
-  const {startLocal} = await import(pathToFileURL(path.join(app,'start-local.mjs')).href);
-  server = await startLocal(0);
+  const {startDevelopmentLocal} = await import(pathToFileURL(path.join(app,'start-local.mjs')).href);
+  server = await startDevelopmentLocal(0);
   const archive = path.join(source, 'local-data/public-lessons');
   const firstStatus = await (await fetch(`http://127.0.0.1:${server.httpServer.address().port}/api/archive/status`)).json();
   assert.equal(firstStatus.archiveRoot, archive);
   await server.close();
   server = null;
-  checks.push('Public start command creates an isolated lesson archive in a clean checkout');
+  checks.push('Public development start creates an isolated lesson archive in a clean checkout');
   const archiveFile = path.join(archive, 'archive.json');
   const catalog = JSON.parse(await readFile(archiveFile, 'utf8'));
   const demo = {...catalog.catalog.lessons[0], id:'lesson-demo', title:'Transport-Demo', seed:{prompt:'',showTransportImage:true}};
   catalog.catalog.lessons.push(demo);
   catalog.catalog.lessonOrderBySeriesId['series-start'].push(demo.id);
   await writeFile(archiveFile, JSON.stringify(catalog));
-  const build = await run('npm', ['run','build'], {cwd:app, timeout:120000, maxBuffer:4*1024*1024});
+  const build = process.env.npm_execpath
+    ? await run(process.execPath, [process.env.npm_execpath,'run','build'], {cwd:app, timeout:120000, maxBuffer:4*1024*1024})
+    : await run('npm', ['run','build'], {cwd:app, timeout:120000, maxBuffer:4*1024*1024});
   await writeFile(path.join(output,'checkout-build.log'),build.stdout+build.stderr);
   checks.push('Source-only production build without test-materials/');
   const image = await readFile(path.join(app,'src/assets/demo/transport-set.png'));
   assert.equal(image.readUInt32BE(16),1536);
   assert.equal(image.readUInt32BE(20),1024);
   process.chdir(app); // loadEnv in the actual vite.config.ts uses the app cwd.
-  browser = await chromium.launch({headless:true});
+  browser = await chromium.launch({headless:true,...(process.argv[3]?{executablePath:process.argv[3]}:{})});
   for (const mode of ['dev','preview']) {
     // The browser-only converter fixture must be optimized before navigation;
     // discovering it later intentionally makes Vite reload the current page.

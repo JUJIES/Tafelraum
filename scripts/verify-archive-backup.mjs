@@ -4,6 +4,7 @@ import { mkdtemp, readFile, readdir, rm, stat } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import os from "node:os";
 import path from "node:path";
+import { archiveTar } from './archive-tar.mjs';
 
 function run(command, args) {
   return new Promise((resolve, reject) => {
@@ -44,7 +45,7 @@ if (checksum !== metadata.sha256) throw new Error("SHA-256-Prüfsumme des Backup
 
 const restoreRoot = await mkdtemp(path.join(os.tmpdir(), "tafelraum-backup-verify-"));
 try {
-  await run("tar", ["-xzf", backupPath, "-C", restoreRoot]);
+  await run(archiveTar, ["-xzf", backupPath, "-C", restoreRoot]);
   const extractedArchiveRoot = path.join(restoreRoot, metadata.archiveDirectoryName);
   const archiveDocument = JSON.parse(await readFile(path.join(extractedArchiveRoot, "archive.json"), "utf8"));
   if (archiveDocument.format !== "tafelraum-unterrichtsarchiv" || archiveDocument.schemaVersion !== 1) {

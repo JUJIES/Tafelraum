@@ -79,10 +79,17 @@ gezielt fortschreiben; der Build generiert seine eigenen Belege nicht neu.
 
 ## Gebündelte Laufzeiten
 
-- **Node22.18.0:** Der vollständige originale
-  [LICENSE-Text einschließlich Unterkomponenten](https://github.com/nodejs/node/blob/v22.18.0/LICENSE)
+- **Public Mac Node22.23.4:** Der vollständige originale
+  [LICENSE-Text einschließlich Unterkomponenten](https://github.com/nodejs/node/blob/v22.23.4/LICENSE)
   liegt unter `runtime-licenses/node/`. Er ist der tatsächlich vorbereiteten
   Desktop-Nodeversion zugeordnet, nicht automatisch einer beliebigen PATH-Version.
+- **Public Windows Node24.22.2:** Der Plattformadapter übernimmt die vollständige
+  originale LICENSE aus dem anhand des offiziellen SHA256 geprüften Node-ZIP und
+  dokumentiert die tatsächlich gebündelten Binär-/Lizenzhashes. Die bewusst
+  getrennten Plattformpins stehen in `scripts/desktop-node-runtime.json`.
+  Mac bleibt wegen seiner bestehenden Mindestversion auf Node22 LTS; Node24
+  benötigt dort macOS13.5. Persönliche bereits ausgelieferte Pakete werden durch
+  diese öffentliche Buildvorbereitung nicht verändert.
 - **LibreOffice26.8.1 ARM64:** Im vorhandenen Apppaket liegen `Resources/LICENSE`,
   `Resources/LICENSE.html` und `Resources/NOTICE` bereits vollständig. Die App
   enthält außerdem62 lizenzbenannte Dateien und128 TTF-/OTF-Dateien. Diese Zählung

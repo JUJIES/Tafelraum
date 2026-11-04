@@ -7,6 +7,42 @@ import path from "node:path";
 import test from "node:test";
 import { pruneRemovedMaterials } from "./material-removal.mjs";
 import { createArchiveMiddleware } from "./archive-server.mjs";
+import { spawn } from "node:child_process";
+
+test("Windows atomic board replacement tolerates short locks and preserves data on persistent locks", {skip:process.platform!=="win32",timeout:20000}, async () => {
+  const root=await mkdtemp(path.join(os.tmpdir(),"tafelraum-board-lock-"));
+  const catalog=emptyCatalog();
+  catalog.subjects=[{id:"subject",classId:"class",label:"Test"}];
+  catalog.series=[{id:"series",classId:"class",subjectId:"subject",label:"Test"}];
+  catalog.lessons=[{id:"lesson",classId:"class",subjectId:"subject",seriesId:"series",title:"Test",metadata:{scheduledFor:null},seed:{}}];
+  await writeFile(path.join(root,"archive.json"),JSON.stringify({format:"tafelraum-unterrichtsarchiv",schemaVersion:1,classes:[{id:"class",label:"Test"}],catalog}));
+  const middleware=createArchiveMiddleware(root),server=http.createServer((req,res)=>void middleware(req,res,()=>res.writeHead(404).end()));
+  await new Promise(resolve=>server.listen(0,"127.0.0.1",resolve));
+  const url=`http://127.0.0.1:${server.address().port}/api/archive/lessons/lesson/board`;
+  const file=path.join(root,"faecher/subject/reihen/series/stunden/lesson/board/scene.json");
+  let locker;
+  const lock=async()=>{
+    const script=`$f=[System.IO.File]::Open('${file.replaceAll("'","''")}',[System.IO.FileMode]::Open,[System.IO.FileAccess]::Read,[System.IO.FileShare]::Read);[Console]::WriteLine('READY');[Console]::Out.Flush();[Console]::ReadLine() | Out-Null;$f.Dispose()`;
+    locker=spawn(path.join(process.env.SystemRoot??'C:\\Windows','System32/WindowsPowerShell/v1.0/powershell.exe'),['-NoProfile','-NonInteractive','-EncodedCommand',Buffer.from(script,'utf16le').toString('base64')],{stdio:['pipe','pipe','pipe']});
+    await new Promise((resolve,reject)=>{let text='';locker.stdout.on('data',b=>{text+=b;if(text.includes('READY'))resolve();});locker.once('error',reject);locker.once('exit',code=>reject(new Error(`lock process exited ${code}: ${text}`)));});
+  };
+  const release=async()=>{const child=locker;locker=null;await new Promise(resolve=>{child.once('exit',resolve);child.stdin.end('\n');});};
+  const put=(revision,value)=>fetch(url,{method:'PUT',headers:{'Content-Type':'application/json',...(revision?{'If-Match':revision}:{'If-None-Match':'*'})},body:JSON.stringify({schemaVersion:1,elements:[],files:{},testValue:value})});
+  try {
+    const first=await put(null,1);assert.equal(first.status,200);const revision=(await first.json()).revision;
+    await lock();
+    let settled=false;const replacement=put(revision,2).then(r=>{settled=true;return r;});
+    await new Promise(resolve=>setTimeout(resolve,120));
+    assert.equal(settled,false,'locked destination is not removed or acknowledged');
+    assert.equal(JSON.parse(await readFile(file,'utf8')).testValue,1);
+    await release();const success=await replacement;assert.equal(success.status,200,await success.clone().text());const next=(await success.json()).revision;
+    assert.equal(JSON.parse(await readFile(file,'utf8')).testValue,2);
+    await lock();const failed=await put(next,3);assert.equal(failed.status,500);assert.equal(JSON.parse(await readFile(file,'utf8')).testValue,2);
+    assert.equal((await fetch(url)).headers.get('ETag'),next,'failed replacement preserves revision');
+    await release();assert.equal((await put(revision,4)).status,409,'retry never bypasses stale-write protection');
+    assert.equal((await put(next,3)).status,200,'normal write remains possible after lock release');
+  } finally {if(locker)await release();await new Promise(resolve=>server.close(resolve));await rm(root,{recursive:true,force:true});}
+});
 
 function emptyCatalog() {
   return {

@@ -48,3 +48,29 @@ The examples overview and its documentation template now use the same direct
 `/?lesson=volcanoes` entry as the README. A repository-wide text audit found no
 other public documentation links to the intermediate guide. The in-demo
 Lesson guide remains optional help, not a demo entry point. No app build changed.
+
+
+## Public Mac/Windows integration — 2026-11-04
+
+One public source and app version now cover macOS Apple Silicon and Windows x64.
+Native resource staging shares server/Agent Kit selection; platform adapters own
+runtime, window/file opening and packaging. Windows remains without the guarded
+macOS DOCX converter. No alternate archive or Room data model was introduced.
+
+The optimised browser start uses the normal archive server; development reload
+remains separate. Room coalesces cosmetic work and avoids canonical projection
+during unfinished ink gestures; final canonical state and acknowledgements stay
+authoritative. Windows namespace paths and bounded atomic-write retries preserve
+the existing persistence contract.
+
+Official Windows updates use the existing signed Public channel, with an explicit
+owned-server handoff and recovery if installer execution fails. Disposable local
+QA identities verified installation, preserved archive, real two-version update,
+bad-signature rejection and failed-launch recovery. These tests precede final
+common-commit artifact acceptance. No production key enters Windows/Actions.
+
+[Release matrix](../RELEASE_MATRIX.md) defines version surfaces, both-platform
+checks, immutable artifacts, docs and deliberately independent full/demo states.
+CI checks Mac/Windows source and produces a bounded Windows installer receipt.
+Node pins are platform-specific to retain macOS12 compatibility. Full edition,
+its installed app and colleagues update channel are separate release decisions.

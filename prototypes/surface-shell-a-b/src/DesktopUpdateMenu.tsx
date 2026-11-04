@@ -11,7 +11,7 @@ type UpdateOverview = {
   currentVersion: string;
   availableVersion: string | null;
   phase: DesktopUpdatePhase;
-  updateChannel: "manual" | "colleagues" | "public";
+  updateChannel: "manual" | "colleagues" | "public" | "qa-update";
 };
 
 const initialOverview: UpdateOverview = {
@@ -28,7 +28,7 @@ export function useDesktopUpdate(presenting: boolean) {
   const [error, setError] = useState<string | null>(null);
   const promptedVersions = useRef(new Set<string>());
   const desktopApp = isTauri();
-  const updatesEnabled = desktopApp ? ["public", "colleagues"].includes(overview.updateChannel) : distribution.officialUpdates;
+  const updatesEnabled = desktopApp ? ["public", "colleagues", "qa-update"].includes(overview.updateChannel) : distribution.officialUpdates;
 
   useEffect(() => {
     if (!desktopApp) return;

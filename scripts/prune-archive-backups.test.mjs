@@ -12,7 +12,7 @@ const run = promisify(execFile);
 const scripts = path.dirname(fileURLToPath(import.meta.url));
 
 async function fixture(t, count = 6, sources = 1) {
-  const root = await mkdtemp(path.join(os.tmpdir(), "tafelraum-retention-test-"));
+  const root = await mkdtemp(path.join(os.tmpdir(), "tafelraum retention test-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const output = path.join(root, "backups");
   const backups = [];

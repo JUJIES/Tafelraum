@@ -71,7 +71,9 @@ export async function pruneBuildArtifacts({ repository, appBackups, installedApp
     if (installed.id !== appId) throw new Error('Installierte App hat eine unbekannte Kennung.');
     const running = await getActivePaths();
     const protectedPaths = protect.map(value => path.resolve(value));
-    const isBusy = (root, paths = running) => paths.some(file => within(root, file) || file.includes(root + path.sep))
+    // Windows command lines may use either slash spelling (and any case).
+    const commandPath = value => process.platform === 'win32' ? value.replaceAll('\\', '/').toLowerCase() : value;
+    const isBusy = (root, paths = running) => paths.some(file => commandPath(file) === commandPath(root) || commandPath(file).includes(commandPath(root) + '/'))
       || protectedPaths.some(file => within(root, file) || within(file, root));
     const candidates = [], kept = [], skipped = [], apps = [], releaseGroups = [];
     const published = new Set();

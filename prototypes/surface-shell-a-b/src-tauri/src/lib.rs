@@ -29,6 +29,7 @@ use persistence_exit::{PersistenceExit, confirm_desktop_persistence};
 #[cfg(target_os = "macos")]
 mod room_fullscreen;
 
+mod system_open;
 mod desktop_release;
 use desktop_release::DesktopRelease;
 
@@ -194,7 +195,20 @@ fn check_for_updates(app: AppHandle, manual: bool) {
     set_update_menu(&app, "Suche nach Updates …", false);
     emit_update_overview(&app);
     tauri::async_runtime::spawn(async move {
-        let result = match app.updater() {
+        let updater = app.updater_builder();
+        #[cfg(windows)]
+        let updater = {
+            let exit_app = app.clone();
+            updater.on_before_exit(move || {
+                // Windows updater calls process::exit; RunEvent::Exit is skipped.
+                // The canonical persistence flush still happens before install.
+                stop_local_server(&exit_app);
+                log_update(&exit_app, "Windows-Update: eigener lokaler Dienst beendet.");
+                // Keep windows/resources alive if ShellExecute fails. A successful
+                // handoff exits the process; failure below restarts only our server.
+            })
+        };
+        let result = match updater.build() {
             Ok(updater) => updater.check().await.map_err(|error| error.to_string()),
             Err(error) => Err(error.to_string()),
         };
@@ -296,6 +310,21 @@ fn confirm_update(app: AppHandle, update: Update) {
                 update.install(bytes).map_err(|e| e.to_string())
             }.await;
             if let Err(error) = install_result {
+                #[cfg(windows)]
+                let error = if owns_persistence {
+                    let stopped = install_app.try_state::<ServerProcess>()
+                        .and_then(|server| server.0.lock().ok().map(|child| child.is_none()))
+                        .unwrap_or(false);
+                    if stopped {
+                        match start_local_server(&install_app) {
+                            Ok(()) => { log_update(&install_app, "Windows-Update fehlgeschlagen; eigener Dienst wird wieder gestartet."); error }
+                            Err(restart_error) => {
+                                log_update(&install_app, format!("Lokaler Wiederanlauf fehlgeschlagen: {restart_error}"));
+                                format!("{error}\nDie Änderungen wurden gespeichert. Bitte Tafelraum neu starten.")
+                            }
+                        }
+                    } else { error }
+                } else { error };
                 if owns_persistence {
                     persistence_exit::release(&install_app);
                     install_app.state::<PersistenceExit>().busy.store(false, Ordering::SeqCst);
@@ -350,16 +379,13 @@ fn print_desktop_webview(window: tauri::WebviewWindow) -> Result<(), String> {
 #[tauri::command]
 fn open_external_web_url(url: String) -> Result<(), String> {
     let parsed = validate_external_web_url(&url)?;
-    Command::new("/usr/bin/open")
-        .arg("--")
-        .arg(parsed.as_str())
-        .spawn()
-        .map_err(|error| format!("Link konnte nicht im Browser geöffnet werden: {error}"))?;
+    system_open::open(std::ffi::OsStr::new(parsed.as_str()))?;
     Ok(())
 }
 
 #[tauri::command]
-fn open_room_canvas(app: AppHandle, channel: String) -> Result<(), String> {
+// WebView2 creation must not block a synchronous command on Windows.
+async fn open_room_canvas(app: AppHandle, channel: String) -> Result<(), String> {
     if channel.len() != 36 || !channel.chars().all(|c| c.is_ascii_hexdigit() || c == '-') {
         return Err("Ungültige Raumansicht.".into());
     }
@@ -442,7 +468,15 @@ mod tests {
 fn install_menu(app: &tauri::App) -> tauri::Result<()> {
     let check_updates =
         MenuItemBuilder::with_id("check-updates", "Nach Updates suchen …").build(app)?;
-    let mut app_menu = SubmenuBuilder::new(app, "Tafelraum").about_with_text("Über Tafelraum", None).separator();
+    #[cfg(windows)]
+    let about = Some(tauri::menu::AboutMetadata {
+        name: Some("Tafelraum".into()),
+        version: Some(app.package_info().version.to_string()),
+        ..Default::default()
+    });
+    #[cfg(not(windows))]
+    let about = None;
+    let mut app_menu = SubmenuBuilder::new(app, "Tafelraum").about_with_text("Über Tafelraum", about).separator();
     if official_updates_enabled(app.handle()) { app_menu = app_menu.item(&check_updates); }
     let app_menu = app_menu.text("open-data", "Lokalen Datenordner öffnen")
         .separator()
@@ -472,8 +506,13 @@ fn install_menu(app: &tauri::App) -> tauri::Result<()> {
 }
 
 #[cfg(not(debug_assertions))]
-fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
-    let handle = app.handle().clone();
+fn start_local_server(app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
+    let handle = app.clone();
+    if let Some(server) = app.try_state::<ServerProcess>() {
+        if server.0.lock().map_err(|_| "Lokaler Dienst nicht verfügbar")?.is_some() {
+            return Err("Lokaler Dienst läuft bereits".into());
+        }
+    }
     let local_port = app.state::<DesktopRelease>().port;
     let resource_dir = app.path().resource_dir()?;
     let data_root = app.path().app_data_dir()?;
@@ -481,14 +520,17 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
     fs::create_dir_all(&data_root)?;
     fs::create_dir_all(&log_dir)?;
 
-    let node_path = resource_dir.join("desktop-resources/runtime/node");
+    let node_path = resource_dir.join(if cfg!(target_os = "windows") { "desktop-resources/runtime/node.exe" } else { "desktop-resources/runtime/node" });
     let server_path = resource_dir.join("desktop-resources/server/desktop-server.mjs");
     let web_root = resource_dir.join("desktop-resources/web");
     let archive_root = data_root.join("unterrichtsarchiv");
     let log_path = log_dir.join("tafelraum-desktop.log");
     let stderr = File::options().create(true).append(true).open(log_path)?;
 
-    let mut child = Command::new(node_path)
+    let mut command = Command::new(node_path);
+    #[cfg(target_os = "windows")]
+    { use std::os::windows::process::CommandExt; command.creation_flags(0x08000000); }
+    let mut child = command
         .arg(server_path)
         .arg("--web-root")
         .arg(web_root)
@@ -506,7 +548,11 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
         .stdout
         .take()
         .ok_or("Lokaler Server liefert keinen Startstatus.")?;
-    app.manage(ServerProcess(Mutex::new(Some(child))));
+    if let Some(server) = app.try_state::<ServerProcess>() {
+        *server.0.lock().map_err(|_| "Lokaler Dienst nicht verfügbar")? = Some(child);
+    } else {
+        app.manage(ServerProcess(Mutex::new(Some(child))));
+    }
 
     std::thread::spawn(move || {
         let mut reader = BufReader::new(stdout);
@@ -535,7 +581,7 @@ fn start_local_server(app: &tauri::App) -> Result<(), Box<dyn std::error::Error>
 }
 
 #[cfg(debug_assertions)]
-fn start_local_server(_app: &tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+fn start_local_server(_app: &AppHandle) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
@@ -579,15 +625,19 @@ pub fn run() {
         ])
         .setup(|app| {
             install_menu(app)?;
-            start_local_server(app).map_err(|error| error.to_string())?;
+            start_local_server(app.handle()).map_err(|error| error.to_string())?;
             Ok(())
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
             "check-updates" => check_for_updates(app.clone(), true),
             "open-data" => {
-                if let Ok(path) = app.path().app_data_dir() {
-                    let _ = fs::create_dir_all(&path);
-                    let _ = Command::new("/usr/bin/open").arg(path).spawn();
+                let result = app.path().app_data_dir().map_err(|e| e.to_string())
+                    .and_then(|path| {
+                        fs::create_dir_all(&path).map_err(|e| e.to_string())?;
+                        system_open::open_folder(&path)
+                    });
+                if let Err(error) = result {
+                    show_message(app, "Datenordner konnte nicht geöffnet werden", error, MessageDialogKind::Error);
                 }
             }
             _ => {}

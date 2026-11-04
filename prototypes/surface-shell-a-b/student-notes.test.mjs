@@ -103,6 +103,7 @@ test('structured query filters, pagination, undated records and readonly CLI use
   const before = await readFile(path.join(root, 'archive.json'), 'utf8');
   const output = JSON.parse(execFileSync(process.execPath, ['../../scripts/read-student-notes.mjs', '--archive-root', root, '--class-id', 'course'], { encoding: 'utf8' }));
   assert.equal(output.entries.length, 3); assert.equal(output.entries[0].subjectName, 'Biologie');
+  assert.throws(()=>execFileSync(process.execPath, ['../../scripts/read-student-notes.mjs', '--archive-root', 'relative-archive', '--class-id', 'course'], {stdio:'pipe'}), /absolute Archivwurzel/);
   assert.equal(await readFile(path.join(root, 'archive.json'), 'utf8'), before);
   const catalog = await api('');
   assert.ok(!JSON.stringify(catalog.value).includes('Synapse erklärt'));

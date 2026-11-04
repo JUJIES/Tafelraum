@@ -12,6 +12,7 @@ export const agentKitFiles=[
  'scripts/tafelraum-unterricht.mjs','scripts/tafelraum-canvas-agent.mjs',
  'scripts/check-interactive-material.mjs','scripts/install-interactive-material.mjs',
  'scripts/create-archive-backup.mjs','scripts/verify-archive-backup.mjs','scripts/prune-archive-backups.mjs',
+ 'scripts/archive-tar.mjs',
  ...['teaching-agent-protocol.mjs','canvas-agent-protocol.mjs','interactive-material.mjs','sentence-check-contract.mjs','interactive-html-playback.mjs'].map(name=>'prototypes/surface-shell-a-b/'+name),
  ...['tafelraum-unterricht-organisieren','tafelraum-canvas-vorbereiten','tafelraum-unterrichtsmaterial','tafelraum-interactive-html'].map(name=>'.agents/skills/'+name+'/SKILL.md'),
  '.agents/skills/tafelraum-canvas-vorbereiten/references/layout.md',

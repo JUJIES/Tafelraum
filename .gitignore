@@ -39,3 +39,9 @@ __pycache__/
 # Generated, bounded agent instructions and helpers (canonical sources stay tracked).
 prototypes/surface-shell-a-b/agent-kit/
 prototypes/surface-shell-a-b/.agent-kit-*/
+
+# Generated isolated Windows package resources.
+windows-resources/
+installer-qa-resources/
+update-qa-resources/
+.windows-stage-*/

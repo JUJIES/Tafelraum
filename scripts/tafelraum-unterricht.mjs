@@ -3,7 +3,7 @@ import {readFile,stat} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
-import {fileURLToPath} from 'node:url';
+import {fileURLToPath,pathToFileURL} from 'node:url';
 import {teachingAgentPrefix,teachingAgentProtocol,teachingCatalog,findTeachingLessons,resolveTeachingLesson,resolveTeachingSeries} from '../prototypes/surface-shell-a-b/teaching-agent-protocol.mjs';
 import {installInteractiveMaterial} from './install-interactive-material.mjs';
 
@@ -149,7 +149,7 @@ export async function runTeachingCommand(action,o={},log=()=>{}) {
   }
 }
 
-if(path.resolve(process.argv[1]??'')===fileURLToPath(import.meta.url)){
+if(process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href===import.meta.url){
   try{
     const {action,options}=parseTeachingArguments(process.argv.slice(2));
     const result=await runTeachingCommand(action,options,info=>process.stderr.write(JSON.stringify(info)+'\n'));

@@ -11,7 +11,7 @@ function json(response, status, data) {
   response.end(JSON.stringify(data));
 }
 
-export function createDocumentImageProcessor({ configPath }) {
+export function createDocumentImageProcessor({ configPath, spawnWorker = spawn }) {
   let child = null;
   let reserved = false;
   let closed = false;
@@ -73,7 +73,7 @@ export function createDocumentImageProcessor({ configPath }) {
         if (perspective) parsed.operation = 'perspective';
         else if (parsed.operation !== undefined) throw new Error('invalid operation');
         if (response.destroyed || closed) return;
-        child = spawn(settings.python, [worker, configPath], { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+        child = spawnWorker(settings.python, [worker, configPath], { stdio: ['pipe', 'pipe', 'pipe'], env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
         handedOff = true;
         const running = child;
         const output = []; let size = 0; let failed = false;

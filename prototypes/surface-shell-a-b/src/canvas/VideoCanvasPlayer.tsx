@@ -62,7 +62,16 @@ function LocalVideoCanvasPlayer({ frame, materialShadow, presentedId, fullscreen
   const fullscreen=useVideoFullscreen(frame.elementId,rootRef,fullscreenControls);
   const videoRef = useRef<HTMLVideoElement>(null);
   const wasPresented=useRef(false);
-  useEffect(()=>{const player=videoRef.current;return()=>{player?.pause();player?.removeAttribute('src');player?.load();};},[]);
+  useEffect(() => {
+    const player = videoRef.current;
+    if (!player) return;
+    player.src = frame.sourceUrl;
+    return () => {
+      player.pause();
+      player.removeAttribute('src');
+      player.load();
+    };
+  }, [frame.sourceUrl]);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -139,7 +148,6 @@ function LocalVideoCanvasPlayer({ frame, materialShadow, presentedId, fullscreen
         <video
           ref={videoRef}
           preload="metadata"
-          src={frame.sourceUrl}
           onVolumeChange={event=>onPlayback?.(frame.elementId,!event.currentTarget.paused,event.currentTarget.currentTime,event.currentTarget.volume)}
           onDurationChange={syncTime}
           onEnded={() => {

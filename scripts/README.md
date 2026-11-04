@@ -1,5 +1,10 @@
 # Script catalogue
 
+For coordinated Mac/Windows artifacts, `public-release-set.mjs RELEASE_DIRECTORY
+VERSION SOURCE_COMMIT` verifies the complete set, source/version agreement,
+hashes, both updater targets and separate guides. It does not sign, install or
+publish. See [release matrix](../docs/RELEASE_MATRIX.md).
+
 Run these scripts from the repository root unless a command specifies the app directory. Use a synthetic lesson archive when testing.
 
 | Task | Tool and effect |

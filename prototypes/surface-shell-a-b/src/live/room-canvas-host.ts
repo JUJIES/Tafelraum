@@ -539,7 +539,10 @@ export class RoomCanvasHost {
       this.inkWire=null;
     }
     this.lastInspectionAt=Date.now();
-    this.inspectionTimer=setTimeout(()=>{this.inspectionTimer=undefined;this.inspectChanged();},0);
+    this.inspectionTimer=setTimeout(()=>{
+      this.inspectionTimer=undefined;this.inspectChanged();
+      if(this.dirty)this.schedule(0);
+    },0);
   };
 
   private scheduleInk(delay?:number){
@@ -649,12 +652,14 @@ export class RoomCanvasHost {
     this.update({ready:false,error:null});this.schedule(0);
   }
   private setTarget(target:RoomTarget) {
-    if(JSON.stringify(target)!==JSON.stringify(this.state.target))this.htmlPlayback?.clear();
     if(!this.state.active)return;
     const current=this.state.target;
     const targetChanged=current.kind!==target.kind
       || current.kind==='material'&&target.kind==='material'&&current.id!==target.id
       || current.kind==='clip'&&target.kind==='clip'&&current.clip.id!==target.clip.id;
+    // Moving/resizing the same clip only changes its camera bounds. Keep live
+    // HTML leases and the confirmed output intact until its next frame arrives.
+    if(targetChanged)this.htmlPlayback?.clear();
     const oldMedia=this.state.mediaId&&this.api?.getSceneElements().find(element=>element.id===this.state.mediaId);
     if(oldMedia&&!roomTargetContainsMedia(target,oldMedia)){
       const previous=this.mediaPlayback.get(oldMedia.id);
@@ -662,7 +667,7 @@ export class RoomCanvasHost {
       pauseRoomVideoStatus(oldMedia.id);
     }
     this.missingTarget=false;
-    this.inkWire=null;this.channel?.postMessage({type:'ink-clear',channel:this.channelId,generation:this.generation});
+    if(targetChanged){this.inkWire=null;this.channel?.postMessage({type:'ink-clear',channel:this.channelId,generation:this.generation});}
     // A preview is the last confirmed receiver frame. Once its display target
     // changes it must not masquerade as the currently selected material/clip.
     if(targetChanged){this.pendingPreview=null;this.setPreview(null);}
@@ -675,7 +680,7 @@ export class RoomCanvasHost {
       });
     }
     const media=roomTargetMedia(this.api?.getSceneElements()??[],target,this.state.mediaId);
-    this.update({target,mediaId:media?.id??null,mediaFullscreenId:null,ready:false,error:null});this.schedule(0);
+    this.update({target,mediaId:media?.id??null,mediaFullscreenId:null,ready:targetChanged?false:this.state.ready,error:null});this.schedule(0);
   }
 
   private changed() {
@@ -744,6 +749,10 @@ export class RoomCanvasHost {
   }
   private async publish() {
     if(this.projecting||!this.dirty||!this.api||!this.receiverReady||!this.state.active)return;
+    // A queued/asynchronous full projection must not publish an unfinished
+    // teacher stroke as canonical content. Keep dirty work for pointer-up;
+    // the existing ink channel carries its expendable previews meanwhile.
+    if(this.inkPreviewId)return;
     this.projecting=true;this.dirty=false;
     const epoch=this.epoch,api=this.api,baseTarget=this.state.target,fullscreenId=this.state.mediaFullscreenId,version=this.sceneVersion;
     const target:RoomTarget=fullscreenId?{kind:'material',id:fullscreenId,title:'Video'}:baseTarget;
@@ -765,7 +774,7 @@ export class RoomCanvasHost {
         else {projection=await this.projector.project(api,target.id);this.materialProjection={version,id:target.id,value:projection};}
       } else if(this.fullProjection?.version===version)projection=this.fullProjection.value;
       else {projection=await this.projector.project(api);this.fullProjection={version,value:projection};}
-      if(epoch!==this.epoch||!this.state.active||version!==this.sceneVersion||JSON.stringify(baseTarget)!==JSON.stringify(this.state.target)||fullscreenId!==this.state.mediaFullscreenId) {this.dirty=true;return;}
+      if(epoch!==this.epoch||!this.state.active||this.inkPreviewId||version!==this.sceneVersion||JSON.stringify(baseTarget)!==JSON.stringify(this.state.target)||fullscreenId!==this.state.mediaFullscreenId) {this.dirty=true;return;}
       const selected=target.kind==='material'?api.getSceneElements().find(element=>element.id===target.id&&!element.isDeleted):null;
       if(target.kind==='material'&&!selected){this.removed(target.id);return;}
       const mediaElement=fullscreenId?selected:roomTargetMedia(api.getSceneElements(),baseTarget,this.state.mediaId);
@@ -793,6 +802,6 @@ export class RoomCanvasHost {
     } catch(error) {
       console.error('Room Canvas projection failed',error);
       if(epoch===this.epoch)this.update({ready:false,error:error instanceof Error?error.message:'Ansicht konnte nicht aktualisiert werden.'});
-    } finally {this.projecting=false;if(this.dirty)this.schedule(0);}
+    } finally {this.projecting=false;if(this.dirty&&!this.inkPreviewId)this.schedule(0);}
   }
 }

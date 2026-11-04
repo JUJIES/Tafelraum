@@ -1,5 +1,5 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath,pathToFileURL } from "node:url";
 import { readInteractiveMaterialPackage, validateRoomStateContract } from "../prototypes/surface-shell-a-b/interactive-material.mjs";
 
 function usage() {
@@ -60,6 +60,6 @@ async function main() {
   }, null, 2)}\n`);
 }
 
-if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
   await main();
 }

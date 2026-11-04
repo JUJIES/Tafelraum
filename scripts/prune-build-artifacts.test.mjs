@@ -47,7 +47,7 @@ test('preview/apply keeps two distinct rollback versions, installed/public relea
   const archive = await f.file('data/unterrichtsarchiv/target/precious');
   const backup = await f.file('output/student-notes-install-backup/unterrichtsarchiv/target/precious');
   const outside = await f.file('outside/target/precious');
-  await symlink(path.dirname(outside), path.join(f.repository, 'output/linked-target'));
+  await symlink(path.dirname(outside), path.join(f.repository, 'output/linked-target'), process.platform === 'win32' ? 'junction' : 'dir');
   const preview = await pruneBuildArtifacts(f.options);
   assert.equal(preview.applied, false); assert.equal(await exists(old), true);
   const result = await pruneBuildArtifacts({ ...f.options, apply: true });
@@ -140,7 +140,7 @@ test('snapshot uses current tracked/untracked source, omits ignored generated da
   assert.equal(await readFile(path.join(checkout, demo), 'utf8'), 'versioned demo');
   assert.equal(await exists(path.join(checkout, 'test-materials')), false);
   await assert.rejects(snapshotBuildSource(f.repository, destination), { code: 'EEXIST' });
-  await symlink(path.join(f.repository, 'outside'), path.join(f.repository, 'output/link'));
   await mkdir(path.join(f.repository, 'outside'));
+  await symlink(path.join(f.repository, 'outside'), path.join(f.repository, 'output/link'), process.platform === 'win32' ? 'junction' : 'dir');
   await assert.rejects(snapshotBuildSource(f.repository, path.join(f.repository, 'output/link/source')), /verlinkten/);
 });

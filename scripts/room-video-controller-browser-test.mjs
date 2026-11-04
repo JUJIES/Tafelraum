@@ -39,6 +39,22 @@ try{
  await controls.getByRole('button',{name:'Abspielen',exact:true}).tap();await room.waitForTimeout(450);await room.evaluate(()=>window.originalVideo=document.querySelector('.room-media video'));
  await controls.getByRole('button',{name:'Vollbild',exact:true}).tap();await host.waitForFunction(()=>Boolean(window.clipFixture.room.state.mediaFullscreenId));await room.waitForTimeout(400);assert.equal(await room.evaluate(()=>window.originalVideo===document.querySelector('.room-media video')),true);
  await controls.getByRole('button',{name:'Vollbild verlassen',exact:true}).tap();record('Fullscreen keeps the same output player');
+ // Reposition the active viewport repeatedly while the output is playing.
+ await host.evaluate(()=>{
+   const room=window.clipFixture.room,video=room.api.getSceneElements().find(e=>e.customData?.materialKind==='video');
+   room.showClip({id:'moving-video',number:8,x:video.x,y:video.y,width:video.width,height:video.height});
+ });
+ await room.waitForTimeout(450);
+ await room.evaluate(()=>{window.movingPlayer=document.querySelector('.room-media video');});
+ const beforeMove=await video.evaluate(v=>v.currentTime);
+ await host.evaluate(async()=>{
+   const room=window.clipFixture.room,clip=room.state.target.clip;
+   for(let i=1;i<=16;i++){room.moveClip({...clip,x:clip.x+i*2,y:clip.y+i});await new Promise(r=>setTimeout(r,35));}
+ });
+ assert.equal(await room.evaluate(()=>window.movingPlayer===document.querySelector('.room-media video')),true);
+ assert.equal(await video.evaluate(v=>v.paused),false);
+ assert.ok(await video.evaluate(v=>v.currentTime)>beforeMove);
+ record('Moving the active clip keeps the same playing MP4 output');
  // Drop only the media heartbeat and all teacher commands, leaving the app and channel intact.
  await host.evaluate(()=>{const channel=window.clipFixture.room.channel;window.originalPost=channel.postMessage.bind(channel);channel.postMessage=m=>{if(m.type!=='media-lease')window.originalPost(m)};});
  await room.waitForTimeout(3400);assert.equal(await video.evaluate(v=>v.paused),true);record('An expired host lease pauses the output');

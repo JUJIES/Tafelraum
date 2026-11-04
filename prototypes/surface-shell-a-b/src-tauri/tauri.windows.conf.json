@@ -1,0 +1,65 @@
+{
+  "build": {
+    "beforeBuildCommand": "node ../../scripts/prepare-windows-desktop.mjs"
+  },
+  "app": {
+    "security": {
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "windows-desktop",
+          "description": "Public Windows desktop on its own loopback origin",
+          "windows": [
+            "main",
+            "room-canvas"
+          ],
+          "remote": {
+            "urls": [
+              "http://127.0.0.1:49318/*"
+            ]
+          },
+          "permissions": [
+            "core:default",
+            "core:window:allow-is-fullscreen",
+            "core:window:allow-set-fullscreen",
+            "allow-desktop-update-overview",
+            "allow-request-desktop-update-check",
+            "allow-print-desktop-webview",
+            "allow-open-external-web-url",
+            "allow-open-room-canvas",
+            "allow-close-room-canvas",
+            "allow-confirm-desktop-persistence",
+            "allow-set-ui-language"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "targets": [
+      "nsis"
+    ],
+    "createUpdaterArtifacts": false,
+    "active": true,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "Tafelraum Public",
+        "languages": [
+          "German",
+          "English"
+        ],
+        "installerHooks": "windows/installer-qa-hooks.nsh"
+      },
+      "webviewInstallMode": {
+        "silent": false,
+        "type": "downloadBootstrapper"
+      }
+    },
+    "resources": {
+      "../windows-resources/": "desktop-resources/",
+      "../desktop-resources/": null
+    },
+    "useLocalToolsDir": true
+  }
+}

@@ -12,7 +12,7 @@ const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 export async function prepareRuntimeNotices(appRoot,resources) {
  const evidence=path.join(appRoot,'runtime-licenses');
  const node=JSON.parse(await readFile(path.join(evidence,'node/provenance.json'),'utf8'));
- const version=(await run(path.join(resources,'runtime/node'),['--version'],{timeout:10000})).stdout.trim();
+ const version=(await run(path.join(resources,'runtime',process.platform==='win32'?'node.exe':'node'),['--version'],{timeout:10000})).stdout.trim();
  assert.equal(version,node.version,'Node changed: collect its original complete LICENSE before packaging');
  const nodeLicense=path.join(evidence,'node/LICENSE');
  assert.equal(hash(await readFile(nodeLicense)),node.sha256,'Node LICENSE evidence changed');

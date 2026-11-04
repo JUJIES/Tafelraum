@@ -31,6 +31,14 @@ function pdfJsWasmAssetsPlugin() {
     return pdfJsWasmAssetNames.find((candidate) => candidate === name) ?? null;
   };
   const serveAsset = (request: { url?: string }, response: { end(body: Buffer): void; statusCode: number; setHeader(name: string, value: string): void }, next: () => void) => {
+    // A PDF module worker runs outside the window. Serve its pinned bytes before Vite adds its development client.
+    if (request.url?.split("?")[0] === "/pdfjs-worker/pdf.worker.min.mjs") {
+      response.statusCode = 200;
+      response.setHeader("Content-Type", "text/javascript; charset=utf-8");
+      response.setHeader("Cache-Control", "no-cache");
+      response.end(readFileSync(new URL("./node_modules/pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url)));
+      return;
+    }
     const name = assetForRequest(request.url);
     if (!name) {
       next();
@@ -66,7 +74,7 @@ export default defineConfig(({ mode }) => {
     : new URL("../../data/unterrichtsarchiv/", import.meta.url);
   return {
     // Surface Lab deliberately supersamples Excalidraw at a minimum of 2x while
-    build: { rolldownOptions: { input: { main: new URL('./index.html',import.meta.url).pathname, room: new URL('./room.html',import.meta.url).pathname } } },
+    build: { rolldownOptions: { input: { main: fileURLToPath(new URL('./index.html',import.meta.url)), room: fileURLToPath(new URL('./room.html',import.meta.url)) } } },
     // image/text quality is being evaluated on desktop and the Legamaster.
     define: {
       "window.devicePixelRatio": "Math.max(window.devicePixelRatio, 2)",

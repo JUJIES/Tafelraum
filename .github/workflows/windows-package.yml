@@ -1,0 +1,61 @@
+name: Windows release candidate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['codex/**']
+    paths: ['.github/workflows/windows-package.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+    steps:
+      - name: Checkout exact workflow commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Node 24
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24.x'
+          cache: npm
+          cache-dependency-path: prototypes/surface-shell-a-b/package-lock.json
+      - name: Verify public source and version
+        run: |
+          node scripts/check-distribution.mjs public
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          node scripts/check-public-versions.mjs
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git diff --exit-code
+      - name: Install locked app dependencies
+        run: npm ci --prefix prototypes/surface-shell-a-b
+      - name: Use an isolated build cache
+        run: '"CARGO_TARGET_DIR=$env:RUNNER_TEMP/tafelraum-target" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append'
+      - name: Build official Windows candidate without transferring signing keys
+        working-directory: prototypes/surface-shell-a-b
+        run: npx tauri build --config src-tauri/tauri.public-release.conf.json --target x86_64-pc-windows-msvc --bundles nsis --no-sign
+      - name: Test compiled native delivery context
+        working-directory: prototypes/surface-shell-a-b/src-tauri
+        run: |
+          $env:TAURI_CONFIG = Get-Content -Raw tauri.public-release.conf.json
+          cargo test --locked --release --target x86_64-pc-windows-msvc --lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Write exact-source artifact receipt
+        run: |
+          $files = @(Get-ChildItem -LiteralPath "$env:CARGO_TARGET_DIR/x86_64-pc-windows-msvc/release/bundle/nsis" -Filter '*-setup.exe')
+          if ($files.Count -ne 1) { throw 'Expected exactly one Windows installer' }
+          node scripts/windows-build-receipt.mjs $files[0].FullName output/windows-release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload candidate and receipt for signing-host verification
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: tafelraum-public-windows-${{ github.sha }}
+          path: output/windows-release/
+          if-no-files-found: error
+          retention-days: 14

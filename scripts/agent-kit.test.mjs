@@ -46,6 +46,10 @@ test('kit is a bounded, self-contained copy of the canonical local pipeline; no 
   const installed=JSON.parse((await run(process.execPath,args,{cwd:temp})).stdout);
   assert.equal(installed.created,true);
   assert.equal(JSON.parse((await run(process.execPath,args,{cwd:temp})).stdout).created,false);
+  // Exercise transitive backup dependencies from the shipped kit, outside the checkout.
+  const backup=JSON.parse((await run(process.execPath,[path.join(root,'scripts/create-archive-backup.mjs'),
+    '--archive-root',archive,'--output-dir',path.join(temp,'backups'),'--label','kit-test'],{cwd:temp})).stdout);
+  await run(process.execPath,[path.join(root,'scripts/verify-archive-backup.mjs'),backup.backupPath],{cwd:temp});
   assert.ok((await collectAgentKit(repository)).manifest.revision===kit.revision);
  }finally{await rm(temp,{recursive:true,force:true});}
 });

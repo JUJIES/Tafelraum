@@ -5,7 +5,7 @@ import { dispatchWheelToCanvas } from "../canvas/projected-media-gestures";
 import { TimerWidgetLayer, type TimerGeometry } from "../widgets/TimerWidgetLayer";
 import type { TimerAction, TimerWidget } from "../widgets/timer";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { CaptureUpdateAction, Excalidraw, restoreElements } from "@excalidraw/excalidraw";
+import { CaptureUpdateAction, Excalidraw, newElementWith, restoreElements } from "@excalidraw/excalidraw";
 import { LocateFixed } from "lucide-react";
 import type { BinaryFileData, DataURL, ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import type { ExcalidrawElement, FileId } from "@excalidraw/excalidraw/element/types";
@@ -21,6 +21,7 @@ import { LiveInteractiveMaterialLayer } from "./LiveInteractiveMaterialLayer";
 import { RoomMediaLayer } from './RoomMediaLayer';
 import type { RoomMedia } from './room-media';
 import { incrementalLinearElementIndex } from "./viewer-elements";
+import { createViewerRenderScheduler } from './viewer-render-scheduler';
 
 function fit(api: ExcalidrawImperativeAPI, viewport: Viewport, preview = false) {
   const state = api.getAppState();
@@ -95,14 +96,20 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
   const requestContent = useRef<() => void>(() => {});
   const loadedRoomMaterials=useRef(new Set<string>());
   const loadedRoomMedia=useRef<string|null>(null);
+  const reportedRoomReady=useRef<{generation:number;revision:number}|null>(null);
   const reportRoomReady=useCallback(()=>{
     if(!onSceneReady)return;
     const current=sceneRef.current;
     if(rendered.current.generation!==current.generation||rendered.current.revision!==current.revision)return;
     if(room&&current.materials?.some(material=>!loadedRoomMaterials.current.has(material.instanceId)))return;
     if(roomMedia&&loadedRoomMedia.current!==`${current.generation}:${roomMedia.id}:${roomMedia.attempt??0}`)return;
+    // Cosmetic ink/object previews keep the canonical scene revision. Repeating
+    // its ACK also repeats Room focus/HTML-scroll restoration and host traffic.
+    if(reportedRoomReady.current?.generation===current.generation&&reportedRoomReady.current.revision===current.revision)return;
+    reportedRoomReady.current={generation:current.generation,revision:current.revision};
     onSceneReady(current.generation,current.revision);
-  },[onSceneReady,room,roomMedia?.id]);
+  },[onSceneReady,room,roomMedia?.id,roomMedia?.attempt]);
+  const reportRoomReadyRef=useRef(reportRoomReady);reportRoomReadyRef.current=reportRoomReady;
   const materialLoaded=useCallback((id:string)=>{loadedRoomMaterials.current.add(id);reportRoomReady();},[reportRoomReady]);
   const mediaLoaded=useCallback(()=>{
     if(roomMedia)loadedRoomMedia.current=`${sceneRef.current.generation}:${roomMedia.id}:${roomMedia.attempt??0}`;
@@ -124,6 +131,9 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
 
   useEffect(() => {
     if (!api) return;
+    // A new viewer API or explicit render retry must be able to confirm the
+    // current scene again, after its normal asset/material readiness barriers.
+    reportedRoomReady.current=null;
     let cancelled = false;
     let running = false;
     let frame = 0, motionFrame = 0, timer: ReturnType<typeof setTimeout>;
@@ -134,7 +144,8 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
       if (rendered.current.revision === content.revision && rendered.current.generation === content.generation&&rendered.current.renderVersion===contentVersion) return;
       const key = ++effectSequence.current;
       const canTransition = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        && rendered.current.generation === content.generation && rendered.current.revision > 0;
+        && rendered.current.generation === content.generation && rendered.current.revision > 0
+        && rendered.current.revision !== content.revision;
       const effect: CoverEffect | null = canTransition && content.coverTransition
         ? { ...content.coverTransition, key, holding: content.coverTransition.type === "reveal" } : null;
       const started = performance.now();
@@ -176,7 +187,10 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
       const elements = incrementalIndex === null
         ? restoreElements(content.elements as unknown as ExcalidrawElement[], null, { refreshDimensions: false, repairBindings: true })
         : renderedNativeElements.current!.map((element, index) => index === incrementalIndex
-          ? restoreElements([content.elements[index] as unknown as ExcalidrawElement], null, { refreshDimensions: false, repairBindings: false })[0]
+          // This is an already restored, unbound ink element of the same type.
+          // Apply its validated live geometry like the teacher does, instead of
+          // repeating import-time linear-point normalization on every preview.
+          ? newElementWith(element, content.elements[index] as unknown as Partial<typeof element>)
           : element);
       if (effect?.type === "reveal" && !superseded) {
         setActiveCoverEffect(effect);
@@ -230,7 +244,7 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
       }
       if(firstCommit) { await nextFrame();if(cancelled)return;await nextFrame();if(cancelled)return; }
       setError(null); setReady(true);
-      reportRoomReady();
+      reportRoomReadyRef.current();
       // Prune on content commit, not after an interruptible visual transition.
       // Rapid toggles must not retain a growing trail of decoded safe rasters.
       for (const id of assets.current.keys()) if (!content.assetIds.includes(id) && !sceneRef.current.assetIds.includes(id)) assets.current.delete(id);
@@ -254,7 +268,18 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
           const content = sceneRef.current;
           const contentVersion=renderVersionRef.current;
           if (rendered.current.generation === content.generation && rendered.current.revision === content.revision&&rendered.current.renderVersion===contentVersion) break;
-          try { await apply(content,contentVersion); }
+          try {
+            await apply(content,contentVersion);
+            // A preview that arrived during asset work is still only a newer
+            // view of this canonical scene. Yield to paint instead of draining
+            // cosmetic updates in an uninterrupted asynchronous loop.
+            if (rendered.current.generation === sceneRef.current.generation
+              && rendered.current.revision === sceneRef.current.revision
+              && rendered.current.renderVersion !== renderVersionRef.current) {
+              requestContent.current();
+              break;
+            }
+          }
           catch {
             if (cancelled) break;
             setActiveCoverEffect(null);
@@ -266,13 +291,16 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
         }
       } finally { running = false; }
     };
+    const scheduler = createViewerRenderScheduler(() => { void pump(); }, requestAnimationFrame, cancelAnimationFrame);
     requestContent.current = () => {
       clearTimeout(timer); finishWait?.(); finishWait = undefined;
-      void pump();
+      scheduler.request(rendered.current.generation === sceneRef.current.generation
+        && rendered.current.revision === sceneRef.current.revision);
     };
     void pump();
     return () => {
       cancelled = true; cancelAnimationFrame(frame); cancelAnimationFrame(motionFrame); clearTimeout(timer);
+      scheduler.dispose();
       finishWait?.(); requestContent.current = () => {};
       setActiveCoverEffect(null);
     };

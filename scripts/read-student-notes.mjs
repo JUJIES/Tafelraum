@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createStudentNotesStore } from '../prototypes/surface-shell-a-b/student-notes-store.mjs';
+import path from 'node:path';
 const args = process.argv.slice(2);
 const values = {};
 const names = { '--archive-root': 'archiveRoot', '--class-id': 'classId', '--subject-id': 'subjectId', '--series-id': 'seriesId', '--student-id': 'studentId', '--from': 'from', '--to': 'to', '--limit': 'limit', '--cursor': 'cursor' };
@@ -11,7 +12,7 @@ try {
       if (!names[args[i]] || !args[i + 1] || args[i + 1].startsWith('--')) throw new Error('Ungültige Argumente. --help zeigt die Optionen.');
       values[names[args[i]]] = args[i + 1];
     }
-    if (!values.archiveRoot?.startsWith('/') || !values.classId) throw new Error('Explizite absolute Archivwurzel und --class-id sind erforderlich.');
+    if (!values.archiveRoot || !path.isAbsolute(values.archiveRoot) || !values.classId) throw new Error('Explizite absolute Archivwurzel und --class-id sind erforderlich.');
     const { archiveRoot, ...filters } = values;
     console.log(JSON.stringify(await createStudentNotesStore({ archiveRoot }).query(filters), null, 2));
   }

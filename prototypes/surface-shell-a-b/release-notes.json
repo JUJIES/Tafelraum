@@ -1,4 +1,10 @@
 {
+  "0.1.92": [
+    "Shared public source for macOS Apple Silicon and Windows x64, with a per-user Windows installer and the existing public update channel.",
+    "Optimised browser startup and reduced Room Canvas work while drawing.",
+    "Windows native window opening, file paths, archive writes, packaged Agent Kit and update handoff corrected.",
+    "Expanded first-use, data/privacy, architecture and coordinated release documentation."
+  ],
   "0.1.91": [
     "Smaller offline Mac package: unnecessary LibreOffice help and icon resources removed; fonts and DOCX conversion retained.",
     "More compact ZIP downloads; existing lessons and update channel remain unchanged."

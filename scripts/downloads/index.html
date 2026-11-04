@@ -2,9 +2,9 @@
 <html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tafelraum downloads</title>
 <style>
-:root{font:17px/1.6 system-ui,sans-serif;color:#183647;background:#f7f5ef}body{margin:0;padding:9vh 24px}main{max-width:650px;margin:auto}small{color:#526d72}h1{font-size:clamp(34px,7vw,52px);line-height:1.15;margin:12px 0 24px}a{color:#205c62}#download{display:inline-block;padding:13px 22px;background:#205c62;color:white;border-radius:10px;text-decoration:none;font-weight:650}section{border-top:1px solid #cbd5d1;margin-top:32px;padding-top:20px}.muted{color:#526d72;font-size:14px;overflow-wrap:anywhere}[hidden]{display:none!important}
+:root{font:17px/1.6 system-ui,sans-serif;color:#183647;background:#f7f5ef}body{margin:0;padding:9vh 24px}main{max-width:650px;margin:auto}small{color:#526d72}h1{font-size:clamp(34px,7vw,52px);line-height:1.15;margin:12px 0 24px}a{color:#205c62}select{font:inherit;min-height:48px;margin:8px 0 0;padding:4px 12px;max-width:100%}#download{display:inline-block;padding:13px 22px;background:#205c62;color:white;border-radius:10px;text-decoration:none;font-weight:650}section{border-top:1px solid #cbd5d1;margin-top:32px;padding-top:20px}.muted{color:#526d72;font-size:14px;overflow-wrap:anywhere}[hidden]{display:none!important}
 </style>
-<main><small id="edition">Tafelraum</small><h1 id="title">Download Tafelraum</h1><p id="status">Loading the released version…</p><p><a id="download" hidden>Download for Mac · Apple Silicon</a></p><p id="guide"></p><p class="muted" id="source"></p><section><p id="details"></p><details><summary id="verify">Verify download</summary><p class="muted" id="hash"></p></details><a id="history" href="../releases/">Version archive</a></section></main>
+<main><small id="edition">Tafelraum</small><h1 id="title">Download Tafelraum</h1><p id="status">Loading the released version…</p><p id="platform-choice" hidden><label for="platform">Platform</label><br><select id="platform"><option value="darwin-aarch64">Mac · Apple Silicon</option><option value="windows-x86_64">Windows · x64</option></select></p><p><a id="download" hidden>Download for Mac · Apple Silicon</a></p><p id="guide"></p><p class="muted" id="source"></p><section><p id="details"></p><details><summary id="verify">Verify download</summary><p class="muted" id="hash"></p></details><a id="history" href="../releases/">Version archive</a></section></main>
 <script>
 (async()=>{
  const mdm=location.pathname.startsWith('/tafelraum/'),root=new URL('../',location.href);
@@ -27,12 +27,33 @@
   const expectedPublic='https://github.com/JUJIES/Tafelraum/releases/download/v'+version+'/'+d.filename;
   if(!mdm&&d.url&&d.url!==expectedPublic)throw Error('invalid download destination');
   const file=mdm?new URL(d.filename,manifestURL):new URL(expectedPublic),button=document.getElementById('download');
-  button.href=file.href;button.hidden=false;button.textContent=mdm?'Version '+version+' für Mac herunterladen':'Download '+version+' for Mac';
+  button.href=file.href;button.hidden=true;button.textContent=mdm?'Version '+version+' für Mac herunterladen':'Download '+version+' for Mac';
   text('status',mdm?'Freigegebene Vollfassung '+version+' · macOS / Apple Silicon':'Public release '+version+' · macOS / Apple Silicon');
   const guide=document.createElement('a');guide.href=new URL('INSTALLATIONSANLEITUNG.txt',manifestURL).href;guide.textContent=mdm?'MDM-Installationsanleitung lesen':'Read the installation guide';document.getElementById('guide').append(guide);
   text('source',mdm?'Entspricht dem freigegebenen Kollegen-Update. Persönliche Unterrichtsdaten sind nicht im Paket enthalten.':'Built from the published public source release.');
   if(!mdm){const a=document.createElement('a');a.href='https://github.com/JUJIES/Tafelraum/tree/'+d.sourceCommit;a.textContent='Source on GitHub';document.getElementById('source').append(document.createTextNode(' '),a);}
   text('hash','SHA-256: '+d.sha256);
- }catch{ text('status',mdm?'Der Download ist gerade nicht verfügbar. Bitte später erneut versuchen oder die Lehrkraft fragen.':'No public desktop download is available right now. Please try again later.');}
+  if(!mdm&&latest.platforms?.['windows-x86_64']){
+   const wr=await fetch(new URL('windows-download.json',manifestURL),{cache:'no-store'});if(!wr.ok)throw Error('Windows metadata unavailable');
+   const w=await wr.json(),name='Tafelraum-Public-'+version+'-Windows-x64-setup.exe';
+   const url='https://github.com/JUJIES/Tafelraum/releases/download/v'+version+'/'+name;
+   if(w.version!==version||w.sourceCommit!==d.sourceCommit||w.profile!=='public'||w.channel!=='public'||w.updateChannel!=='public'||w.platform!=='windows-x86_64'||w.filename!==name||w.url!==url||w.instructions!=='WINDOWS-INSTALLATION.txt'||!/^[a-f0-9]{64}$/.test(w.sha256)||latest.platforms['windows-x86_64'].url!==url)throw Error('Windows metadata mismatch');
+   const selector=document.getElementById('platform');
+   const choose=()=>{
+    const win=selector.value==='windows-x86_64',selected=win?w:d;
+    button.href=win?url:expectedPublic;
+    button.textContent='Download '+version+' for '+(win?'Windows':'Mac');
+    guide.href=new URL(win?'WINDOWS-INSTALLATION.txt':'INSTALLATIONSANLEITUNG.txt',manifestURL).href;
+    text('hash','SHA-256: '+selected.sha256);
+   };
+   if(/Windows/i.test(navigator.userAgent))selector.value='windows-x86_64';
+   selector.addEventListener('change',choose);choose();
+   document.getElementById('platform-choice').hidden=false;
+   text('status','Public release '+version+' · Mac / Apple Silicon and Windows / x64');
+   text('details','Choose the package for your computer and read its installation guide. Both apps use the public GitHub update channel. The colleagues edition is separate.');
+  }
+
+  button.hidden=false;
+ }catch{ document.getElementById('download').hidden=true;document.getElementById('platform-choice').hidden=true;document.getElementById('guide').replaceChildren();text('status',mdm?'Der Download ist gerade nicht verfügbar. Bitte später erneut versuchen oder die Lehrkraft fragen.':'No public desktop download is available right now. Please try again later.');}
 })();
 </script></html>

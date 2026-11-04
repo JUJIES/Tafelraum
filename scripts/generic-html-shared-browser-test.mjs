@@ -51,6 +51,24 @@ try{
  await teacher.getByRole('button',{name:'Weiter',exact:true}).click();await front.waitForFunction(()=>window.tafelraumLive.getState().chapter===1&&window.tafelraumPlayback.getStatus().playing);record('Teacher chapter action reaches the Room and continues playback');
  await front.getByRole('button',{name:'Pause',exact:true}).click();await teacher.waitForFunction(()=>!window.tafelraumPlayback.getStatus().playing);record('Room Pause reaches the teacher');
  await teacher.getByLabel('Antwort',{exact:true}).fill('Mac');await front.waitForFunction(()=>window.tafelraumLive.getState().answer==='Mac');await front.getByLabel('Antwort',{exact:true}).fill('Vorne');await teacher.waitForFunction(()=>window.tafelraumLive.getState().answer==='Vorne');record('Semantic inputs still synchronize in both directions');
+ await host.evaluate(()=>{
+   const room=window.clipFixture.room,html=window.clipFixture.api.getSceneElements().find(e=>e.customData?.materialKind==='interactive-html');
+   if(!html)throw Error('HTML carrier missing');
+   room.showClip({id:'moving-html',number:9,x:html.x,y:html.y,width:html.width,height:html.height});
+ });
+ await room.waitForTimeout(600);
+ const movingFront=await getFrame(room,'[data-room-material-id] iframe');
+ await teacher.getByRole('button',{name:'Abspielen',exact:true}).click();
+ await movingFront.waitForFunction(()=>window.tafelraumPlayback.getStatus().playing);
+ await movingFront.evaluate(()=>{window.clipMoveProbe='same-document';});
+ await host.evaluate(async()=>{
+   const room=window.clipFixture.room,clip=room.state.target.clip;
+   for(let i=1;i<=16;i++){room.moveClip({...clip,x:clip.x+i,y:clip.y+i});await new Promise(r=>setTimeout(r,35));}
+ });
+ assert.equal(await movingFront.evaluate(()=>window.clipMoveProbe),'same-document');
+ assert.equal(await movingFront.evaluate(()=>window.tafelraumPlayback.getStatus().playing),true);
+ assert.equal(await movingFront.evaluate(()=>window.tafelraumLive.getState().answer),'Vorne');
+ record('Moving the same clip preserves the HTML document, playback and worksheet answer');
  await host.screenshot({path:out+'generic-html.png'});
  assert.deepEqual(errors,[]);await writeFile(out+'generic-html-checks.json',JSON.stringify({checks,errors},null,2));
 }catch(e){await host.screenshot({path:out+'generic-html-failure.png'}).catch(()=>{});throw e;}finally{await host.evaluate(()=>window.clipFixture?.room.stop()).catch(()=>{});await browser.close();await vite.close();await rm(archiveRoot,{recursive:true,force:true});}

@@ -1,0 +1,63 @@
+Tafelraum Public for Windows
+
+Requirements
+------------
+64-bit Windows 10 or Windows 11 and Microsoft Edge WebView2 Runtime.
+This package is for x64 PCs. Windows on ARM is not covered by the x64 QA.
+
+Install and start
+-----------------
+1. Download the setup.exe and this guide from the official Tafelraum release.
+2. Close Tafelraum normally and wait for your changes to finish saving.
+3. Run setup.exe. It installs for your current Windows user and creates a
+   Start Menu entry. The default installation does not require an administrator.
+4. Start Tafelraum Public from the Start Menu or Explorer.
+
+If WebView2 is missing, setup needs internet access to obtain Microsoft's
+Evergreen runtime and may invoke Microsoft's runtime installer.
+Do not bypass a Windows security warning. If Windows requests administrator
+approval or reports an unverified publisher, ask your administrator to review it.
+An updater signature verifies update content; it does not provide an
+Authenticode publisher certificate or SmartScreen reputation.
+
+Your local lessons
+------------------
+Lessons are stored in your Windows user's AppData folder, separately from the
+installation. Use Tafelraum > Open local data folder to find them. The Public
+edition keeps a separate archive from the full school edition and QA builds.
+Installing another edition does not migrate an archive automatically.
+
+Back up your lesson archive before changing computers or installing a test
+build. Close the app normally before copying its archive. Uninstalling this
+Windows package retains the lesson archive when "Delete app data" stays
+unchecked. Keep that option unchecked to preserve your lessons. Removing the
+program is not an archive backup.
+
+Updates
+-------
+Official Public builds use the Public update channel. Confirm the update in
+the teacher window; Tafelraum saves pending changes before installation.
+A manually built source app may have manual updates instead.
+Close a running app normally before using a setup file to replace it. The
+installer refuses to forcibly terminate the running target app.
+
+Windows limits
+--------------
+Word/DOCX conversion is currently unavailable on Windows and displays a
+platform message. PNG/PDF, WAV and AVC media were checked in local QA; the
+tested HEVC file did not play on the QA PC. Optional image enhancement needs
+its separately configured Python runtime.
+
+Printable HTML worksheets can produce blank A4 handouts. WebView2 may add
+date/title/address headers and footers; check print settings and preview.
+Physical printers, pen/touch devices, multiple displays/DPI and a Windows PC
+without development tools need separate practice tests.
+
+Troubleshooting and feedback
+----------------------------
+Start the app from Explorer or the Start Menu when reporting a persistence
+problem. On the QA host, launching from a packaged automation app could expose
+a different virtualized AppData catalog at the same logical path.
+Report the app version, start route, Windows/WebView2 version and a reproducible
+example using invented lesson content. Do not send real pupil or lesson data.
+Source and issue tracker: https://github.com/JUJIES/Tafelraum

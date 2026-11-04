@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { lstat, mkdir, readFile, readdir, realpath, rm } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath,pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 const run = promisify(execFile);
@@ -71,7 +71,7 @@ export async function pruneArchiveBackups(directory, { apply = false } = {}) {
   }
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
   if (process.argv.includes("--help")) {
     console.log("node scripts/prune-archive-backups.mjs [--output-dir PFAD] [--apply] (sonst nur Vorschau; 5 je Quelle)");
   } else {

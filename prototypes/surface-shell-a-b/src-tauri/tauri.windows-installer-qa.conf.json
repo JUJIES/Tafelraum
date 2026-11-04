@@ -1,0 +1,76 @@
+{
+  "productName": "Tafelraum Windows Installer QA",
+  "identifier": "app.jujies.tafelraum.public.qa.windows.installer",
+  "build": {
+    "beforeBuildCommand": "node ../../scripts/prepare-windows-installer-qa.mjs"
+  },
+  "app": {
+    "security": {
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "windows-installer-qa",
+          "description": "Isolated local Windows QA app only",
+          "windows": [
+            "main",
+            "room-canvas"
+          ],
+          "remote": {
+            "urls": [
+              "http://127.0.0.1:49320/*"
+            ]
+          },
+          "permissions": [
+            "core:default",
+            "core:window:allow-is-fullscreen",
+            "core:window:allow-set-fullscreen",
+            "allow-desktop-update-overview",
+            "allow-request-desktop-update-check",
+            "allow-print-desktop-webview",
+            "allow-open-external-web-url",
+            "allow-open-room-canvas",
+            "allow-close-room-canvas",
+            "allow-confirm-desktop-persistence",
+            "allow-set-ui-language"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "targets": [
+      "nsis"
+    ],
+    "createUpdaterArtifacts": false,
+    "active": true,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "Tafelraum Windows Installer QA",
+        "languages": [
+          "German",
+          "English"
+        ],
+        "installerHooks": "windows/installer-qa-hooks.nsh"
+      },
+      "webviewInstallMode": {
+        "silent": false,
+        "type": "downloadBootstrapper"
+      }
+    },
+    "resources": {
+      "../installer-qa-resources/": "desktop-resources/",
+      "../windows-resources/": null,
+      "../desktop-resources/": null
+    },
+    "useLocalToolsDir": true
+  },
+  "plugins": {
+    "tafelraum-qa": {
+      "package": "nsis",
+      "platform": "windows",
+      "port": 49320
+    }
+  },
+  "mainBinaryName": "Tafelraum-Installer-QA"
+}

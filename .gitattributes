@@ -1,0 +1,10 @@
+# Stable source bytes across Mac/Windows checkouts; scripts use LF on both.
+* text=auto eol=lf
+
+# Original third-party notices are hash-verified and must retain vendor bytes.
+**/runtime-licenses/** -text
+**/vendor-licenses/** -text
+third-party/** -text
+**/LICENSE* -text
+**/COPYING* -text
+**/NOTICE* -text

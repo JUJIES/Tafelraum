@@ -19,6 +19,10 @@ fn main() -> Result<(), String> {
     let config_path = arguments
         .next()
         .ok_or_else(|| "Tauri-Konfiguration fehlt.".to_string())?;
+    let platform = arguments.next().unwrap_or_else(|| "darwin-aarch64".into());
+    if !matches!(platform.as_str(), "darwin-aarch64" | "windows-x86_64") {
+        return Err("Unbekannte Update-Plattform.".into());
+    }
     if arguments.next().is_some() {
         return Err("Zu viele Argumente.".into());
     }
@@ -33,7 +37,7 @@ fn main() -> Result<(), String> {
     let public_key = config["plugins"]["updater"]["pubkey"]
         .as_str()
         .ok_or_else(|| "Öffentlicher Updater-Schlüssel fehlt.".to_string())?;
-    let signature = manifest["platforms"]["darwin-aarch64"]["signature"]
+    let signature = manifest["platforms"][&platform]["signature"]
         .as_str()
         .ok_or_else(|| "Updater-Signatur fehlt.".to_string())?;
 

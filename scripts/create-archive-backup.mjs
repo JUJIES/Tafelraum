@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { managedBackupDirectory, pruneArchiveBackups, verifyBackup } from "./prune-archive-backups.mjs";
+import { archiveTar } from './archive-tar.mjs';
 
 const repositoryRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -71,7 +72,7 @@ const backupPath = path.join(outputDirectory, fileName);
 const temporaryPath = `${backupPath}.tmp-${process.pid}`;
 
 try {
-  await run("tar", ["-czf", temporaryPath, "-C", path.dirname(archiveRoot), path.basename(archiveRoot)]);
+  await run(archiveTar, ["-czf", temporaryPath, "-C", path.dirname(archiveRoot), path.basename(archiveRoot)]);
   await rename(temporaryPath, backupPath);
   const checksum = await sha256(backupPath);
   const backupStat = await stat(backupPath);

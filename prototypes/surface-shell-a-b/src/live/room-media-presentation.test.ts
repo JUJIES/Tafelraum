@@ -43,8 +43,28 @@ test('Room preserves the crop through playback and temporary fullscreen, cancels
     const flush=async()=>{mock.timers.tick(100);await new Promise<void>(resolve=>setImmediate(resolve));};
     host.showClip(crop.clip);host.playMedia(video.id,true,12);await flush();
     assert.deepEqual(host.state.target,crop);assert.equal(host.state.mediaId,video.id);
-    const published=channel.sent.filter(message=>message.type==='frame').at(-1);
+    let published=channel.sent.filter(message=>message.type==='frame').at(-1);
     channel.receive({type:'shown',channel:channelId,generation:published.scene.generation,revision:published.scene.revision});
+    const releases=mock.method((host as any).htmlPlayback,'clear');
+    const inkClears=channel.sent.filter(message=>message.type==='ink-clear').length;
+    for(let step=1;step<=8;step++){
+      host.moveClip({...crop.clip,x:crop.clip.x+step,y:crop.clip.y+step});
+      assert.equal(host.state.ready,true,'moving the current clip keeps the confirmed output ready');
+      await flush();
+    }
+    assert.equal(releases.mock.callCount(),0,'camera geometry must not release HTML playback leases');
+    assert.equal(channel.sent.filter(message=>message.type==='ink-clear').length,inkClears,'camera movement preserves transient ink');
+    const movedFrame=channel.sent.filter(message=>message.type==='frame').at(-1);
+    assert.equal(movedFrame.scene.presentation.clip.x,crop.clip.x+8);
+    assert.equal(movedFrame.assets.length,0,'moving the camera does not resend assets');
+    host.showClip({...crop.clip,id:'different-clip'});
+    assert.equal(releases.mock.callCount(),1,'a real clip switch still releases playback');
+    assert.equal(host.state.ready,false,'a real clip switch waits for confirmation');
+    host.showClip(crop.clip);await flush();
+    releases.mock.restore();
+    const latest=channel.sent.filter(message=>message.type==='frame').at(-1);
+    channel.receive({type:'shown',channel:channelId,generation:latest.scene.generation,revision:latest.scene.revision});
+    published=latest;
     const status={playing:true,position:13,duration:60,volume:.4};
     channel.receive({type:'media-status',sequence:0,channel:channelId,generation:published.scene.generation,revision:published.scene.revision-1,id:video.id,status});
     assert.equal(getRoomVideoStatus(video.id),null,'stale output cannot replace confirmed status');
@@ -77,6 +97,31 @@ test('Room preserves the crop through playback and temporary fullscreen, cancels
     channel.receive({type:'media-status',sequence:0,channel:channelId,generation:published.scene.generation,revision:published.scene.revision,id:video.id,status:{...status,position:22.1}});assert.equal(host.state.target.kind,'clip','late output status cannot act as a Play command');
     host.playMedia(video.id,false,22.1);host.playMedia(video.id,true,22.1);assert.equal(host.state.target.kind,'material');
     host.attach(api as any,'lesson-2');assert.equal(host.state.mediaFullscreenId,null);assert.equal(host.state.mediaId,null);
+  } finally {
+    host.stop();mock.timers.reset();globalThis.BroadcastChannel=beforeChannel;
+    if(beforeWindow)Object.defineProperty(globalThis,'window',beforeWindow);else Reflect.deleteProperty(globalThis,'window');
+  }
+});
+
+test('Room retains a queued full projection until teacher ink finishes or cancels',async()=>{
+  const beforeWindow=Object.getOwnPropertyDescriptor(globalThis,'window'),beforeChannel=globalThis.BroadcastChannel;
+  Object.defineProperty(globalThis,'window',{configurable:true,value:{open:()=>({closed:false,close:()=>{},focus:()=>{}})}});
+  globalThis.BroadcastChannel=Channel as any;
+  mock.timers.enable({apis:['setTimeout','setInterval','Date']});
+  const host=new RoomCanvasHost();
+  const api={getSceneElements:()=>[video],getSceneElementsIncludingDeleted:()=>[video],getFiles:()=>({}),getAppState:()=>({viewBackgroundColor:'#fff',width:1000,height:800}),onChange:()=>()=>{},onScrollChange:()=>()=>{}};
+  const flush=async()=>{mock.timers.tick(100);await new Promise<void>(resolve=>setImmediate(resolve));};
+  try {
+    host.attach(api as any,'lesson');await host.start();
+    const channel=Channel.current,channelId=(host as any).channelId;
+    channel.receive({type:'ready',channel:channelId,width:1440,height:1000});await flush();
+    const first=channel.sent.filter(message=>message.type==='frame').at(-1);
+    channel.receive({type:'shown',channel:channelId,generation:first.scene.generation,revision:first.scene.revision});
+    const count=channel.sent.filter(message=>message.type==='frame').length;
+    host.retry();host.setInkPreview('draft');await flush();await flush();
+    assert.equal(channel.sent.filter(message=>message.type==='frame').length,count,'queued work cannot publish during an unfinished gesture');
+    host.setInkPreview(null);await flush();await flush();
+    assert.equal(channel.sent.filter(message=>message.type==='frame').length,count+1,'cancel also resumes dirty work when the canonical scene did not change');
   } finally {
     host.stop();mock.timers.reset();globalThis.BroadcastChannel=beforeChannel;
     if(beforeWindow)Object.defineProperty(globalThis,'window',beforeWindow);else Reflect.deleteProperty(globalThis,'window');

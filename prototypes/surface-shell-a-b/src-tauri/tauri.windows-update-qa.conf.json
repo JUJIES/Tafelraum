@@ -1,0 +1,87 @@
+{
+  "productName": "Tafelraum Windows Update QA",
+  "identifier": "app.jujies.tafelraum.public.qa.windows.update",
+  "build": {
+    "beforeBuildCommand": "node ../../scripts/prepare-windows-update-qa.mjs"
+  },
+  "app": {
+    "security": {
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "windows-update-qa",
+          "description": "Isolated local Windows QA app only",
+          "windows": [
+            "main",
+            "room-canvas"
+          ],
+          "remote": {
+            "urls": [
+              "http://127.0.0.1:49321/*"
+            ]
+          },
+          "permissions": [
+            "core:default",
+            "core:window:allow-is-fullscreen",
+            "core:window:allow-set-fullscreen",
+            "allow-desktop-update-overview",
+            "allow-request-desktop-update-check",
+            "allow-print-desktop-webview",
+            "allow-open-external-web-url",
+            "allow-open-room-canvas",
+            "allow-close-room-canvas",
+            "allow-confirm-desktop-persistence",
+            "allow-set-ui-language"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "targets": [
+      "nsis"
+    ],
+    "createUpdaterArtifacts": true,
+    "active": true,
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "startMenuFolder": "Tafelraum Windows Update QA",
+        "languages": [
+          "German",
+          "English"
+        ],
+        "installerHooks": "windows/installer-qa-hooks.nsh"
+      },
+      "webviewInstallMode": {
+        "silent": false,
+        "type": "downloadBootstrapper"
+      }
+    },
+    "resources": {
+      "../update-qa-resources/": "desktop-resources/",
+      "../windows-resources/": null,
+      "../desktop-resources/": null
+    },
+    "useLocalToolsDir": true
+  },
+  "plugins": {
+    "tafelraum-qa": {
+      "update": "loopback",
+      "port": 49321,
+      "platform": "windows",
+      "package": "nsis"
+    },
+    "updater": {
+      "endpoints": [
+        "http://127.0.0.1:49322/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhCMTREQzBGNzJGN0QxRUUKUldUdTBmZHlEOXdVaTVsZ25mQnNjWGViaFNHU0l5cklTSHdwTEU1UHZxUWdnenRiQ2xHU1E5VFoK",
+      "windows": {
+        "installMode": "passive"
+      },
+      "dangerousInsecureTransportProtocol": true
+    }
+  },
+  "mainBinaryName": "Tafelraum-Update-QA"
+}

@@ -94,7 +94,10 @@ function MaterialFrame({material,baseUrl,api,participant,onAction,inputReady=tru
     iframe.current?.contentWindow?.postMessage({type:'tafelraum:interactive-apply',state:material.state,applyId,
       ...(room&&synchronized.current?{preserveFocusedValue:true}:{})},'*');
   }};
-  useEffect(() => {if(!room)synchronized.current=false;sync();},[material.stateRevision,material.state]);
+  // Room frames are structured clones: camera movement gives an unchanged state
+  // a new object identity. Reapplying it can pause/restart an HTML player.
+  const stateContent=JSON.stringify(material.state);
+  useEffect(() => {if(!room)synchronized.current=false;sync();},[material.stateRevision,stateContent]);
   const state = api.getAppState(), zoom = state.zoom.value;
   const style = {left:(material.x+state.scrollX)*zoom,top:(material.y+state.scrollY)*zoom,width:material.width*zoom,height:material.height*zoom,
     "--room-html-titlebar-height": `${getInteractiveHtmlTitlebarProjection(material.height*zoom,zoom,material.roomContentOnly?0:interactiveHtmlTitlebarHeight).viewportHeight}px`,

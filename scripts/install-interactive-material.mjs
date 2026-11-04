@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { cp, mkdir, readFile, readdir, rename, rm } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath,pathToFileURL } from "node:url";
 import {
   interactiveMaterialFolderName,
   readInteractiveMaterialPackage,
@@ -143,6 +143,6 @@ async function main() {
   process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 }
 
-if (path.resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
   await main();
 }

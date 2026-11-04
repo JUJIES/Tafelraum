@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,mkdir,writeFile,readFile,cp,rm,symlink,access} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,cp,rm,copyFile,access} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
@@ -105,7 +105,7 @@ async function runtimeFixture(t) {
  const files=['Resources/LICENSE','Resources/LICENSE.html','Resources/NOTICE'].map(file=>({path:file,sha256:hash('Original '+file)}));
  await f.file('runtime-licenses/libreoffice/provenance.json',{version:'1.0.0',files});
  for(const row of files) await f.file('generated-resources/runtime/libreoffice/LibreOffice.app/Contents/'+row.path,'Original '+row.path);
- await symlink(process.execPath,path.join(resources,'runtime/node'));
+ await copyFile(process.execPath,path.join(resources,'runtime',process.platform==='win32'?'node.exe':'node'));
  return {...f,resources};
 }
 

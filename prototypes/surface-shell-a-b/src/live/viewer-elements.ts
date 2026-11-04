@@ -32,6 +32,9 @@ export function incrementalLinearElementIndex(
   }
   if (changed === -1) return null;
   const element = next[changed];
-  if ((element.type !== "freedraw" && element.type !== "line") || element.boundElements?.length) return null;
+  const before = previous[changed];
+  if ((element.type !== "freedraw" && element.type !== "line") || before.type !== element.type
+    || before.boundElements?.length || element.boundElements?.length) return null;
+  if(element.type==='line'&&[before,element].some(value=>value.points?.[0]?.[0]!==0||value.points?.[0]?.[1]!==0))return null;
   return changed;
 }

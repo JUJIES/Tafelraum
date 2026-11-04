@@ -49,3 +49,7 @@ The maintainer uses Codex in lesson preparation. The local command and browser w
 Tafelraum itself stores lessons locally. An assistant with file access can read the files you make available to it. If the assistant uses a cloud model, content it reads may be sent to that provider. Choose the working folder and permissions accordingly.
 
 To reproduce the reference workflow with synthetic data, install the app’s Playwright browsers, then run `npm run test:agent-onboarding` from `prototypes/surface-shell-a-b/`. It exercises lesson creation, material import, canvas edits, clips, saving and reopening the lesson.
+
+Private lesson notes are excluded from normal canvas inspection, not from an
+assistant’s separate file-access permission. See [Data, privacy and backups](DATA_AND_PRIVACY.md)
+for storage locations, backup contents and external-service boundaries.

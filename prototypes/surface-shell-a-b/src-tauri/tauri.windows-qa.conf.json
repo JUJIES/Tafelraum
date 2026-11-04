@@ -1,0 +1,54 @@
+{
+  "productName": "Tafelraum Windows QA",
+  "identifier": "app.jujies.tafelraum.public.qa.windows",
+  "build": {
+    "beforeBuildCommand": "node ../../scripts/prepare-windows-qa.mjs"
+  },
+  "app": {
+    "security": {
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "windows-qa",
+          "description": "Isolated local Windows QA app only",
+          "windows": [
+            "main",
+            "room-canvas"
+          ],
+          "remote": {
+            "urls": [
+              "http://127.0.0.1:49319/*"
+            ]
+          },
+          "permissions": [
+            "core:default",
+            "core:window:allow-is-fullscreen",
+            "core:window:allow-set-fullscreen",
+            "allow-desktop-update-overview",
+            "allow-request-desktop-update-check",
+            "allow-print-desktop-webview",
+            "allow-open-external-web-url",
+            "allow-open-room-canvas",
+            "allow-close-room-canvas",
+            "allow-confirm-desktop-persistence",
+            "allow-set-ui-language"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": false,
+    "createUpdaterArtifacts": false,
+    "resources": {
+      "../desktop-resources/": "desktop-resources/",
+      "../windows-resources/": null
+    }
+  },
+  "plugins": {
+    "tafelraum-qa": {
+      "platform": "windows",
+      "port": 49319
+    }
+  }
+}

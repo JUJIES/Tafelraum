@@ -141,11 +141,11 @@
         },
         {
           "file": "prototypes/surface-shell-a-b/runtime-licenses/node/LICENSE",
-          "sha256": "de8f7d08b164a5b05d815cefdcdb332d38846379649b53956071522f63a5e777"
+          "sha256": "c738ae413cf561f174e34f6961f8ca458aae2369a73640dda6234c629b98bcc4"
         },
         {
           "file": "prototypes/surface-shell-a-b/runtime-licenses/node/provenance.json",
-          "sha256": "578250e8440981214f46550820f866d1d249bd74c081f3341f27a884a0ec0711"
+          "sha256": "eaa9f794f984430d7e1402cb2e7327d20dc6559f7801c824db0646dabfd1ceb9"
         }
       ]
     },

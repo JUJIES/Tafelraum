@@ -17,6 +17,9 @@ test("viewer falls back for snapshots, order changes, multiple changes and bound
   assert.equal(incrementalLinearElementIndex([a,b],[b,a],[{id:"a"},{id:"b"}]),null);
   assert.equal(incrementalLinearElementIndex([a,b],[{...a},{...b}],[{id:"a"},{id:"b"}]),null);
   assert.equal(incrementalLinearElementIndex([a,b],[a,{...changedB,boundElements:[{id:"label",type:"text"}]}],[{id:"a"},{id:"b"}]),null);
+  assert.equal(incrementalLinearElementIndex([a,b],[line('a',[[0,0],[1,1]]),b],[{id:'a'},{id:'b'}]),null,'type changes need full restoration');
+  assert.equal(incrementalLinearElementIndex([a,{...b,boundElements:[{id:'label',type:'text'}]}],[a,changedB],[{id:'a'},{id:'b'}]),null,'removing a binding needs full restoration');
+  assert.equal(incrementalLinearElementIndex([a,b],[a,line('b',[[2,3],[5,6]])],[{id:'a'},{id:'b'}]),null,'unnormalized line origins need import normalization');
 });
 
 test("canonical content clears only superseded transient ink previews", () => {

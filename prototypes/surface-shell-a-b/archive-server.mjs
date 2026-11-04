@@ -18,6 +18,7 @@ import {
 import path from "node:path";
 import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
+import { setTimeout as delay } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { isDeepStrictEqual } from "node:util";
 import { installInteractiveHtmlStateBridge } from "./interactive-html-state-bridge.mjs";
@@ -229,7 +230,19 @@ async function writeAtomicJson(filePath, value, options = {}) {
   await mkdir(path.dirname(filePath), { recursive: true });
   const temporaryPath = `${filePath}.tmp-${process.pid}-${Date.now()}`;
   await writeFile(temporaryPath, nextContents, { encoding: "utf8", flag: "wx" });
-  await rename(temporaryPath, filePath);
+  // Windows readers/scanners can briefly deny replacement of an existing file.
+  // Keep the same atomic rename inside the existing write queue: never unlink
+  // the canonical file or repeat the revision/history part of the transaction.
+  const retryDelays = process.platform === "win32" ? [10, 25, 50, 100, 200, 400] : [];
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await rename(temporaryPath, filePath);
+      break;
+    } catch (error) {
+      if (!["EPERM", "EACCES", "EBUSY"].includes(error?.code) || attempt >= retryDelays.length) throw error;
+      await delay(retryDelays[attempt]);
+    }
+  }
   return true;
 }
 

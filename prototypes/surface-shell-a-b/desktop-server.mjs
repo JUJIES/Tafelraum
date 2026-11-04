@@ -8,7 +8,7 @@ import { createReadStream } from "node:fs";
 import { access, mkdir, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { createArchiveMiddleware } from "./archive-server.mjs";
 import { createMobileCaptureReceiver } from "./mobile-capture-receiver.mjs";
 import { createDocumentImageProcessor } from "./document-image-server.mjs";
@@ -142,7 +142,7 @@ async function serveStatic(webRoot, request, response) {
   else createReadStream(filePath).pipe(response);
 }
 
-export async function createDesktopServer({ archiveRoot, webRoot, port = 0, aiKeyStore, sentenceRequest = fetch, liveRequest = fetch, liveConfigPath = path.join(path.dirname(archiveRoot), "live-canvas.json"), captureConfigPath = path.join(path.dirname(archiveRoot), 'mobile-capture.json'), documentImageConfigPath = path.join(path.dirname(archiveRoot), 'document-image.json') }) {
+export async function createDesktopServer({ archiveRoot, webRoot, port = 0, aiKeyStore, sentenceRequest = fetch, liveRequest = fetch, liveConfigPath = path.join(path.dirname(archiveRoot), "live-canvas.json"), captureConfigPath = path.join(path.dirname(archiveRoot), 'mobile-capture.json'), documentImageConfigPath = path.join(path.dirname(archiveRoot), 'document-image.json'), documentImageSpawnWorker }) {
   const resolvedWebRoot = path.resolve(webRoot);
   const agentKit = createAgentKitMiddleware({kitRoot:path.join(resolvedWebRoot,"..","agent-kit")});
   await access(path.join(resolvedWebRoot, "index.html"));
@@ -156,7 +156,7 @@ export async function createDesktopServer({ archiveRoot, webRoot, port = 0, aiKe
   // requests cross-site; grant only a scoped, unguessable read-only package URL.
   const materialSecret = randomBytes(32);
   let capture;
-  const documentImage = createDocumentImageProcessor({ configPath: documentImageConfigPath });
+  const documentImage = createDocumentImageProcessor({ configPath: documentImageConfigPath, spawnWorker: documentImageSpawnWorker });
   const materialToken = (lesson, material) => createHmac("sha256", materialSecret).update(`${lesson}/${material}`).digest("hex");
   const server = createServer((request, response) => {
     if(aiSettings && new URL(request.url??"/","http://local").pathname==="/api/settings/sentence-check"){void aiSettings(request,response);return;}
@@ -265,7 +265,7 @@ async function main() {
   process.on("SIGINT", stop);
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   main().catch((error) => {
     process.stderr.write(`${error instanceof Error ? error.stack ?? error.message : String(error)}\n`);
     process.exit(1);

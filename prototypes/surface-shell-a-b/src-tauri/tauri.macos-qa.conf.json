@@ -1,0 +1,53 @@
+{
+  "productName": "Tafelraum Public Mac QA",
+  "identifier": "app.jujies.tafelraum.public.qa.macos",
+  "build": {
+    "beforeBuildCommand": "npm run prepare:desktop"
+  },
+  "app": {
+    "security": {
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "macos-qa",
+          "description": "Isolated local Mac QA only",
+          "windows": [
+            "main",
+            "room-canvas"
+          ],
+          "remote": {
+            "urls": [
+              "http://127.0.0.1:49321/*"
+            ]
+          },
+          "permissions": [
+            "core:default",
+            "core:window:allow-is-fullscreen",
+            "core:window:allow-set-fullscreen",
+            "allow-desktop-update-overview",
+            "allow-request-desktop-update-check",
+            "allow-print-desktop-webview",
+            "allow-open-external-web-url",
+            "allow-open-room-canvas",
+            "allow-close-room-canvas",
+            "allow-confirm-desktop-persistence",
+            "allow-set-ui-language"
+          ]
+        }
+      ]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "targets": [
+      "app"
+    ]
+  },
+  "plugins": {
+    "tafelraum-qa": {
+      "platform": "macos",
+      "port": 49321
+    }
+  }
+}
