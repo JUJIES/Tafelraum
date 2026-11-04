@@ -103,11 +103,12 @@ Nodeversion und den Node-Lizenztext, Office-Spezifikation und die drei kopierten
 Office-Roottexte; danach ergänzt er `runtime/licenses/NODE-LICENSE` und die
 Nachweise. Versionswechsel oder fehlende/veränderte Texte brechen ab.
 
-Die drei Office-Texte wurden aus dem vorhandenen Originalpaket in einem eigenen
-Prüfordner mit dem vorhandenen Desktop-Node geprüft. Keine vollständige native
-App neu gebaut, installiert oder signiert. Node bleibt22.18.0; der Auftrag
-ändert keine Laufzeitversion. Weitere Binär-/Quellpflichten von LibreOffice,
-Rust und Modelllaufzeiten sind keine durch diese Rootprüfung erteilte Freigabe.
+Historischer Beleg des ursprünglichen Roottext-Auftrags: Die drei Office-Texte
+wurden aus dem damaligen Originalpaket separat geprüft; damals wurde keine neue
+native App gebaut und Node blieb22.18.0. Die aktuelle öffentliche Laufzeitwahl
+steht oben und in der Plattformpin-Datei. Weitere Binär-/Quellpflichten von
+LibreOffice, Rust und Modelllaufzeiten sind keine durch diese Rootprüfung
+erteilte Freigabe.
 
 ## Eigene Bilder und Markenassets
 

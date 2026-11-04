@@ -13,7 +13,7 @@ Update veröffentlicht. Die installierte App und ihre Daten werden nicht geände
 | Lerndeck | bestehende Registrierung, direkt beim Öffnen verfügbar | keine Registrierung, Appauswahl oder Verbindungseinstellung; Icon ausgeschlossen |
 | Experimenteller Modellanschluss für HTML | bestehende Keyverwaltung, Provider und freigegebene Satzprüfung | keine Keyverwaltung/-UI, Providerimplementierung oder aktive HTML-Modellbrücke |
 | Remote Canvas | bestehender persönlicher Weg | keine Auswahl, Einrichtung oder Wiederverbindung; kein Remote-Dienst/Teilnehmerbuild |
-| Official desktop updater | Existing signed colleagues channel | Manual by default; official Public Mac packages use a separate signed GitHub channel (contract65) |
+| Official desktop updater | Existing signed colleagues channel | Manual by default; official Public desktop packages use a separate signed GitHub channel (contract65) |
 
 Die Satzprüfung war ein erster Test des persönlichen Modellanschlusses für
 HTML-Embeds, keine allgemeine KI-Funktion. Ein späterer öffentlicher Anschluss
@@ -72,11 +72,16 @@ Veröffentlichung. Lokale Umgebungszuordnungen werden, soweit vorhanden, in
 `local-data/development-environments.json` erfasst und live geprüft. Fehlende
 Rechnerdateien sind keine Voraussetzung öffentlicher Checkouts.
 
-Die private Entwicklung bleibt führend; gemeinsame Logik wird einmal gepflegt,
-gezielte Änderungen dürfen beide oder nur eine Variante betreffen. Öffentliche
-Kandidaten entstehen aktuell weiterhin über den festen Export, auch beim gezielten Entwicklungsabgleich mit `refresh public`. Zwei unabhängige
-Repositorys sind noch nicht eingerichtet. Persönliche Konfigurationen/Daten und
-bestehende Installationen bleiben außerhalb einer reinen Quelländerung.
+Seit der Git-Freigabe wird Public als eigenständiger öffentlicher Quellstand mit
+fortlaufender Historie gepflegt. Die Vollfassung bleibt ein eigener Arbeitsstand.
+Gemeinsame Änderungen werden gezielt abgeglichen; ein Export aus der Vollfassung
+ist nur ein Importkandidat und ersetzt niemals den aktuellen Public-Branch.
+Insbesondere öffentliche Windows-Adapter, Quellstart, Room-Korrekturen und
+öffentliche Beiträge beim nächsten Import erhalten. Vor dem Abgleich aktuelle
+Commits und Anwendbarkeit je Variante festhalten; keine private Historie pushen.
+Persönliche Konfigurationen/Daten und bestehende Installationen bleiben außerhalb
+einer reinen Quelländerung. Die [Release-Matrix](../RELEASE_MATRIX.md) beschreibt
+Mac/Windows-Pakete, Ressourcen, Tests und bewusst getrennte Auslieferungsstände.
 
 ## Arbeits- und Freigabeweg
 
@@ -85,14 +90,15 @@ bestehende Installationen bleiben außerhalb einer reinen Quelländerung.
 2. Für persönliche Installation einen geprüften Build einfrieren und lokal
    abnehmen. Kollegen können nach gesondertem Auftrag genau dieses Paket über
    den bestehenden Updatekanal erhalten; kein Neubuild beim Hochladen.
-3. Für GitHub Änderungen aus einem festgehaltenen, geprüften Quellstand bewusst
-   auswählen, einen neuen öffentlichen Export
-   erstellen und **diesen** prüfen. Private Historie nicht mitübernehmen.
+3. Für GitHub vom aktuellen öffentlichen Branch ausgehen. Gemeinsame Änderungen
+   aus einem festgehaltenen Quellstand gezielt auswählen, gegebenenfalls über den
+   festen Export als Vergleich. Public-eigene Änderungen erhalten und den
+   tatsächlich integrierten Stand prüfen. Private Historie nicht mitübernehmen.
 4. Nach dem ersten Upload eine fortlaufende öffentliche Historie pflegen;
    weder private Commits blind pushen noch bei jeder Aktualisierung neu beginnen.
 
-Dies richtet keine Branches oder Remotes ein und ersetzt noch keinen späteren
-Workflow für öffentliche Beiträge. Die Profilgrenze wählt nur den genannten
+Die ursprüngliche Profiltrennung richtete keine Branches/Remotes ein; inzwischen
+sind öffentliche Historie und Beiträge im eigenen Repository regulär zu pflegen. Die Profilgrenze wählt nur den genannten
 Funktionsumfang; weitere Featureauswahl bleibt eine bewusste Quellentscheidung.
 Der bisherige Updatekanal ist öffentlich erreichbar, kein zugangsgeschützter
 Kollegenbereich. Private Schlüssel, Unterricht und persönliche Konfigurationen
@@ -131,9 +137,9 @@ Windows-/Linux-Nachweis. Keine solche Installation ist hier beauftragt.
 ## Gemeinsame UI-Pflege (30.10.2026)
 
 Room-Einklappen und Versionseinstieg werden in den gemeinsamen Komponenten
-gepflegt und unverändert exportiert. Einstellungen zeigen je Profil
-`Version und Updates` oder `Version`; nur persönlich gibt es Updatehinweis und
--befehle. `npm run test:ui-settings` prüft beide Profile mit demselben Browserflow.
+gepflegt und unverändert exportiert. Einstellungen zeigen `Version und Updates` oder `Version` entsprechend dem
+nativen Auslieferungskanal. Offizielle Public-Pakete und Kollegenpakete bieten
+ihren jeweils getrennten Updater; manuelle Public-Builds bleiben manuell. `npm run test:ui-settings` prüft beide Profile mit demselben Browserflow.
 Der lokale Kandidat unter `output/ui-settings-public-final/source/` enthält
 diese Änderungen; kein Git-Remote, Upload oder installierter Appaustausch.
 
