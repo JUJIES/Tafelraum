@@ -53,3 +53,21 @@ To reproduce the reference workflow with synthetic data, install the app’s Pla
 Private lesson notes are excluded from normal canvas inspection, not from an
 assistant’s separate file-access permission. See [Data, privacy and backups](DATA_AND_PRIVACY.md)
 for storage locations, backup contents and external-service boundaries.
+
+
+## Windows agent execution context
+
+The installed Public0.1.92 kit was checked on Windows11: help, status, sessions,
+lesson create/open, ordinary file import, canvas inspection/apply and clips used
+the embedded Node and the real local app API. The file-based HTML package
+installer needs a filesystem view of the same archive used by the native app.
+On the tested PC, a packaged automation app could see a virtualized AppData
+catalog under the same logical path. Confirm the active archive with the app API
+and **Open local data folder** before filesystem work; never initialise a second
+archive to make a command appear successful.
+
+The final native HTML test validated the package with the installed checker and
+placed it additively through Explorer. It confirms rendering, Room and saved form
+state, and does not claim that the file-based installer was exercised from that
+packaged assistant context. A normal non-virtualized execution context and each
+agent/tool combination need their own check. See [Windows scope](WINDOWS_QA.md).

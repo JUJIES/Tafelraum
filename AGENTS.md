@@ -45,15 +45,17 @@ Public GitHub README offers public source and public Mac/Windows packages; the f
 package is a separate school distribution, not the public repository's default app.
 
 
-## Download statistics and current public release (2026-11-02)
+## Download statistics and current public release (2026-11-04)
 
-The currently published Public Mac release0.1.91 is tied to Git commit c038c6d
-and uses its own GitHub updater. Check the actual release/tag and artifact receipts
-before delivery; a newer source checkout is not automatically the released app.
+Public desktop release0.1.92 binds Mac Apple Silicon and Windows x64 to source
+commit c370dbba60a3d14989a41bc572e0d9caa9934b15 and one signed GitHub updater
+manifest with both platform targets. Check the actual release/tag and receipts
+before delivery; newer documentation does not rebuild or relabel desktop bytes.
+Native Windows coverage and hardware limits are in [Windows QA](docs/WINDOWS_QA.md).
 The full-edition colleagues channel has an independent version and approval.
-Public contributors do not need to mirror its changing installation numbers.
-Version numbers never prove equal source profiles. The combined Windows release
-remains a candidate until the release-matrix gates and publication proofs pass.
+Public contributors do not mirror its changing installation numbers. Version
+numbers never prove equal source profiles. Each later app release must pass the
+[release matrix](docs/RELEASE_MATRIX.md) for both platforms before publication.
 
 In the maintainer checkout, `node scripts/download-stats.mjs 14` reports fresh
 GitHub asset counts and private Beelink aggregates. Raw origin logs omit client

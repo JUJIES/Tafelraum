@@ -75,3 +75,38 @@ An optional silent reinstall while running was blocked by automatic review befor
 execution. Running-instance refusal has source/compile coverage; that extra native
 negative case remains open. Clean-machine/WebView2 bootstrap, physical devices
 and school deployment are outside this acceptance.
+
+
+## Common-source Public0.1.92 acceptance
+
+The official Windows x64 NSIS candidate was built by GitHub Actions from clean
+commit `c370dbba60a3d14989a41bc572e0d9caa9934b15`, the same source as the Mac
+package. Installer: `Tafelraum-Public-0.1.92-Windows-x64-setup.exe`,
+50,977,961 bytes, SHA256
+`2e7939a89660af394d3c4f2f72784708d3614b3518989bf18be472f6bbb66def`.
+Both full source CI jobs and11 compiled Windows native tests passed. The Windows
+CI ran488 unit tests successfully, with one Mac-specific test skipped; file-link
+protection executed there, including the cases unavailable on the local QA account.
+
+The exact CI installer was installed per-user on a Windows11 x64 desktop with
+no previous Public installation/archive. Explorer startup, native About version,
+embedded source receipt and pinned Node matched. Tests used invented lessons: pen
+and marker, PNG/PDF, WAV/AVC playback, a local HTML worksheet, clips, Room input
+reaching the canonical teacher scene, data-folder opening, installed Agent Kit
+(the121 files matched its manifest), Ctrl+Z/Redo, clipboard text and filenames
+with spaces/umlauts. Quit with Room open ended both windows and the owned server;
+Explorer restart preserved10 objects, two clips, materials and the HTML answer.
+Three further native restarts confirmed the marker was visible immediately and
+after waiting/zoom comparison. The earlier report of an invisible marker was
+withdrawn after checking the original screenshots; no code workaround was added.
+
+The installer bytes were then signed on the Mac for the Public updater and both
+platform signatures were cryptographically verified against the embedded Public
+key. This signing does not change the EXE or provide Authenticode. The real
+two-version Windows update/invalid-signature/failed-launch tests above used the
+separate disposable QA lane; there is no previous official Windows release to
+claim as an official production upgrade. The tested Public app remains installed
+and was closed normally. The HTML file-based installer in a packaged assistant's
+virtualized AppData context was not separately accepted; the final HTML fixture
+was validated then added through Explorer. [Agent context notes](AGENT_WORKFLOW.md#windows-agent-execution-context)
+explain that boundary. Hardware, clean-machine and DOCX limits above remain.
