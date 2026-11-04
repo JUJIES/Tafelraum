@@ -40,3 +40,11 @@ The direct worksheet-centred WebKit check showed that filter bounds alone were i
 ## 2026-11-04 – open the hosted lesson directly
 
 The README’s main live-demo link opens `/?lesson=volcanoes` directly. The lesson guide remains optional inside the preview. This removes the extra entry step without changing demo state, material permissions or desktop releases.
+
+
+## 2026-11-04 – audit all public demo entry links
+
+The examples overview and its documentation template now use the same direct
+`/?lesson=volcanoes` entry as the README. A repository-wide text audit found no
+other public documentation links to the intermediate guide. The in-demo
+Lesson guide remains optional help, not a demo entry point. No app build changed.
