@@ -4,7 +4,12 @@
 
 **AI is optional.** Use Tafelraum on its own as a local whiteboard for lessons, workshops and training sessions. Bring your own materials, draw and present without connecting an agent.
 
-**[Download for Mac or Windows](https://updates.jujies.app/tafelraum-public/download/)** · Apple Silicon / Windows x64 · [Version archive](https://github.com/JUJIES/Tafelraum/releases)
+## Download Tafelraum
+
+- **[Download for Windows (.exe)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.92/Tafelraum-Public-0.1.92-Windows-x64-setup.exe)** · Windows x64 · [Installation guide](prototypes/surface-shell-a-b/distribution/public/WINDOWS-INSTALLATION.txt)
+- **[Download for Mac (.zip)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.92/Tafelraum-Public-0.1.92-macOS-arm64.zip)** · Apple Silicon (M-series) · [Installation guide](prototypes/surface-shell-a-b/distribution/public/INSTALLATIONSANLEITUNG.txt)
+
+[All GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
 
 **[Try the live demo](https://tafelraum-demo.jujies.app/?lesson=volcanoes)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
 
@@ -94,7 +99,7 @@ Room Canvas opens a second local window. You can try both windows on one screen 
 
 ## Try it on your computer
 
-Choose the ready-to-use **[Public desktop app](https://updates.jujies.app/tafelraum-public/download/)** for Mac Apple Silicon or Windows x64, or run from source below. Choose your platform on the download page. The Mac ZIP and Windows installer have separate installation guides; official packages offer future public app updates in the app. Downloading GitHub's source ZIP does not install an app.
+Choose the ready-to-use **[Windows installer or Mac app](#download-tafelraum)**, or run from source below. The Mac ZIP and Windows installer have separate installation guides. Official packages offer future public app updates in the app. Downloading GitHub's source ZIP does not install an app.
 
 The Mac app is ad-hoc signed, **not Apple-notarized**; follow the included
 [first-open guide](prototypes/surface-shell-a-b/distribution/public/INSTALLATIONSANLEITUNG.txt).
@@ -122,7 +127,7 @@ Press **Ctrl+C** in the terminal to stop. Run `npm start` in the same directory 
 <details>
 <summary>How do I get updates?</summary>
 
-**Official Public desktop app:** official packages check for new public releases at startup and periodically in the background. Confirm an update when ready, or use **Settings → Version and updates**. Downloads are served by GitHub. You can also replace the app manually using the [download page](https://updates.jujies.app/tafelraum-public/download/). The app has its own archive and never uses the school/colleagues update channel. Early0.1.88 users need one manual installation; read the migration note in the included guide.
+**Official Public desktop app:** official packages check for new public releases at startup and periodically in the background. Confirm an update when ready, or use **Settings → Version and updates**. Downloads are served by GitHub. You can also [download the installer for your platform](#download-tafelraum) and replace the app manually. The app has its own archive and never uses the school/colleagues update channel. Early0.1.88 users need one manual installation; read the migration note in the included guide.
 
 **Running from source:** stop the local server. From an unmodified checkout, run `git pull --ff-only`, then `npm ci` and `npm start` in the app directory. Default self-built desktop apps also use manual updates, preserving your own changes. [Build and release details](prototypes/surface-shell-a-b/RELEASE.md).
 
