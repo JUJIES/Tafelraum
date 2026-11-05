@@ -13,6 +13,8 @@
 
 **[Try the live demo](https://tafelraum-demo.jujies.app/?lesson=volcanoes)** · No installation or account needed. Open the volcanoes lesson from the video, try its worksheet and send a numbered clip to Room Canvas. Reload to start fresh.
 
+## Demo video
+
 [![Watch Tafelraum: From chat to classroom. A 2:34 demo of an AI agent preparing a lesson, with teacher and student views side by side.](docs/images/agent-demo.jpg)](https://youtu.be/nBQukVA6Bxg)
 
 **[Watch the 2:34 demo — From chat to classroom](https://youtu.be/nBQukVA6Bxg)** · English narration and captions.
