@@ -15,9 +15,9 @@
 
 ## Demo video
 
-[![Watch Tafelraum: From chat to classroom. A 2:34 demo of an AI agent preparing a lesson, with teacher and student views side by side.](docs/images/agent-demo.jpg)](https://youtu.be/nBQukVA6Bxg)
+<video src="https://github.com/user-attachments/assets/a8d45d42-2139-4f3f-82cc-1ac0969c1fa5" controls></video>
 
-**[Watch the 2:34 demo — From chat to classroom](https://youtu.be/nBQukVA6Bxg)** · English narration and captions.
+**From chat to classroom** · 2:34 · English narration · [Watch on YouTube with captions](https://youtu.be/nBQukVA6Bxg).
 
 See a new lesson appear in the library, its materials arrive and the canvas take shape. Then switch numbered clips while keeping separate teacher and classroom views.
 
