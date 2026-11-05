@@ -24,7 +24,7 @@ from matching version numbers.
 | Change | Required work |
 | --- | --- |
 | Common app/runtime | Relevant regression tests; Mac and Windows build/runtime checks; both packages for an app release |
-| Version | App `package.json`, root/app entries in `package-lock.json`, Tauri config, own Cargo package in `Cargo.toml`/`Cargo.lock`, versioned release notes |
+| Version | App `package.json`, root/app entries in `package-lock.json`, Tauri config, own Cargo package in `Cargo.toml`/`Cargo.lock`, versioned release notes. When publishing, update both direct README download links to the matching release assets and verify them. |
 | Server/agent/material resource | Shared `stage-desktop-common.mjs`, kit/runtime notices as applicable; verify files in both packaged outputs |
 | Platform adapter | Targeted native check and other-platform regression check; document capability differences |
 | Storage/import | Saved-data compatibility, Room commands/projection, save/restart and backup implications |
