@@ -15,7 +15,7 @@
 
 ## Demo video
 
-<video src="https://github.com/user-attachments/assets/a8d45d42-2139-4f3f-82cc-1ac0969c1fa5" controls></video>
+https://github.com/user-attachments/assets/a8d45d42-2139-4f3f-82cc-1ac0969c1fa5
 
 **From chat to classroom** · 2:34 · English narration · [Watch on YouTube with captions](https://youtu.be/nBQukVA6Bxg).
 
