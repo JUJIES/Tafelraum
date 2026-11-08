@@ -18,3 +18,15 @@ checkout-local archive. Neither command packages or installs a desktop app.
 From `prototypes/surface-shell-a-b/`, run `npm run typecheck`, `npm test` and `npm run build`. Run `node scripts/check-distribution.mjs public` from the repository root to verify the edition. The [UI style guide](docs/design/00_UI_UX_STYLEGUIDE.md) and [agent workflow](docs/AGENT_WORKFLOW.md) document the shared conventions. The [documentation index](docs/README.md) distinguishes current guides from the original engineering records.
 
 By submitting a contribution, you confirm that you have the rights to offer it under the [project licence](LICENSE). You retain your copyright. Keep third-party attributions with their assets and list new dependencies in the [notices](THIRD_PARTY_NOTICES.md). Contact the maintainer at mail@jujies.app.
+
+## Repository privacy maintenance (8 November 2026)
+
+The maintainer's personal author metadata was removed from nine post-release
+commits. All existing desktop release tags and their source trees are unchanged.
+Published application packages, signatures and update manifests retain their
+original hashes. This is repository maintenance, not a new app release.
+
+If your clone predates this maintenance, start from a fresh clone or rebase
+unpublished work onto current main. Do not merge the previous history back into
+the public repository. Use your GitHub noreply address if you want to keep your
+email private.
