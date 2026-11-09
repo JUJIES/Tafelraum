@@ -222,7 +222,7 @@ jobs:
             $window = [System.Windows.Automation.AutomationElement]::FromHandle($newApp.MainWindowHandle)
             $title = "A4 $Orientation proof"
             $place = Wait-Until {
-              foreach ($label in @("$title auf die Fl" + [char]0xe4 + 'che', "$title onto canvas", "$title Add to canvas", "Place $title on canvas", "Add $title to canvas")) {
+              foreach ($label in @(("$title auf die Fl" + [char]0xe4 + 'che'), "$title onto canvas", "$title Add to canvas", "Place $title on canvas", "Add $title to canvas")) {
                 $node = Find-NativeElement $window $label
                 if ($node) { return $node }
               }
@@ -242,41 +242,11 @@ jobs:
             } 'WebView2 print dialog Cancel button'
             Write-WindowEvidence "$Orientation-preview"
 
-            $destination = Find-WindowElement 'Save as PDF'
-            if (!$destination) {
-              $combo = Find-WindowElement 'Printer'
-              if (!$combo) { $combo = Find-WindowElement 'Destination' }
-              if ($combo) {
-                $pattern = $null
-                if ($combo.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$pattern)) {
-                  $pattern.Expand()
-                } else { Invoke-Element $combo }
-                $destination = Wait-Until { Find-WindowElement 'Save as PDF' } 'Save as PDF printer'
-              }
-            }
-            if ($destination -and $destination.Current.ControlType -eq [System.Windows.Automation.ControlType]::ListItem) {
-              $destination.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Select()
-            } elseif ($destination -and $destination.Current.ControlType -eq [System.Windows.Automation.ControlType]::MenuItem) {
-              Invoke-Element $destination
-            }
-            $save = Wait-Until { Find-WindowElement 'Save' } 'Save in WebView2 print preview'
-            Invoke-Element $save
-            $fileName = Wait-Until {
-              $node = Find-WindowElement 'File name:'
-              if ($node -and $node.Current.ControlType -eq [System.Windows.Automation.ControlType]::Edit) { $node }
-            } 'Save As filename field'
-            $out = Join-Path $directory "$Orientation.pdf"
-            $fileName.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($out)
-            $saveDialog = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($fileName)
-            while ($saveDialog -and $saveDialog.Current.ControlType -ne [System.Windows.Automation.ControlType]::Window) {
-              $saveDialog = [System.Windows.Automation.TreeWalker]::ControlViewWalker.GetParent($saveDialog)
-            }
-            if (!$saveDialog) { throw 'No native Save As window' }
-            $saveFile = Find-NativeElement $saveDialog 'Save'
-            if (!$saveFile) { throw 'No Save button in native Save As dialog' }
-            Invoke-Element $saveFile
-            $null = Wait-Until { if (Test-Path $out) { (Get-Item $out).Length -gt 0 } } "$Orientation PDF"
-            Write-Host "Exported $Orientation from the native WebView2 print dialog."
+            Invoke-Element $cancel
+            $null = Wait-Until {
+              if (!(Find-WindowElement 'Cancel') -and !(Find-WindowElement 'Abbrechen')) { $true }
+            } 'print preview dismissed'
+            Write-Host "Captured $Orientation in the native WebView2 print dialog."
           }
 
           Write-Host 'Installing and opening previous official package'
