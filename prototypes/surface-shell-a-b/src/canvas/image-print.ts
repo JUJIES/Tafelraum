@@ -1,7 +1,6 @@
 import { t } from "../i18n/translate.ts";
-import { printDocument } from "./print-dialog.ts";
+import { printDocument, type PrintPageOrientation } from "./print-dialog.ts";
 
-export type PrintPageOrientation = "landscape" | "portrait";
 export type PrintImageTransform = {
   angle: number;
   cropped: boolean;

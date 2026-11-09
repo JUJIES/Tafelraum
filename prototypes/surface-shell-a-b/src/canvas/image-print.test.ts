@@ -6,15 +6,22 @@ import { printDocument } from "./print-dialog.ts";
 test("image and HTML native printing share the existing command and propagate failures", async () => {
   const previous = Object.getOwnPropertyDescriptor(globalThis, "window");
   const calls: string[] = [];
+  const nativeArgs: unknown[] = [];
   const nativeWindow = {
     focus: () => calls.push("focus"),
     print: () => { throw new Error("Native print must use the command"); },
-    __TAURI_INTERNALS__: { invoke: async (command: string) => { calls.push(command); } },
+    __TAURI_INTERNALS__: { invoke: async (command: string, args?: unknown) => {
+      calls.push(command);
+      nativeArgs.push(args);
+    } },
   };
   Object.defineProperty(globalThis, "window", { configurable: true, value: nativeWindow });
   try {
     await printDocument();
     assert.deepEqual(calls, ["focus", "print_desktop_webview"]);
+    await printDocument(window, "landscape");
+    await printDocument(window, "portrait");
+    assert.deepEqual(nativeArgs, [{}, { orientation: "landscape" }, { orientation: "portrait" }]);
     nativeWindow.__TAURI_INTERNALS__.invoke = async () => { throw new Error("Druckdialog nicht verfügbar"); };
     await assert.rejects(printDocument(), /Druckdialog nicht verfügbar/);
     const browserFrame = { focus: () => calls.push("frame focus"), print: () => calls.push("frame print") } as unknown as Window;

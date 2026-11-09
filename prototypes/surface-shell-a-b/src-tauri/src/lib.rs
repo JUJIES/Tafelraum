@@ -29,6 +29,8 @@ use persistence_exit::{PersistenceExit, confirm_desktop_persistence};
 #[cfg(target_os = "macos")]
 mod room_fullscreen;
 
+mod desktop_print;
+
 mod system_open;
 mod desktop_release;
 use desktop_release::DesktopRelease;
@@ -370,13 +372,6 @@ fn request_desktop_update_check(window: tauri::WebviewWindow, app: AppHandle, av
 }
 
 #[tauri::command]
-fn print_desktop_webview(window: tauri::WebviewWindow) -> Result<(), String> {
-    window
-        .print()
-        .map_err(|error| format!("Druckdialog konnte nicht geöffnet werden: {error}"))
-}
-
-#[tauri::command]
 fn open_external_web_url(url: String) -> Result<(), String> {
     let parsed = validate_external_web_url(&url)?;
     system_open::open(std::ffi::OsStr::new(parsed.as_str()))?;
@@ -616,7 +611,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             desktop_update_overview,
             request_desktop_update_check,
-            print_desktop_webview,
+            desktop_print::print_desktop_webview,
             open_external_web_url,
             open_room_canvas,
             close_room_canvas,

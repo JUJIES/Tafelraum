@@ -1,7 +1,6 @@
 import { t } from "../i18n/translate.ts";
 import { getUiLocale } from "../i18n/locale.ts";
-import type { PrintPageOrientation } from "./image-print";
-import { printDocument } from "./print-dialog.ts";
+import { printDocument, type PrintPageOrientation } from "./print-dialog.ts";
 
 const printCleanupTimeout = 120_000;
 const printReadyTimeout = 10_000;
@@ -309,7 +308,7 @@ async function openTopLevelInteractiveHtmlPrintDialog(
     if (!("__TAURI_INTERNALS__" in window)) {
       cleanupTimer = window.setTimeout(cleanup, printCleanupTimeout);
     }
-    await printDocument();
+    await printDocument(window, orientation);
   } catch (error) {
     cleanup();
     throw error;
