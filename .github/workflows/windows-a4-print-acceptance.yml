@@ -228,25 +228,46 @@ jobs:
               }
             } "material row for $title"
             Invoke-Element $place
-            $print = Wait-Until {
-              $node = Find-NativeElement $window 'Material drucken'
-              if (!$node) { $node = Find-NativeElement $window 'Print material' }
-              $node
-            } 'Material drucken'
-            Invoke-Element $print
-
-            $cancel = Wait-Until {
-              $node = Find-WindowElement 'Cancel'
-              if (!$node) { $node = Find-WindowElement 'Abbrechen' }
-              $node
-            } 'WebView2 print dialog Cancel button'
-            Write-WindowEvidence "$Orientation-preview"
-
-            Invoke-Element $cancel
+            Start-Sleep -Milliseconds 1000
             $null = Wait-Until {
-              if (!(Find-WindowElement 'Cancel') -and !(Find-WindowElement 'Abbrechen')) { $true }
-            } 'print preview dismissed'
+              try {
+                $node = Find-NativeElement $window 'Material drucken'
+                if (!$node) { $node = Find-NativeElement $window 'Print material' }
+                if ($node) { Invoke-Element $node; return $true }
+              } catch [System.Windows.Automation.ElementNotAvailableException] {}
+            } 'Material drucken'
+
+            $cancel = Wait-Until { Find-WindowElement 'Cancel' } 'WebView2 print dialog Cancel button'
+            $null = Wait-Until { Find-WindowElement 'Page 1' } 'rendered first preview page'
+            Write-WindowEvidence "$Orientation-preview"
             Write-Host "Captured $Orientation in the native WebView2 print dialog."
+
+            $pdfPrinter = Find-WindowElement 'Microsoft Print to PDF'
+            if (!$pdfPrinter) { throw 'Preview did not choose the virtual PDF printer' }
+            $printDialog = Find-WindowElement 'Print'
+            $condition = New-Object System.Windows.Automation.AndCondition(
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'Print')),
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))
+            $print = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+            if (!$print) { throw 'Preview Print button missing' }
+            Invoke-Element $print
+            $saveDialog = Wait-Until { Find-WindowElement 'Save Print Output As' } 'virtual PDF printer Save window'
+            $fileCondition = New-Object System.Windows.Automation.AndCondition(
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'File name:')),
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Edit)))
+            $fileName = $saveDialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $fileCondition)
+            if (!$fileName) {
+              $fileCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::AutomationIdProperty, '1001')
+              $fileName = $saveDialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $fileCondition)
+            }
+            if (!$fileName) { throw 'Native PDF filename entry missing' }
+            $out = Join-Path $directory "$Orientation.pdf"
+            $fileName.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($out)
+            $saveFile = Find-NativeElement $saveDialog 'Save'
+            if (!$saveFile) { throw 'No Save button in native Save As dialog' }
+            Invoke-Element $saveFile
+            $null = Wait-Until { if (Test-Path $out) { (Get-Item $out).Length -gt 0 } } "$Orientation PDF"
+            Write-Host "Exported $Orientation from the actual print dialog."
           }
 
           Write-Host 'Installing and opening previous official package'
@@ -269,6 +290,7 @@ jobs:
             if (!$materials) { throw 'Material drawer action missing' }
             Invoke-Element $materials
             Print-Worksheet 'landscape'
+            Start-Sleep -Milliseconds 900
             Print-Worksheet 'portrait'
           } catch {
             Write-WindowEvidence 'print-failure'
