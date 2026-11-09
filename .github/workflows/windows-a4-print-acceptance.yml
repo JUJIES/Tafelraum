@@ -242,6 +242,22 @@ jobs:
             Write-WindowEvidence "$Orientation-preview"
             Write-Host "Captured $Orientation in the native WebView2 print dialog."
 
+            $layoutLabel = if ($Orientation -eq 'landscape') { 'Landscape' } else { 'Portrait' }
+            $layoutCondition = New-Object System.Windows.Automation.AndCondition(
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $layoutLabel)),
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::RadioButton)))
+            $layoutChoice = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $layoutCondition)
+            if (!$layoutChoice) { throw 'Print orientation radio button missing' }
+            $selection = $null
+            if ($layoutChoice.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref]$selection)) {
+              if (!$selection.Current.IsSelected) { $selection.Select() }
+            } else {
+              $point = $layoutChoice.GetClickablePoint()
+              [NativeProbeInput]::Click([int]$point.X,[int]$point.Y)
+            }
+            Start-Sleep -Milliseconds 650
+            Write-WindowEvidence "$Orientation-manual-preview"
+
             $pdfPrinter = Find-WindowElement 'Microsoft Print to PDF'
             if (!$pdfPrinter) { throw 'Preview did not choose the virtual PDF printer' }
             $printDialog = Find-WindowElement 'Print'
@@ -308,7 +324,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: public-windows-native-acceptance
+          name: public-windows-manual-layout
           path: |
             ${{ runner.temp }}/tafelraum-print-qa/native-acceptance.json
             ${{ runner.temp }}/tafelraum-print-qa/*.pdf
