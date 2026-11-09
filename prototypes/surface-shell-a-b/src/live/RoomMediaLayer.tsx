@@ -105,13 +105,16 @@ export function RoomMediaLayer({media,api,onReady,onError,output=false,onStatus}
     const currentPlayer=video.current;const timer=setInterval(send,100);send();return()=>{clearInterval(timer);requestedPlaying.current=false;currentPlayer?.pause();};
   },[output,media.kind,media.id]);
   const state=api.getAppState(),zoom=state.zoom.value;
+  const docked=media.outsideTarget&&media.kind==='youtube';
+  const hidden=media.outsideTarget&&!docked;
   const width=media.width*zoom,height=media.height*zoom;
   const style={left:(media.x+state.scrollX)*zoom,top:(media.y+state.scrollY)*zoom,width,height,
     '--room-media-zoom':zoom,
     transform:`rotate(${media.angle}rad)`} as CSSProperties;
   const cover=getInteractiveHtmlCoverProjection(width,height,media.cover??null);
-  return <div className={`room-media${cover.fullyCovered?' is-fully-covered':''}`} style={style} aria-label={media.title}>
-    <div className="room-media__visibility" style={{clipPath:cover.clipPath}}>
+  return <div className={`room-media${docked?' is-docked':''}${hidden?' is-offscreen':''}${!docked&&cover.fullyCovered?' is-fully-covered':''}`}
+    style={docked?undefined:style} aria-hidden={hidden||undefined} aria-label={media.title}>
+    <div className="room-media__visibility" style={docked?undefined:{clipPath:cover.clipPath}}>
       {!output&&media.kind!=='audio'&&<div className="room-media__audio"><strong>{media.title}</strong><span>{t("Wiedergabe im Room")}</span></div>}
       {output&&media.kind==='video'&&<video ref={video} src={media.sourceUrl} muted={!output} playsInline preload="auto"
         onLoadedData={()=>{if(!readyRef.current){readyRef.current=true;setLoaded(true);onReady?.();}}}
@@ -123,7 +126,7 @@ export function RoomMediaLayer({media,api,onReady,onError,output=false,onStatus}
         <strong>{media.title}</strong><span>{formatTime(roomMediaPosition(media))}</span></div>}
       {loadError&&<div className="room-media__error" role="alert">{t(loadError)}</div>}
     </div>
-    {media.annotations.length>0&&<svg className="room-media__annotations" viewBox={`0 0 ${media.width} ${media.height}`} preserveAspectRatio="none">
+    {!docked&&media.annotations.length>0&&<svg className="room-media__annotations" viewBox={`0 0 ${media.width} ${media.height}`} preserveAspectRatio="none">
       {media.annotations.map((annotation,index)=>annotation.kind==='stroke'
         ?<polyline key={index} fill={annotation.fillColor??'none'} opacity={annotation.opacity}
           points={annotation.points.map(point=>point.join(',')).join(' ')} stroke={annotation.strokeColor}

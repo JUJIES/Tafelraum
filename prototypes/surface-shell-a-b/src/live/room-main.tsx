@@ -382,7 +382,14 @@ function RoomView() {
           return element?.points?.length&&(element.strokeColor!=='transparent'||object.markerRibbon)
             ?{...object,path:element.points,strokeWidth:element.strokeWidth}:object;
         });
-        mediaLease.current=Date.now();sceneRef.current=nextScene;setUrls(nextUrls);setMedia(message.media??null);setMediaFullscreen(Boolean(message.mediaFullscreen));if(message.mediaFullscreen)setTool('hand');setEditableObjects(objects);setScene(compose(nextScene));
+        mediaLease.current=Date.now();sceneRef.current=nextScene;setUrls(nextUrls);
+        setMedia(current=>{
+          const next=message.media??null;
+          if(!next||current?.id!==next.id||current.attempt!==next.attempt||previous?.generation!==nextScene.generation)return next;
+          // A clip frame and a command can be batched in one React render.
+          return {...next,command:current.command,suspended:current.suspended};
+        });
+        setMediaFullscreen(Boolean(message.mediaFullscreen));if(message.mediaFullscreen)setTool('hand');setEditableObjects(objects);setScene(compose(nextScene));
       }else if(message.type==='media-command'&&sceneRef.current?.generation===message.generation&&Number.isSafeInteger(message.sequence)&&validRoomVideoCommand(message.action)){
         mediaLease.current=Date.now();
         setMedia(current=>current?.id===message.id&&message.sequence>(current.command?.sequence??current.commandSequence??0)
@@ -571,7 +578,7 @@ function RoomView() {
   const cameraIndependent=!mediaFullscreen&&toolsOpen&&scene?.presentation?.mode==='clip';
   return <div className={`room-view${fullscreen?' is-fullscreen':''}${mediaFullscreen?' is-video-fullscreen':''}${cameraIndependent?' is-camera-independent':''}${toolsOpen&&tool!=='hand'?' is-inking':''}`}
     data-theme={palette?.theme??'light'} data-theme-variant={palette?.variant??'calm'}>
-    {scene?<CanvasViewer key={scene.presentation?.mode} scene={scene} renderVersion={renderVersion} connected hostConnected publicationReady hostPointer={pointer.current}
+    {scene?<CanvasViewer key={scene.generation} scene={scene} renderVersion={renderVersion} connected hostConnected publicationReady hostPointer={pointer.current}
       presentation={scene.presentation} previewAssets={urls} materialBaseUrl="/" room roomPlaybackOutput roomMedia={media} onSceneReady={onReady} onRoomMediaError={onMediaError} onRoomVideoStatus={onVideoStatus}
       onMaterialAction={onMaterialAction} roomInputReady={htmlInputReady} roomTimers={timers}
       onTimerAction={(id:string,action:TimerAction,revision:number)=>{

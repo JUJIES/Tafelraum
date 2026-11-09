@@ -97,18 +97,22 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
   const loadedRoomMaterials=useRef(new Set<string>());
   const loadedRoomMedia=useRef<string|null>(null);
   const reportedRoomReady=useRef<{generation:number;revision:number}|null>(null);
+  const roomMediaRef=useRef(roomMedia);
+  roomMediaRef.current=roomMedia;
+  const dockedVideo=roomMedia?.outsideTarget&&roomMedia.kind==='youtube';
   const reportRoomReady=useCallback(()=>{
     if(!onSceneReady)return;
     const current=sceneRef.current;
     if(rendered.current.generation!==current.generation||rendered.current.revision!==current.revision)return;
     if(room&&current.materials?.some(material=>!loadedRoomMaterials.current.has(material.instanceId)))return;
-    if(roomMedia&&loadedRoomMedia.current!==`${current.generation}:${roomMedia.id}:${roomMedia.attempt??0}`)return;
+    const media=roomMediaRef.current;
+    if(media&&!media.outsideTarget&&loadedRoomMedia.current!==`${current.generation}:${media.id}:${media.attempt??0}`)return;
     // Cosmetic ink/object previews keep the canonical scene revision. Repeating
     // its ACK also repeats Room focus/HTML-scroll restoration and host traffic.
     if(reportedRoomReady.current?.generation===current.generation&&reportedRoomReady.current.revision===current.revision)return;
     reportedRoomReady.current={generation:current.generation,revision:current.revision};
     onSceneReady(current.generation,current.revision);
-  },[onSceneReady,room,roomMedia?.id,roomMedia?.attempt]);
+  },[onSceneReady,room]);
   const reportRoomReadyRef=useRef(reportRoomReady);reportRoomReadyRef.current=reportRoomReady;
   const materialLoaded=useCallback((id:string)=>{loadedRoomMaterials.current.add(id);reportRoomReady();},[reportRoomReady]);
   const mediaLoaded=useCallback(()=>{
@@ -378,25 +382,27 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
   const remoteTimers = useMemo(() => remoteTimerWidgets(scene), [remoteTimerKey]);
   const dark = /^#[0-4][0-9a-f][0-4][0-9a-f][0-4][0-9a-f]$/i.test(scene.background);
   const live = connected && hostConnected && publicationReady && ready && !error;
-  return <main className={`live-view ${dark ? "is-dark" : ""}`} style={{ background: scene.background } as CSSProperties}>
-    <div className={`live-view-canvas ${clip ? "is-clip" : ""} ${ready ? "is-ready" : "is-preparing"}`} ref={root} style={clipInset?{clipPath:clipInset}:undefined}
+  return <main className={`live-view ${dark ? "is-dark" : ""}${dockedVideo?' has-docked-video':''}`} style={{ background: scene.background } as CSSProperties}>
+    <div className={`live-view-canvas ${clip ? "is-clip" : ""} ${ready ? "is-ready" : "is-preparing"}`} ref={root} style={dockedVideo?undefined:{clipPath:clipInset}}
       onWheelCapture={() => cancelRecall()}
       onPointerDownCapture={() => cancelRecall()}
       onContextMenu={(event) => event.preventDefault()}
       onDropCapture={(event) => { event.preventDefault(); event.stopPropagation(); }}>
+      <div className="live-view-content" style={dockedVideo?{clipPath:clipInset}:undefined}>
       <Excalidraw autoFocus={!previewAssets} excalidrawAPI={setApi} initialData={viewerInitial} viewModeEnabled zenModeEnabled
         langCode={uiLanguageTag()} theme="light" handleKeyboardGlobally={false}
         onLinkOpen={(_element, event) => event.preventDefault()}
         UIOptions={{ canvasActions: { clearCanvas: false, export: false, loadScene: false, saveAsImage: false, saveToActiveFile: false, toggleTheme: false, changeViewBackgroundColor: false }, tools: { image: false } }}/>
       {api && materialBaseUrl && scene.materials?.length ? <LiveInteractiveMaterialLayer materials={scene.materials} baseUrl={materialBaseUrl} api={api} participant={participation} onAction={onMaterialAction} inputReady={roomInputReady} room={room} playbackOutput={roomPlaybackOutput} onReady={room?materialLoaded:undefined}/> : null}
-      {api && room && roomMedia ? <RoomMediaLayer key={`${roomMedia.id}:${roomMedia.attempt??0}`} media={roomMedia} api={api}
-        output={roomPlaybackOutput} onStatus={(status,sequence)=>onRoomVideoStatus?.(roomMedia.id,status,sequence)} onReady={mediaLoaded} onError={message=>onRoomMediaError?.(roomMedia.id,message)}/> : null}
       {/* RoomView gates input on its confirmed target. A cosmetic native
           re-render of that same scene must not unmount the active gesture. */}
       {room&&roomInkOverlay}
       {api&&!room&&ready&&remoteTimers.length>0&&<TimerWidgetLayer api={api} widgets={remoteTimers} readOnly/>}
       {api&&room&&ready&&roomTimers.length>0&&<TimerWidgetLayer api={api} widgets={roomTimers} disabled={!publicationReady}
         onAction={onTimerAction} onTransform={onTimerTransform}/>}
+      </div>
+      {api && room && roomMedia ? <RoomMediaLayer key={`${roomMedia.id}:${roomMedia.attempt??0}`} media={roomMedia} api={api}
+        output={roomPlaybackOutput} onStatus={(status,sequence)=>onRoomVideoStatus?.(roomMedia.id,status,sequence)} onReady={mediaLoaded} onError={message=>onRoomMediaError?.(roomMedia.id,message)}/> : null}
     </div>
     {api && <HostPointerOverlay api={api} channel={hostPointer} generation={scene.generation} enabled={live} bounds={clip}/>}
     {!previewAssets && <>

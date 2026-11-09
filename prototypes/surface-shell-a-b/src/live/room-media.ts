@@ -9,7 +9,7 @@ import { projectInteractiveHtmlAnnotations } from '../canvas/interactive-html-an
 export type RoomMediaPlayback = { playing: boolean; position: number; updatedAt: number; volume?:number;commandSequence?:number };
 export type RoomMedia = RoomMediaPlayback & {
   id: string; kind: 'audio' | 'video' | 'youtube'; title: string;
-  attempt?: number;suspended?:boolean;command?:{sequence:number;action:RoomVideoCommand};
+  attempt?: number;outsideTarget?:boolean;suspended?:boolean;command?:{sequence:number;action:RoomVideoCommand};
   x: number; y: number; width: number; height: number; angle: number;
   sourceUrl?: string; videoId?: string;
   cover?: ImageCoverRect; annotations: LiveMaterialAnnotation[];

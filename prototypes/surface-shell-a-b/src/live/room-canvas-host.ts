@@ -589,18 +589,14 @@ export class RoomCanvasHost {
     const element=this.api.getSceneElements().find(element=>element.id===id&&!element.isDeleted);
     if(active&&(!element||!isRoomMediaElement(element)))return;
     if(!active&&this.state.mediaFullscreenId!==id)return;
-    const mediaId=active?id:roomTargetMedia(this.api.getSceneElements(),this.state.target,this.state.mediaId)?.id??null;
-    this.update({mediaFullscreenId:active?id:null,mediaId,ready:false,error:null});
+    if(active)this.selectMedia(id);
+    this.update({mediaFullscreenId:active?id:null,ready:false,error:null});
     this.schedule(0);
   }
   private commandVideo(id:string,action:RoomVideoCommand){
     if(!this.state.active||!this.api||!validRoomVideoCommand(action))return;
     const element=this.api.getSceneElements().find(e=>e.id===id&&isRoomMediaElement(e));if(!element)return;
-    if(action.type==='play'&&!roomTargetContainsMedia(this.state.target,element)&&this.state.mediaFullscreenId!==id)
-      this.showMaterial(id,String(element.customData?.sourceTitle??'Material'));
-    if(roomTargetContainsMedia(this.state.target,element)||this.state.mediaFullscreenId===id){
-      if(this.state.mediaId!==id){this.update({mediaId:id});this.schedule(0);}
-    }
+    if(action.type==='play')this.startMedia(element);
     const previous=this.mediaPlayback.get(id)??{playing:false,position:0,updatedAt:Date.now(),volume:1};
     const sequence=(previous.commandSequence??0)+1;
     const position=action.type==='seek'?Math.max(0,Math.min(86400,action.value))
@@ -615,16 +611,29 @@ export class RoomCanvasHost {
     if(!this.state.active||!this.api)return;
     const element=this.api.getSceneElements().find(element=>element.id===id&&!element.isDeleted);
     if(!element||!isRoomMediaElement(element))return;
-    const started=playing&&!this.mediaPlayback.get(id)?.playing;
-    // A delayed timeupdate from the old player must not undo an explicit clip change.
-    if(started&&!roomTargetContainsMedia(this.state.target,element)&&this.state.mediaFullscreenId!==id){
-      this.showMaterial(id,String(element.customData?.sourceTitle??'Material'));
-    }
-    if((roomTargetContainsMedia(this.state.target,element)||this.state.mediaFullscreenId===id)
-      &&(started||this.state.mediaId===id||this.state.mediaId===null)){
-      if(this.state.mediaId!==id){this.update({mediaId:id});this.schedule(0);}
-    }
+    if(playing&&!this.mediaPlayback.get(id)?.playing)this.startMedia(element);
     this.setMediaPlayback(id,playing,position,volume);
+  }
+  private startMedia(element:ExcalidrawElement){
+    if(this.state.mediaId===element.id)return;
+    if(!roomTargetContainsMedia(this.state.target,element)||this.state.mediaFullscreenId)
+      this.showMaterial(element.id,String(element.customData?.sourceTitle??'Material'));
+    this.selectMedia(element.id);
+  }
+  private selectMedia(id:string|null){
+    const previousId=this.state.mediaId;
+    if(previousId===id)return;
+    if(previousId){
+      const previous=this.mediaPlayback.get(previousId);
+      if(previous?.playing){
+        const now=Date.now();
+        this.mediaPlayback.set(previousId,{...previous,playing:false,
+          position:previous.position+Math.max(0,(now-previous.updatedAt)/1000),updatedAt:now});
+      }
+      pauseRoomVideoStatus(previousId);
+    }
+    this.update({mediaId:id});
+    this.schedule(0);
   }
   setMediaPlayback(id:string, playing:boolean, position:number,volume?:number) {
     if(!this.state.active || !Number.isFinite(position) || position<0)return;
@@ -660,12 +669,6 @@ export class RoomCanvasHost {
     // Moving/resizing the same clip only changes its camera bounds. Keep live
     // HTML leases and the confirmed output intact until its next frame arrives.
     if(targetChanged)this.htmlPlayback?.clear();
-    const oldMedia=this.state.mediaId&&this.api?.getSceneElements().find(element=>element.id===this.state.mediaId);
-    if(oldMedia&&!roomTargetContainsMedia(target,oldMedia)){
-      const previous=this.mediaPlayback.get(oldMedia.id);
-      if(previous)this.mediaPlayback.set(oldMedia.id,{...previous,playing:false,updatedAt:Date.now()});
-      pauseRoomVideoStatus(oldMedia.id);
-    }
     this.missingTarget=false;
     if(targetChanged){this.inkWire=null;this.channel?.postMessage({type:'ink-clear',channel:this.channelId,generation:this.generation});}
     // A preview is the last confirmed receiver frame. Once its display target
@@ -679,8 +682,15 @@ export class RoomCanvasHost {
         captureUpdate:CaptureUpdateAction.NEVER,
       });
     }
-    const media=roomTargetMedia(this.api?.getSceneElements()??[],target,this.state.mediaId);
-    this.update({target,mediaId:media?.id??null,mediaFullscreenId:null,ready:targetChanged?false:this.state.ready,error:null});this.schedule(0);
+    const elements=this.api?.getSceneElements()??[];
+    const currentMedia=elements.find(element=>element.id===this.state.mediaId&&isRoomMediaElement(element));
+    const visibleMedia=roomTargetMedia(elements,target,this.state.mediaId);
+    // A clip changes the view. Keep the selected output available for Pause/Play
+    // even when its video is outside the crop. Opening a specific video selects it.
+    const keepOutput=currentMedia&&(!targetChanged||this.mediaPlayback.get(currentMedia.id)?.playing);
+    this.selectMedia(target.kind==='material'&&visibleMedia?visibleMedia.id
+      :keepOutput?currentMedia.id:visibleMedia?.id??null);
+    this.update({target,mediaFullscreenId:null,ready:targetChanged?false:this.state.ready,error:null});this.schedule(0);
   }
 
   private changed() {
@@ -777,10 +787,18 @@ export class RoomCanvasHost {
       if(epoch!==this.epoch||!this.state.active||this.inkPreviewId||version!==this.sceneVersion||JSON.stringify(baseTarget)!==JSON.stringify(this.state.target)||fullscreenId!==this.state.mediaFullscreenId) {this.dirty=true;return;}
       const selected=target.kind==='material'?api.getSceneElements().find(element=>element.id===target.id&&!element.isDeleted):null;
       if(target.kind==='material'&&!selected){this.removed(target.id);return;}
-      const mediaElement=fullscreenId?selected:roomTargetMedia(api.getSceneElements(),baseTarget,this.state.mediaId);
-      const currentMedia=mediaElement?roomMediaFromElement(mediaElement,api.getSceneElements(),this.mediaPlayback.get(mediaElement.id)??{playing:false,position:0,updatedAt:Date.now()}):null;
-      const media=currentMedia?{...currentMedia,attempt:this.mediaAttempt}:null;
-      if(selected && ['audio','video','youtube'].includes(String(selected.customData?.materialKind)) && !media)
+      const elements=api.getSceneElements();
+      const mediaElement=elements.find(element=>element.id===this.state.mediaId&&isRoomMediaElement(element))
+        ??roomTargetMedia(elements,target,null);
+      const currentMedia=mediaElement?roomMediaFromElement(mediaElement,elements,this.mediaPlayback.get(mediaElement.id)??{playing:false,position:0,updatedAt:Date.now()}):null;
+      const outsideTarget=Boolean(mediaElement&&!roomTargetContainsMedia(target,mediaElement)
+        &&(target.kind!=='canvas'||currentMedia?.kind==='youtube'));
+      // A docked YouTube embed must stay visible. Do not reveal an intentional
+      // cover just to move the player into the dock.
+      const canShowMedia=currentMedia&&!(outsideTarget&&currentMedia.kind==='youtube'&&currentMedia.cover);
+      const media=canShowMedia?{...currentMedia,attempt:this.mediaAttempt,outsideTarget}:null;
+      this.selectMedia(media?.id??null);
+      if(selected && ['audio','video','youtube'].includes(String(selected.customData?.materialKind)) && media?.id!==selected.id)
         throw new Error('Das Medium konnte nicht für Room Canvas vorbereitet werden.');
       const bounds:Viewport=target.kind==='clip'?target.clip:selected
         ? {x:selected.x,y:selected.y,width:selected.width,height:selected.height}:getPublicViewport(api);

@@ -29,13 +29,15 @@ class Channel {
   constructor(){Channel.current=this;}postMessage(message:any){this.sent.push(message);}close(){}
   receive(message:any){this.onmessage?.({data:message});}
 }
-test('Room preserves the crop through playback and temporary fullscreen, cancels on explicit new target',async()=>{
+test('Room changes the display target independently of its single video output',async()=>{
   const beforeWindow=Object.getOwnPropertyDescriptor(globalThis,'window'),beforeChannel=globalThis.BroadcastChannel;
   Object.defineProperty(globalThis,'window',{configurable:true,value:{open:()=>({closed:false,close:()=>{},focus:()=>{}})}});
   globalThis.BroadcastChannel=Channel as any;
   mock.timers.enable({apis:['setTimeout','setInterval','Date']});
   const host=new RoomCanvasHost();const elements=[video];
-  const api={getSceneElements:()=>elements,getSceneElementsIncludingDeleted:()=>elements,getFiles:()=>({}),getAppState:()=>({viewBackgroundColor:'#fff',width:1000,height:800}),onChange:()=>()=>{},onScrollChange:()=>()=>{}};
+  const api={getSceneElements:()=>elements,getSceneElementsIncludingDeleted:()=>elements,getFiles:()=>({}),
+    getAppState:()=>({viewBackgroundColor:'#fff',width:1000,height:800,zoom:{value:1},scrollX:0,scrollY:0}),
+    updateScene:()=>{},onChange:()=>()=>{},onScrollChange:()=>()=>{}};
   try {
     host.attach(api as any,'lesson-1');await host.start();
     const channel=Channel.current,channelId=(host as any).channelId;
@@ -57,9 +59,23 @@ test('Room preserves the crop through playback and temporary fullscreen, cancels
     const movedFrame=channel.sent.filter(message=>message.type==='frame').at(-1);
     assert.equal(movedFrame.scene.presentation.clip.x,crop.clip.x+8);
     assert.equal(movedFrame.assets.length,0,'moving the camera does not resend assets');
-    host.showClip({...crop.clip,id:'different-clip'});
-    assert.equal(releases.mock.callCount(),1,'a real clip switch still releases playback');
+    const worksheet={...crop.clip,id:'worksheet',x:950};
+    host.showClip(worksheet);
+    assert.equal(releases.mock.callCount(),1,'a real clip switch still releases HTML playback');
     assert.equal(host.state.ready,false,'a real clip switch waits for confirmation');
+    await flush();
+    const worksheetFrame=channel.sent.filter(message=>message.type==='frame').at(-1);
+    assert.equal(worksheetFrame.scene.presentation.clip.id,worksheet.id);
+    assert.equal(worksheetFrame.media.id,video.id);
+    assert.equal(worksheetFrame.media.playing,true);
+    assert.equal(worksheetFrame.media.outsideTarget,true);
+    mock.timers.tick(500);
+    assert.equal(channel.sent.filter(message=>message.type==='media-lease').at(-1)?.id,video.id);
+    sendRoomVideoCommand(video.id,{type:'pause'});
+    assert.equal(channel.sent.at(-1).action.type,'pause');
+    sendRoomVideoCommand(video.id,{type:'play'});
+    assert.deepEqual(host.state.target,{kind:'clip',clip:worksheet});
+    assert.equal(channel.sent.at(-1).action.type,'play');
     host.showClip(crop.clip);await flush();
     releases.mock.restore();
     const latest=channel.sent.filter(message=>message.type==='frame').at(-1);
@@ -68,7 +84,7 @@ test('Room preserves the crop through playback and temporary fullscreen, cancels
     const status={playing:true,position:13,duration:60,volume:.4};
     channel.receive({type:'media-status',sequence:0,channel:channelId,generation:published.scene.generation,revision:published.scene.revision-1,id:video.id,status});
     assert.equal(getRoomVideoStatus(video.id),null,'stale output cannot replace confirmed status');
-    channel.receive({type:'media-status',sequence:0,channel:channelId,generation:published.scene.generation,revision:published.scene.revision,id:video.id,status});
+    channel.receive({type:'media-status',sequence:2,channel:channelId,generation:published.scene.generation,revision:published.scene.revision,id:video.id,status});
     assert.deepEqual(getRoomVideoStatus(video.id),status);
     sendRoomVideoCommand(video.id,{type:'pause'});
     const pauseCommand=channel.sent.at(-1);assert.equal(pauseCommand.type,'media-command');assert.equal(pauseCommand.action.type,'pause');
@@ -93,9 +109,17 @@ test('Room preserves the crop through playback and temporary fullscreen, cancels
     assert.equal(restored.media.position,21);assert.equal(restored.media.playing,false);
     host.setMediaFullscreen(video.id,true);host.showMaterial(video.id,'Test');assert.equal(host.state.mediaFullscreenId,null);
     host.showClip({...crop.clip,id:'other',x:950});host.playMedia(video.id,true,22);assert.equal(host.state.target.kind,'material');
-    const otherClip={...crop.clip,id:'later',x:950};host.showClip(otherClip);
+    const otherClip={...worksheet,id:'later'};host.showClip(otherClip);
     channel.receive({type:'media-status',sequence:0,channel:channelId,generation:published.scene.generation,revision:published.scene.revision,id:video.id,status:{...status,position:22.1}});assert.equal(host.state.target.kind,'clip','late output status cannot act as a Play command');
-    host.playMedia(video.id,false,22.1);host.playMedia(video.id,true,22.1);assert.equal(host.state.target.kind,'material');
+    host.setCanvas();await flush();
+    assert.equal(channel.sent.filter(message=>message.type==='frame').at(-1)?.media.id,video.id);
+    host.showClip(otherClip);
+    host.playMedia(video.id,false,22.1);host.playMedia(video.id,true,22.1);assert.equal(host.state.target.kind,'clip');
+    const secondVideo={...video,id:'video-2',x:1600};
+    elements.push(secondVideo);
+    sendRoomVideoCommand(secondVideo.id,{type:'play'});await flush();
+    assert.equal(channel.sent.filter(message=>message.type==='frame').at(-1)?.media.id,secondVideo.id);
+    assert.equal(getRoomVideoStatus(video.id)?.playing,false);
     host.attach(api as any,'lesson-2');assert.equal(host.state.mediaFullscreenId,null);assert.equal(host.state.mediaId,null);
   } finally {
     host.stop();mock.timers.reset();globalThis.BroadcastChannel=beforeChannel;
