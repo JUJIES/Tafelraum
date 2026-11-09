@@ -218,6 +218,29 @@ jobs:
             foreach ($file in $files) { [System.IO.File]::WriteAllText($file, [System.IO.File]::ReadAllText($file), $utf8) }
           }
 
+          function Find-TypedWindowElement([string]$Name, $ControlType) {
+            $condition = New-Object System.Windows.Automation.AndCondition(
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $Name)),
+              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, $ControlType)))
+            return [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+          }
+
+          function Save-NativePdf([string]$OutputPath, [string[]]$Titles) {
+            $dialog = Wait-Until {
+              foreach ($title in $Titles) {
+                $node = Find-TypedWindowElement $title ([System.Windows.Automation.ControlType]::Window)
+                if ($node) { return $node }
+              }
+            } 'PDF save dialog'
+            $null = [NativeProbeInput]::SetForegroundWindow($dialog.Current.NativeWindowHandle)
+            Start-Sleep -Milliseconds 350
+            [System.Windows.Forms.SendKeys]::SendWait('^a')
+            [System.Windows.Forms.SendKeys]::SendWait($OutputPath)
+            [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
+            $null = Wait-Until { if (Test-Path $OutputPath) { (Get-Item $OutputPath).Length -gt 0 } } 'saved PDF'
+          }
+
+
           function Print-Worksheet([string]$Orientation) {
             $window = [System.Windows.Automation.AutomationElement]::FromHandle($newApp.MainWindowHandle)
             $title = "A4 $Orientation proof"
@@ -254,38 +277,30 @@ jobs:
                 $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button -and $_.Current.Name -match '^(Print|Drucken)(\b|$)'
               } | Select-Object -First 1
             } 'PDF print toolbar'
-            $pdfSave = Wait-Until {
-              $all = $preview.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
-              $all | Where-Object {
-                $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button -and $_.Current.Name -match '^(Save|Speichern)(\b|$)'
-              } | Select-Object -First 1
-            } 'PDF save toolbar'
             Write-WindowEvidence "$Orientation-preview"
             if ($Orientation -eq 'landscape') {
               Invoke-Element $pdfToolbar
-              $cancel = Wait-Until { Find-WindowElement 'Cancel' } 'print dialog from the PDF viewer'
               $null = Wait-Until { Find-WindowElement 'Page 1' } 'first rendered print page'
+              $landscape = Find-TypedWindowElement 'Landscape' ([System.Windows.Automation.ControlType]::RadioButton)
+              if (!$landscape -or !$landscape.GetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern).Current.IsSelected) {
+                throw 'The PDF print dialog did not select landscape'
+              }
               Write-WindowEvidence "$Orientation-printer-preview"
-              Invoke-Element $cancel
-              $null = Wait-Until {
-                if (!(Find-WindowElement 'Cancel')) { $true }
-              } 'printer preview dismissed'
+              if (!(Find-WindowElement 'Microsoft Print to PDF')) { throw 'Virtual PDF printer is not selected' }
+              $printButton = Find-TypedWindowElement 'Print' ([System.Windows.Automation.ControlType]::Button)
+              if (!$printButton) { throw 'Print dialog button missing' }
+              Invoke-Element $printButton
+              Save-NativePdf (Join-Path $directory "$Orientation-driver.pdf") @('Save Print Output As')
             }
 
+            $pdfSave = Wait-Until {
+              $condition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::AutomationIdProperty, 'saveAs')
+              $node = $preview.FindFirst([System.Windows.Automation.TreeScope]::Descendants,$condition)
+              if ($node -and $node.Current.IsEnabled) { $node }
+            } 'PDF Save As toolbar'
             Invoke-Element $pdfSave
-            $saveDialog = Wait-Until {
-              $node = Find-WindowElement 'Save As'
-              if (!$node) { $node = Find-WindowElement 'Save as' }
-              if (!$node) { $node = Find-WindowElement 'Save' }
-              if ($node -and $node.Current.ControlType -eq [System.Windows.Automation.ControlType]::Window) { $node }
-            } 'PDF Save As dialog'
             $saved = Join-Path $directory "$Orientation-saved.pdf"
-            $null = [NativeProbeInput]::SetForegroundWindow($saveDialog.Current.NativeWindowHandle)
-            Start-Sleep -Milliseconds 350
-            [System.Windows.Forms.SendKeys]::SendWait('^a')
-            [System.Windows.Forms.SendKeys]::SendWait($saved)
-            [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-            $null = Wait-Until { if (Test-Path $saved) { (Get-Item $saved).Length -gt 0 } } 'saved A4 PDF'
+            Save-NativePdf $saved @('Save As','Save')
             if ((Get-FileHash $saved).Hash -ne (Get-FileHash $pdf.FullName).Hash) { throw 'PDF viewer saved different bytes' }
             $preview.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
             $null = Wait-Until { if (!(Test-Path $pdf.FullName)) { $true } } 'preview temp file removed'
