@@ -252,20 +252,17 @@ jobs:
             if (!$print) { throw 'Preview Print button missing' }
             Invoke-Element $print
             $saveDialog = Wait-Until { Find-WindowElement 'Save Print Output As' } 'virtual PDF printer Save window'
-            $fileCondition = New-Object System.Windows.Automation.AndCondition(
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'File name:')),
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Edit)))
-            $fileName = $saveDialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $fileCondition)
-            if (!$fileName) {
-              $fileCondition = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::AutomationIdProperty, '1001')
-              $fileName = $saveDialog.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $fileCondition)
-            }
-            if (!$fileName) { throw 'Native PDF filename entry missing' }
             $out = Join-Path $directory "$Orientation.pdf"
-            $fileName.GetCurrentPattern([System.Windows.Automation.ValuePattern]::Pattern).SetValue($out)
-            $saveFile = Find-NativeElement $saveDialog 'Save'
-            if (!$saveFile) { throw 'No Save button in native Save As dialog' }
-            Invoke-Element $saveFile
+            if ($out -notmatch '^[A-Za-z]:[\\A-Za-z0-9_ .-]+$') { throw 'Unexpected runner output path' }
+            $null = [NativeProbeInput]::SetForegroundWindow($saveDialog.Current.NativeWindowHandle)
+            # Windows 11 exposes the filename input here as a Pane with no
+            # ValuePattern. The observed native dialog focuses it on opening.
+            Start-Sleep -Milliseconds 350
+            $focus = [System.Windows.Automation.AutomationElement]::FocusedElement
+            if ($focus.Current.ProcessId -ne $saveDialog.Current.ProcessId) { throw 'Save dialog did not receive focus' }
+            [System.Windows.Forms.SendKeys]::SendWait('^a')
+            [System.Windows.Forms.SendKeys]::SendWait($out)
+            [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
             $null = Wait-Until { if (Test-Path $out) { (Get-Item $out).Length -gt 0 } } "$Orientation PDF"
             Write-Host "Exported $Orientation from the actual print dialog."
           }
