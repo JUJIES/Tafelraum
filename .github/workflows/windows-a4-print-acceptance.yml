@@ -19,8 +19,8 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          $sourceCommit = '9f0e6e22ee8c12a58bce95e238a3e99753d9076f'
-          $candidateRun = 42624016760
+          $sourceCommit = 'b867b8082ccff1382e819cbffa0955dbcfe3103b'
+          $candidateRun = 42630004830
           $directory = Join-Path $env:RUNNER_TEMP 'tafelraum-print-qa'
           New-Item -ItemType Directory $directory | Out-Null
           for ($attempt = 0; $attempt -lt 80; $attempt++) {
@@ -237,50 +237,59 @@ jobs:
               } catch [System.Windows.Automation.ElementNotAvailableException] {}
             } 'Material drucken'
 
-            $cancel = Wait-Until { Find-WindowElement 'Cancel' } 'WebView2 print dialog Cancel button'
-            $null = Wait-Until { Find-WindowElement 'Page 1' } 'rendered first preview page'
+            $preview = Wait-Until {
+              $node = Find-WindowElement ('Druckvorschau')
+              if (!$node) { $node = Find-WindowElement 'Print preview' }
+              $node
+            } 'Tafelraum PDF preview window'
+            $pdf = Wait-Until {
+              Get-ChildItem $env:TEMP -Directory -Filter 'tafelraum-print-*' |
+                ForEach-Object { Get-ChildItem $_.FullName -Filter 'Tafelraum.pdf' -File } |
+                Where-Object Length -gt 0 | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            } 'generated A4 PDF'
+            Copy-Item -LiteralPath $pdf.FullName -Destination (Join-Path $directory "$Orientation.pdf")
+            $pdfToolbar = Wait-Until {
+              $all = $preview.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
+              $all | Where-Object {
+                $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button -and $_.Current.Name -match '^(Print|Drucken)(\b|$)'
+              } | Select-Object -First 1
+            } 'PDF print toolbar'
+            $pdfSave = Wait-Until {
+              $all = $preview.FindAll([System.Windows.Automation.TreeScope]::Descendants,[System.Windows.Automation.Condition]::TrueCondition)
+              $all | Where-Object {
+                $_.Current.ControlType -eq [System.Windows.Automation.ControlType]::Button -and $_.Current.Name -match '^(Save|Speichern)(\b|$)'
+              } | Select-Object -First 1
+            } 'PDF save toolbar'
             Write-WindowEvidence "$Orientation-preview"
-            Write-Host "Captured $Orientation in the native WebView2 print dialog."
-
-            $layoutLabel = if ($Orientation -eq 'landscape') { 'Landscape' } else { 'Portrait' }
-            $layoutCondition = New-Object System.Windows.Automation.AndCondition(
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, $layoutLabel)),
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::RadioButton)))
-            $layoutChoice = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $layoutCondition)
-            if (!$layoutChoice) { throw 'Print orientation radio button missing' }
-            $selection = $null
-            if ($layoutChoice.TryGetCurrentPattern([System.Windows.Automation.SelectionItemPattern]::Pattern, [ref]$selection)) {
-              if (!$selection.Current.IsSelected) { $selection.Select() }
-            } else {
-              $point = $layoutChoice.GetClickablePoint()
-              [NativeProbeInput]::Click([int]$point.X,[int]$point.Y)
+            if ($Orientation -eq 'landscape') {
+              Invoke-Element $pdfToolbar
+              $cancel = Wait-Until { Find-WindowElement 'Cancel' } 'print dialog from the PDF viewer'
+              $null = Wait-Until { Find-WindowElement 'Page 1' } 'first rendered print page'
+              Write-WindowEvidence "$Orientation-printer-preview"
+              Invoke-Element $cancel
+              $null = Wait-Until {
+                if (!(Find-WindowElement 'Cancel')) { $true }
+              } 'printer preview dismissed'
             }
-            Start-Sleep -Milliseconds 650
-            Write-WindowEvidence "$Orientation-manual-preview"
 
-            $pdfPrinter = Find-WindowElement 'Microsoft Print to PDF'
-            if (!$pdfPrinter) { throw 'Preview did not choose the virtual PDF printer' }
-            $printDialog = Find-WindowElement 'Print'
-            $condition = New-Object System.Windows.Automation.AndCondition(
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, 'Print')),
-              (New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::ControlTypeProperty, [System.Windows.Automation.ControlType]::Button)))
-            $print = [System.Windows.Automation.AutomationElement]::RootElement.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
-            if (!$print) { throw 'Preview Print button missing' }
-            Invoke-Element $print
-            $saveDialog = Wait-Until { Find-WindowElement 'Save Print Output As' } 'virtual PDF printer Save window'
-            $out = Join-Path $directory "$Orientation.pdf"
-            if ($out -notmatch '^[A-Za-z]:[\\A-Za-z0-9_ .-]+$') { throw 'Unexpected runner output path' }
+            Invoke-Element $pdfSave
+            $saveDialog = Wait-Until {
+              $node = Find-WindowElement 'Save As'
+              if (!$node) { $node = Find-WindowElement 'Save as' }
+              if (!$node) { $node = Find-WindowElement 'Save' }
+              if ($node -and $node.Current.ControlType -eq [System.Windows.Automation.ControlType]::Window) { $node }
+            } 'PDF Save As dialog'
+            $saved = Join-Path $directory "$Orientation-saved.pdf"
             $null = [NativeProbeInput]::SetForegroundWindow($saveDialog.Current.NativeWindowHandle)
-            # Windows 11 exposes the filename input here as a Pane with no
-            # ValuePattern. The observed native dialog focuses it on opening.
             Start-Sleep -Milliseconds 350
-            $focus = [System.Windows.Automation.AutomationElement]::FocusedElement
-            if ($focus.Current.ProcessId -ne $saveDialog.Current.ProcessId) { throw 'Save dialog did not receive focus' }
             [System.Windows.Forms.SendKeys]::SendWait('^a')
-            [System.Windows.Forms.SendKeys]::SendWait($out)
+            [System.Windows.Forms.SendKeys]::SendWait($saved)
             [System.Windows.Forms.SendKeys]::SendWait('{ENTER}')
-            $null = Wait-Until { if (Test-Path $out) { (Get-Item $out).Length -gt 0 } } "$Orientation PDF"
-            Write-Host "Exported $Orientation from the actual print dialog."
+            $null = Wait-Until { if (Test-Path $saved) { (Get-Item $saved).Length -gt 0 } } 'saved A4 PDF'
+            if ((Get-FileHash $saved).Hash -ne (Get-FileHash $pdf.FullName).Hash) { throw 'PDF viewer saved different bytes' }
+            $preview.GetCurrentPattern([System.Windows.Automation.WindowPattern]::Pattern).Close()
+            $null = Wait-Until { if (!(Test-Path $pdf.FullName)) { $true } } 'preview temp file removed'
+            Write-Host "Saved the unchanged $Orientation PDF and closed its preview."
           }
 
           Write-Host 'Installing and opening previous official package'
@@ -324,7 +333,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: public-windows-manual-layout
+          name: public-windows-a4-pdf-acceptance
           path: |
             ${{ runner.temp }}/tafelraum-print-qa/native-acceptance.json
             ${{ runner.temp }}/tafelraum-print-qa/*.pdf
