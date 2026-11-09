@@ -15,12 +15,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Set up Node 24 for the WebView readiness probe
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
-        with:
-          node-version: '24.x'
       - name: Test install, startup and archive retention on a disposable Windows runner
-        shell: pwsh
+        shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
           $sourceCommit = '8059dfde7a37fe9a777654a0ec21016a55bbf124'
@@ -49,34 +45,12 @@ jobs:
           $profile = Join-Path $env:APPDATA 'app.jujies.tafelraum.public'
           $application = Join-Path $env:LOCALAPPDATA 'Tafelraum Public\tafelraum.exe'
           if ((Test-Path $profile) -or (Test-Path $application)) { throw 'Runner already has a Public profile or installation' }
-          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=49193'
-          $probe = Join-Path $directory 'view-ready.mjs'
-          @'
-          const views=await fetch('http://127.0.0.1:49193/json/list').then(response=>response.json());
-          const view=views.find(view=>view.url?.startsWith('http://127.0.0.1:49318/'));
-          if(!view){console.log('No app WebView',views.map(view=>view.url));process.exit(1);}
-          const ws=new WebSocket(view.webSocketDebuggerUrl);
-          const openStarter=`(() => {
-            if (document.querySelector('.excalidraw canvas')) return 'canvas';
-            const starter = [...document.querySelectorAll('button')].find(button =>
-              ['Erster Unterricht','First lesson'].includes(button.textContent.trim()));
-            starter?.click();
-            return starter ? 'opening' : 'waiting';
-          })()`;
-          const value=await new Promise((resolve,reject)=>{
-            const timeout=setTimeout(()=>reject(Error('No WebView response')),1500);
-            ws.addEventListener('open',()=>ws.send(JSON.stringify({id:1,method:'Runtime.evaluate',
-              params:{expression:openStarter,returnByValue:true}})));
-            ws.addEventListener('message',({data})=>{
-              const message=JSON.parse(data);
-              if(message.id===1){clearTimeout(timeout);resolve(message.result?.result?.value);}
-            });
-            ws.addEventListener('error',()=>reject(Error('WebView probe failed')));
-          });
-          ws.close();
-          console.log(value);
-          process.exitCode=value==='canvas'?0:1;
-          '@ | Set-Content -Encoding utf8 $probe
+          Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+          function Find-NativeElement($window, [string]$name) {
+            $condition = New-Object System.Windows.Automation.PropertyCondition(
+              [System.Windows.Automation.AutomationElement]::NameProperty, $name)
+            return $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+          }
 
           function Install-App([string]$installer) {
             $install = Start-Process -FilePath $installer -ArgumentList '/S' -PassThru
@@ -86,6 +60,7 @@ jobs:
             if ((Get-Item $application).VersionInfo.ProductVersion -ne $version) { throw 'Installed version mismatch' }
             $app = Start-Process -FilePath $application -PassThru
             $lastProbe = ''
+            $openedStarter = $false
             $archiveAvailable = $false
             for ($attempt = 0; $attempt -lt 40; $attempt++) {
               $app.Refresh()
@@ -94,16 +69,27 @@ jobs:
                 $status = Invoke-RestMethod 'http://127.0.0.1:49318/api/archive/status' -TimeoutSec 2
                 $archiveAvailable = [bool]$status.available
                 if ($archiveAvailable -and $app.MainWindowHandle -ne 0) {
-                  $lastProbe = (& node $probe 2>&1 | Out-String)
-                  if ($LASTEXITCODE -eq 0) {
-                    Write-Host "Tafelraum $version WebView and archive are ready"
+                  $window = [System.Windows.Automation.AutomationElement]::FromHandle($app.MainWindowHandle)
+                  $lastProbe = $window.Current.Name
+                  $toolbar = Find-NativeElement $window 'Präsentieren'
+                  if (!$toolbar) { $toolbar = Find-NativeElement $window 'Present' }
+                  if ($toolbar) {
+                    Write-Host "Tafelraum $version native toolbar and archive are ready"
                     return $app
                   }
+                  if (!$openedStarter) {
+                    $starter = Find-NativeElement $window 'Erster Unterricht'
+                    if ($starter) {
+                      $invoker = $starter.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+                      $invoker.Invoke()
+                      $openedStarter = $true
+                    }
+                  }
                 }
-              } catch { }
+              } catch { $lastProbe = $_.Exception.Message }
               Start-Sleep -Seconds 1
             }
-            throw "Tafelraum $version not ready: archive=$archiveAvailable hwnd=$($app.MainWindowHandle) WebView=$lastProbe"
+            throw "Tafelraum $version not ready: archive=$archiveAvailable hwnd=$($app.MainWindowHandle) nativeUI=$lastProbe"
           }
           function Close-App($app) {
             $app.Refresh()
@@ -117,11 +103,13 @@ jobs:
             throw 'Loopback service remained after app exit'
           }
 
+          Write-Host 'Installing and opening previous official package'
           Install-App $previous
           $oldApp = Start-App '0.1.92'
           Close-App $oldApp
           $catalog = Join-Path $profile 'unterrichtsarchiv\archive.json'
           $before = (Get-FileHash $catalog).Hash
+          Write-Host 'Installing and opening exact 0.1.93 candidate'
           Install-App $candidate.FullName
           $newApp = Start-App '0.1.93'
           $room = Invoke-WebRequest 'http://127.0.0.1:49318/room.html' -TimeoutSec 5
