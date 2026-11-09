@@ -1,6 +1,7 @@
 {
   "0.1.94": [
-    "Printing an HTML worksheet on Mac now opens the print dialog in the A4 orientation declared by the template."
+    "Printing an HTML worksheet on Mac now opens the print dialog in the A4 orientation declared by the template.",
+    "Windows opens an A4 PDF preview when printing an HTML worksheet. The preview uses the template orientation and lets you print or save the PDF."
   ],
   "0.1.93": [
     "Room Canvas keeps video playing when you switch to a worksheet clip. Local video audio continues and YouTube remains visible alongside the worksheet."

@@ -5,8 +5,9 @@ export async function printDocument(targetWindow: Window = window, orientation?:
   targetWindow.focus();
   if (targetWindow === window && "__TAURI_INTERNALS__" in window) {
     const { invoke } = await import("@tauri-apps/api/core");
-    await invoke("print_desktop_webview", orientation ? { orientation } : undefined);
+    return invoke<boolean>("print_desktop_webview", orientation ? { orientation } : undefined);
   } else {
     targetWindow.print();
+    return false;
   }
 }

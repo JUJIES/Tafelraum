@@ -226,6 +226,7 @@ async function openTopLevelInteractiveHtmlPrintDialog(
   const cleanup = () => {
     if (cleanedUp) return;
     cleanedUp = true;
+    window.removeEventListener("afterprint", cleanup);
     if (cleanupTimer !== null) window.clearTimeout(cleanupTimer);
     temporaryHeadNodes.forEach((node) => node.parentNode?.removeChild(node));
     temporaryBodyNodes.forEach((node) => node.parentNode?.removeChild(node));
@@ -308,7 +309,7 @@ async function openTopLevelInteractiveHtmlPrintDialog(
     if (!("__TAURI_INTERNALS__" in window)) {
       cleanupTimer = window.setTimeout(cleanup, printCleanupTimeout);
     }
-    await printDocument(window, orientation);
+    if (await printDocument(window, orientation)) cleanup();
   } catch (error) {
     cleanup();
     throw error;

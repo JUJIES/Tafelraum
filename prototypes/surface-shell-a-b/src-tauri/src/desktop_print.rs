@@ -9,16 +9,24 @@ pub(crate) enum PrintPageOrientation {
 pub(crate) async fn print_desktop_webview(
     window: tauri::WebviewWindow,
     orientation: Option<PrintPageOrientation>,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     #[cfg(target_os = "macos")]
     if let Some(orientation) = orientation {
-        return print_a4_template(&window, orientation).await;
+        return print_a4_template(&window, orientation)
+            .await
+            .map(|()| false);
     }
-    // WebView2 uses window.print(), which reads the template's @page CSS.
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(windows)]
+    if let Some(orientation) = orientation {
+        return windows_print::open_a4_preview(&window, orientation)
+            .await
+            .map(|()| true);
+    }
+    #[cfg(not(any(target_os = "macos", windows)))]
     let _ = orientation;
     window
         .print()
+        .map(|()| false)
         .map_err(|error| format!("Druckdialog konnte nicht geöffnet werden: {error}"))
 }
 
@@ -74,3 +82,6 @@ async fn print_a4_template(
         .await
         .ok_or_else(|| "Druckdialog konnte nicht geöffnet werden".to_string())?
 }
+#[cfg(windows)]
+#[path = "windows_print.rs"]
+mod windows_print;
