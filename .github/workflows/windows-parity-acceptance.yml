@@ -1,0 +1,131 @@
+name: Windows Public 0.1.95 native acceptance
+
+on:
+  push:
+    branches: [codex/public-parity-windows-acceptance]
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  native-acceptance:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Test install, startup and archive retention on a disposable Windows runner
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $sourceCommit = 'f8ab465aadd541bf5ba8e8147a36aac340392b41'
+          $candidateRun = 42850443209
+          $directory = Join-Path $env:RUNNER_TEMP 'tafelraum-parity-qa'
+          New-Item -ItemType Directory $directory | Out-Null
+          for ($attempt = 0; $attempt -lt 140; $attempt++) {
+            $run = gh run view $candidateRun --repo $env:GITHUB_REPOSITORY --json status,conclusion,headSha | ConvertFrom-Json
+            if ($LASTEXITCODE -ne 0 -or $run.headSha -ne $sourceCommit) { throw 'Candidate run mismatch' }
+            if ($run.status -eq 'completed') { break }
+            Start-Sleep -Seconds 10
+          }
+          if ($run.conclusion -ne 'success') { throw 'Candidate build is not successful' }
+          gh run download $candidateRun --repo $env:GITHUB_REPOSITORY --name "tafelraum-public-windows-$sourceCommit" --dir $directory
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate download failed' }
+          $receipt = Get-Content (Join-Path $directory 'windows-build.json') | ConvertFrom-Json
+          $installers = @(Get-ChildItem $directory -Filter '*-setup.exe')
+          if ($installers.Count -ne 1) { throw 'Expected exactly one candidate installer' }
+          $candidate = $installers[0]
+          if ($receipt.sourceCommit -ne $sourceCommit -or $receipt.version -ne '0.1.95' -or
+              (Get-FileHash $candidate.FullName).Hash -ne $receipt.installerSha256) { throw 'Candidate identity mismatch' }
+
+          $previous = Join-Path $directory 'previous.exe'
+          Invoke-WebRequest 'https://github.com/JUJIES/Tafelraum/releases/download/v0.1.94/Tafelraum-Public-0.1.94-Windows-x64-setup.exe' -UseBasicParsing -OutFile $previous
+          if ((Get-FileHash $previous).Hash -ne '9ee5bf93212ffc0bd5dab5f5efcd1c43e020a5e75dfe9906278a4a653db8e9a2') { throw 'Prior official installer hash mismatch' }
+          $profile = Join-Path $env:APPDATA 'app.jujies.tafelraum.public'
+          $application = Join-Path $env:LOCALAPPDATA 'Tafelraum Public\tafelraum.exe'
+          if ((Test-Path $profile) -or (Test-Path $application)) { throw 'Runner already has a Public profile or installation' }
+          Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
+          function Find-NativeElement($window, [string]$name) {
+            $condition = New-Object System.Windows.Automation.PropertyCondition(
+              [System.Windows.Automation.AutomationElement]::NameProperty, $name)
+            return $window.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+          }
+
+          function Install-App([string]$installer) {
+            $install = Start-Process -FilePath $installer -ArgumentList '/S' -PassThru
+            if (!$install.WaitForExit(180000) -or $install.ExitCode -ne 0) { throw 'Installer did not complete successfully' }
+          }
+          function Start-App([string]$version) {
+            if ((Get-Item $application).VersionInfo.ProductVersion -ne $version) { throw 'Installed version mismatch' }
+            $app = Start-Process -FilePath $application -PassThru
+            $lastProbe = ''
+            $openedStarter = $false
+            $archiveAvailable = $false
+            for ($attempt = 0; $attempt -lt 40; $attempt++) {
+              $app.Refresh()
+              if ($app.HasExited) { throw 'Native app exited during startup' }
+              try {
+                $status = Invoke-RestMethod 'http://127.0.0.1:49318/api/archive/status' -TimeoutSec 2
+                $archiveAvailable = [bool]$status.available
+                if ($archiveAvailable -and $app.MainWindowHandle -ne 0) {
+                  $window = [System.Windows.Automation.AutomationElement]::FromHandle($app.MainWindowHandle)
+                  $lastProbe = $window.Current.Name
+                  $toolbar = Find-NativeElement $window ('Pr' + [char]0xe4 + 'sentieren')
+                  if (!$toolbar) { $toolbar = Find-NativeElement $window 'Present' }
+                  if ($toolbar) {
+                    Write-Host "Tafelraum $version native toolbar and archive are ready"
+                    return $app
+                  }
+                  if (!$openedStarter) {
+                    $starter = Find-NativeElement $window 'Erster Unterricht'
+                    if ($starter) {
+                      $invoker = $starter.GetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern)
+                      $invoker.Invoke()
+                      $openedStarter = $true
+                    }
+                  }
+                }
+              } catch { $lastProbe = $_.Exception.Message }
+              Start-Sleep -Seconds 1
+            }
+            throw "Tafelraum $version not ready: archive=$archiveAvailable hwnd=$($app.MainWindowHandle) nativeUI=$lastProbe"
+          }
+          function Close-App($app) {
+            $app.Refresh()
+            if (!$app.CloseMainWindow()) { throw 'Could not send the native window close request' }
+            if (!$app.WaitForExit(30000)) { throw 'Native app did not close after the window close request' }
+            for ($attempt = 0; $attempt -lt 20; $attempt++) {
+              try { $null = Invoke-RestMethod 'http://127.0.0.1:49318/api/archive/status' -TimeoutSec 1 }
+              catch { return }
+              Start-Sleep -Seconds 1
+            }
+            throw 'Loopback service remained after app exit'
+          }
+
+          Write-Host 'Installing and opening previous official package'
+          Install-App $previous
+          $oldApp = Start-App '0.1.94'
+          Close-App $oldApp
+          $catalog = Join-Path $profile 'unterrichtsarchiv\archive.json'
+          $before = (Get-FileHash $catalog).Hash
+          Write-Host 'Installing and opening exact 0.1.95 candidate'
+          Install-App $candidate.FullName
+          $newApp = Start-App '0.1.95'
+          $room = Invoke-WebRequest 'http://127.0.0.1:49318/room.html' -UseBasicParsing -TimeoutSec 5
+          if ($room.StatusCode -ne 200 -or $room.Content -notmatch 'Room Canvas') { throw 'Packaged Room page missing' }
+          Close-App $newApp
+          if ((Get-FileHash $catalog).Hash -ne $before) { throw 'The archive catalog changed during install or startup' }
+          $releasePath = Get-ChildItem (Split-Path $application) -Recurse -Filter 'desktop-release.json' |
+            Where-Object { $_.Directory.Name -eq 'server' } | Select-Object -First 1
+          $release = Get-Content $releasePath.FullName | ConvertFrom-Json
+          if ($release.sourceCommit -ne $sourceCommit) { throw 'Native bundle source mismatch' }
+          [ordered]@{version='0.1.95'; sourceCommit=$sourceCommit; priorVersion='0.1.94'; installerSha256=$receipt.installerSha256;
+            nativeStartup=$true; regularExit=$true; catalogRetained=$true; roomPage=$true; upgrade='NSIS installer'} |
+            ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $directory 'native-acceptance.json')
+      - name: Upload native acceptance receipt
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: public-windows-native-acceptance
+          path: ${{ runner.temp }}/tafelraum-parity-qa/native-acceptance.json
+          if-no-files-found: error
