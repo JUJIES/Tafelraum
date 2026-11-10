@@ -1,6 +1,6 @@
 [package]
 name = "tafelraum"
-version = "0.1.94"
+version = "0.1.95"
 description = "Lokale Unterrichts- und Präsentationsumgebung"
 authors = ["JUJIES"]
 license-file = "../../../LICENSE"

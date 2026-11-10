@@ -76,6 +76,43 @@ beachten. Reine Code-/Prüfarbeit und additive neue Materialdateien benötigen
 kein Vollbackup; bestehende produktive Katalog-/Materialänderungen entsprechend
 der dortigen Regel sichern. Dieser Skill führt keine neue Bestätigungspflicht ein.
 
+## Sichtbare Arbeitsphase in Tafelraum
+
+Bei jedem beauftragten Canvas-Schreibauftrag sowie bei mehrstufiger
+Unterrichtsvorbereitung mit Archiv- oder Canvasübernahme die vorhandene
+Arbeitsphase als Teil des Auftrags führen. Sobald Zielstunde und Lehreransicht
+feststehen, vor der ersten eigentlichen Vorbereitung mit
+`work-start --lesson ID --work-id UUID` beginnen. Ist Materialerstellung samt
+Übernahme beauftragt und das Ziel bereits bekannt, startet die Phase vor der
+Materialerstellung. Die Anlage einer neuen Stunde selbst geht der Phase voraus.
+Für reine Entwürfe ohne bestätigte Zielstunde gelten die normalen Chat-Updates.
+
+- Eindeutige Lehreransicht, lokales `--url`, geprüfte `--archive-root` und dieselbe
+  `--work-id` durchgängig verwenden. Bei mehreren Fenstern die betroffene
+  Organisationssitzung explizit wählen. Die Canvas-Sitzungs-ID ist separat.
+- Spätestens alle 30 Sekunden aktiver Arbeit `work-heartbeat` senden, auch
+  während längerer Materialerstellung, Prüfungen und getrennt laufender Befehle.
+  Bei längeren Tools früh zurückkehren und zwischen den Prüfungen das nächste
+  Lebenszeichen senden. Die App zeigt konkrete Import- und Canvasaktionen aus
+  den echten Befehlen und zwischen ihnen „Bereitet Materialien vor“.
+- `work-finish` erst nach Bestätigung aller beauftragten Schritte verwenden.
+  Bei Canvasarbeit muss die Zielstunde geöffnet und gespeichert sein. Bei Abbruch
+  `work-cancel` senden und bei unbestätigtem Schreiben den vorhandenen
+  Auftragsstatus prüfen. Kein Lebenszeichen nach Ende des Auftrags senden.
+- Für reine Materialerstellung mit Archivübernahme `--work-scope archive` bei
+  `work-start` und dieselbe `--work-id` auch bei jedem Import, Link oder
+  HTML-Installer angeben. Die App bestätigt den Abschluss anhand des
+  Materialbestands auch in einer geschlossenen Zielstunde. Unterstützt ein
+  älterer Host den Archivabschluss noch nicht, verwende den regulären
+  Importstatus und melde die Anzeigegrenze. Für die Statusanzeige die
+  laufende Stunde oder Präsentation nicht wechseln.
+- Fehlende, abgelaufene oder nicht eindeutig zuordenbare Anzeige als solche
+  benennen. Archiv-/Canvasbestätigung und Sichtbarkeit getrennt behandeln.
+  Eine fehlende Anzeige ist kein Grund, bestätigte Schreibbefehle zu wiederholen.
+
+Der [Organisationsvertrag](../../../docs/implementation/47_TEACHING_AGENT.md#continuous-lesson-preparation-local-development)
+beschreibt Lebensdauer und Abschlussbedingungen.
+
 ## Canvas und Präsentation
 
 Bei „bereite den Canvas vor“ oder „clippe die Materialien“ dieselbe Zielregel

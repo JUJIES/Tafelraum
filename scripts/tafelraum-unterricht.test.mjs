@@ -94,7 +94,17 @@ test('organization shares broker protections, keeps job confirmation across less
   assert.equal((await raw(`/sessions/${host.id}/jobs`,{requestId:'bad',lessonId:'teacher',command:{type:'apply',operations:[]}})).status,400);
   const command={type:'openLesson',lessonId:'l2',expectedLessonId:'l1',expectedRevision:'r1'};
   await raw(`/sessions/${host.id}/jobs`,{requestId:'open',lessonId:'teacher',command});
-  assert.equal((await raw(`/sessions/${host.id}/poll`,{},host.token)).value.job.command.lessonId,'l2');
+  const activity={type:'materialActivity',lessonId:'l2',operationId:'01234567-0123-4567-89ab-0123456789ab',phase:'begin'};
+  const activityRoute=`/sessions/${host.id}/activity`;
+  assert.equal((await raw(activityRoute,{...activity,phase:'invalid'})).status,400);
+  assert.equal((await raw(activityRoute,{...activity,phase:'added',materialPath:'../other'})).status,400);
+  assert.equal((await raw(activityRoute,activity)).status,202);
+  const archived={...activity,phase:'added',materialPath:'bild.png'};
+  assert.equal((await raw(activityRoute,archived)).status,202);
+  const delivered=(await raw(`/sessions/${host.id}/poll`,{},host.token)).value;
+  assert.equal(delivered.job.command.lessonId,'l2');
+  assert.deepEqual(delivered.activities,[activity,archived]);
+  assert.equal((await raw(activityRoute,{...activity,phase:'clear'})).status,202);
   await raw(`/sessions/${host.id}/jobs/open`,{ok:true,opened:true,lesson:{id:'l2'}},host.token,'PUT');
   assert.equal((await raw(`/sessions/${host.id}/jobs`,{requestId:'open',lessonId:'teacher',command})).value.status,'completed');
   const foreign=await fetch(url+'/api/teaching-agent/sessions',{headers:{'X-Tafelraum-Agent':'1',Origin:'null'}});assert.equal(foreign.status,403);

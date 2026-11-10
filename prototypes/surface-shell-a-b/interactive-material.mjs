@@ -227,6 +227,10 @@ export async function readInteractiveMaterialPackage(packageRoot, relativePath, 
   if (path.extname(entryPath).toLowerCase() !== ".html") throw new Error("Einstiegspunkt ist keine HTML-Datei.");
   // Legacy controllerEntry is readable metadata; HTML always uses its original entry.
   if (manifest.print) await resolveInteractiveMaterialFile(packageRoot, manifest.print.entry);
+  // Strict authoring/import gate; ordinary runtime reads retain legacy compatibility.
+  if (requirePrint && manifest.print.layout !== "shared-pages") {
+    throw new Error("Neue Arbeitsblätter benötigen gemeinsame A4-Seiten (print.layout: shared-pages). Eine reine Druckvorlage reicht für --require-print nicht aus; Altmaterial vor dem Import gezielt umstellen.");
+  }
   if (manifest.print?.layout === "shared-pages" && !/\bdata-tafelraum-page(?:\s|=|>)/.test(await readFile(entryPath,"utf8"))) {
     throw new Error("Gemeinsame A4-Seiten benötigen explizite data-tafelraum-page-Seiten.");
   }

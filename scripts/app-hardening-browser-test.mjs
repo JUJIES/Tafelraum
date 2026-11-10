@@ -154,6 +154,52 @@ try{
   assert.equal(await page.getByRole('heading',{name:'Welche Fassung öffnen?',exact:true}).isVisible(),false);
   checks.push(name+': actual StrictMode Canvas recovery resolves once and loads the saved elements');
 
+  // A second writer changes the board after this teacher loaded its revision.
+  const otherRead=await page.request.get(origin+'/api/archive/lessons/lesson-start/board');
+  const otherBoard=await otherRead.json();otherBoard.viewport.scrollX+=133;
+  const otherWrite=await page.request.put(origin+'/api/archive/lessons/lesson-start/board',{
+   headers:{'If-Match':otherRead.headers().etag},data:otherBoard});
+  assert.equal(otherWrite.status(),200);
+  const rejected=page.waitForResponse(response=>response.url().endsWith('/lesson-start/board')&&response.request().method()==='PUT'&&response.status()===409);
+  await page.getByRole('button',{name:'Stift',exact:true}).click();
+  // Use an explicit colour; neutral ink deliberately follows the theme on load.
+  await page.getByRole('option',{name:'Stift: Tafelblau',exact:true}).click();
+  const canvas=await page.locator('.excalidraw canvas').first().boundingBox();
+  await page.mouse.move(canvas.x+500,canvas.y+350);await page.mouse.down();
+  await page.mouse.move(canvas.x+550,canvas.y+400,{steps:8});await page.mouse.up();
+  await rejected;
+  await page.getByRole('button',{name:'Konflikt lösen',exact:true}).waitFor();
+  const savedDraft=await page.evaluate(async()=>{
+   const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('tafelraum-surface-lab',3);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+   const record=await new Promise((resolve,reject)=>{const r=db.transaction('canvas-snapshots').objectStore('canvas-snapshots').get('lesson-start');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});db.close();return record;
+  });
+  assert.equal(savedDraft.pending,true);
+  assert(savedDraft.snapshot.elements.some(element=>element.type==='freedraw'&&!element.isDeleted));
+  await page.screenshot({path:path.join(output,name+'-save-conflict.png'),animations:'disabled'});
+  await page.setViewportSize({width:960,height:800});
+  await page.screenshot({path:path.join(output,name+'-save-conflict-960.png'),animations:'disabled'});
+  const warning=await page.locator('.save-status').boundingBox();
+  const findContent=await page.getByRole('button',{name:'Inhalt finden',exact:true}).boundingBox();
+  assert(warning.y>=findContent.y+findContent.height,'the conflict action must not cover canvas controls at minimum width');
+  // A failed safety copy must leave the current scene and the action available.
+  await page.evaluate(()=>{window.originalTransaction=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(...args){if(args[0]==='canvas-snapshots'&&args[1]==='readwrite')throw Error('Synthetic recovery cache failure');return window.originalTransaction.apply(this,args);};});
+  if(!distribution.embeddedApps.length)page.on('dialog',dialog=>dialog.accept());
+  await page.getByRole('button',{name:'Konflikt lösen',exact:true}).click();
+  assert.equal(await page.getByRole('button',{name:'Konflikt lösen',exact:true}).isVisible(),true);
+  await page.evaluate(()=>{IDBDatabase.prototype.transaction=window.originalTransaction;});
+  await page.getByRole('button',{name:'Konflikt lösen',exact:true}).click();
+  await page.getByRole('heading',{name:'Welche Fassung öffnen?',exact:true}).waitFor();
+  await page.getByRole('button',{name:'Entwurf wiederherstellen',exact:true}).click();
+  await page.waitForResponse(response=>response.url().endsWith('/lesson-start/board')&&response.request().method()==='PUT'&&response.status()===200);
+  const restored=await (await page.request.get(origin+'/api/archive/lessons/lesson-start/board')).json();
+  // Excalidraw hydration normalizes absent bindings from null to an empty list.
+  const bindings=elements=>elements.map(element=>({...element,boundElements:element.boundElements??[]}));
+  assert.deepEqual(bindings(restored.elements),bindings(savedDraft.snapshot.elements),'the local stroke survives conflict recovery');
+  assert.equal(await page.getByRole('button',{name:'Konflikt lösen',exact:true}).count(),0);
+  await page.setViewportSize({width:1440,height:1000});
+  checks.push(name+': live board conflict, failed draft backup, explicit reload recovery and confirmed commit without losing the stroke');
+
+
   const guard=await context.newPage();await guard.goto(origin+'/guard.html');
   await guard.waitForFunction(()=>window.handlers?.['tafelraum-flush-before-exit']);
   await guard.getByRole('textbox',{name:'Draft'}).fill('unsaved');
@@ -165,7 +211,7 @@ try{
   await guard.screenshot({path:path.join(output,name+'-saving.png')});
   await guard.evaluate(()=>window.finishFlush(false));
   await guard.waitForFunction(()=>window.ack.length===1);
-  assert.deepEqual(await guard.evaluate(()=>window.ack),[{id:17,saved:false}]);
+  assert.deepEqual(await guard.evaluate(()=>window.ack),[{id:17,saved:false,error:'Synthetic disk failure'}]);
   assert.equal(await guard.locator('dialog[open]').count(),0);
   await guard.evaluate(()=>{window.flushStarted=false;void window.handlers['tafelraum-flush-before-exit']({payload:18});});
   await guard.waitForFunction(()=>window.flushStarted);await guard.evaluate(()=>window.finishFlush(true));

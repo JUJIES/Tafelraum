@@ -9,7 +9,7 @@ Pflicht:
   --source-dir <Pfad>    Paketordner mit manifest.json und HTML-Einstiegspunkt
 
 Optional:
-  --require-print      Für Arbeitsblätter: fehlende A4-Druckfähigkeit ablehnen
+  --require-print      Für Arbeitsblätter: gemeinsame A4-Seiten für neue Arbeitsblätter verlangen
   --help
 
 Die Prüfung verwendet denselben Paketvertrag wie Tafelraum und verändert

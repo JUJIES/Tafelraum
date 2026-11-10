@@ -201,6 +201,16 @@ export async function saveCanvasSnapshot(lessonId: string, snapshot: StoredCanva
   }
 }
 
+// Reload recovery is allowed only after the current scene has a durable draft.
+// Do not queue another stale archive write or acknowledge the failed commit.
+export async function cacheCanvasRecoveryDraft(lessonId: string, snapshot: StoredCanvasSnapshot) {
+  await updateLocalSnapshot(lessonId, current => ({
+    snapshot: { ...snapshot, elements: withoutTemporaryEraserState(snapshot.elements) },
+    sequence: crypto.randomUUID(), pending: true,
+    baseRevision: current?.pending ? current.baseRevision : fileCanvasRevision(lessonId),
+  }));
+}
+
 export async function clearCanvasSnapshot(lessonId: string) {
   await archiveFileCanvasSnapshot(lessonId);
   recoveryWrites.delete(lessonId);

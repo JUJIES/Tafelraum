@@ -10,11 +10,12 @@ test.afterEach(() => clearInternalImageCopyForTest());
 
 test("restores editable scene data only for the exact exported PNG", async () => {
   const exported = new Blob(["png-binary-a"], { type: "image/png" });
-  rememberInternalImageCopy("editable-scene", Promise.resolve(exported));
+  const copy = { lessonId: "source-lesson", sceneText: "editable-scene" };
+  rememberInternalImageCopy(copy, Promise.resolve(exported));
 
-  assert.equal(
+  assert.deepEqual(
     await internalSceneForPastedImage(new Blob(["png-binary-a"], { type: "image/png" })),
-    "editable-scene",
+    copy,
   );
   assert.equal(
     await internalSceneForPastedImage(new Blob(["png-binary-b"], { type: "image/png" })),
@@ -23,12 +24,13 @@ test("restores editable scene data only for the exact exported PNG", async () =>
 });
 
 test("a newer copy replaces the earlier editable representation", async () => {
-  rememberInternalImageCopy("first-scene", Promise.resolve(new Blob(["first"], { type: "image/png" })));
-  rememberInternalImageCopy("second-scene", Promise.resolve(new Blob(["second"], { type: "image/png" })));
+  rememberInternalImageCopy({ lessonId: "first-lesson", sceneText: "first-scene" }, Promise.resolve(new Blob(["first"], { type: "image/png" })));
+  const newest = { lessonId: "second-lesson", sceneText: "second-scene" };
+  rememberInternalImageCopy(newest, Promise.resolve(new Blob(["second"], { type: "image/png" })));
 
   assert.equal(await internalSceneForPastedImage(new Blob(["first"], { type: "image/png" })), null);
-  assert.equal(
+  assert.deepEqual(
     await internalSceneForPastedImage(new Blob(["second"], { type: "image/png" })),
-    "second-scene",
+    newest,
   );
 });

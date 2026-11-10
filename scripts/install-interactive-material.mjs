@@ -19,7 +19,7 @@ Pflicht:
 
 Optional:
   --archive-root <Pfad>  Standard: data/unterrichtsarchiv
-  --require-print       Für Arbeitsblätter: fehlende A4-Druckfähigkeit ablehnen
+  --require-print       Für Arbeitsblätter: gemeinsame A4-Seiten für neue Arbeitsblätter verlangen
   --help
 
 Der Installer ist additiv: Ein gleichnamiges bestehendes Paket wird nur als

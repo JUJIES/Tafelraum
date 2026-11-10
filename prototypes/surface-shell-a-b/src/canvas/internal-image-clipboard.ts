@@ -1,6 +1,10 @@
-type InternalImageClipboard = {
-  fingerprint: Promise<string | null>;
+type InternalImageCopy = {
+  lessonId: string;
   sceneText: string;
+};
+
+type InternalImageClipboard = InternalImageCopy & {
+  fingerprint: Promise<string | null>;
 };
 
 let internalImageClipboard: InternalImageClipboard | null = null;
@@ -15,15 +19,15 @@ async function fingerprintImage(blob: Blob): Promise<string> {
  * text/plain to other applications. The exported PNG remains the only system
  * clipboard representation.
  */
-export function rememberInternalImageCopy(sceneText: string, image: Promise<Blob>) {
+export function rememberInternalImageCopy(copy: InternalImageCopy, image: Promise<Blob>) {
   internalImageClipboard = {
+    ...copy,
     fingerprint: image.then(fingerprintImage).catch(() => null),
-    sceneText,
   };
 }
 
 /** Returns editable scene data only while the system clipboard still contains the exact exported PNG. */
-export async function internalSceneForPastedImage(image: Blob): Promise<string | null> {
+export async function internalSceneForPastedImage(image: Blob): Promise<InternalImageCopy | null> {
   const remembered = internalImageClipboard;
   if (!remembered) return null;
 
@@ -32,7 +36,7 @@ export async function internalSceneForPastedImage(image: Blob): Promise<string |
     fingerprintImage(image).catch(() => null),
   ]);
   if (remembered !== internalImageClipboard || !expected || expected !== actual) return null;
-  return remembered.sceneText;
+  return { lessonId: remembered.lessonId, sceneText: remembered.sceneText };
 }
 
 export function clearInternalImageCopyForTest() {

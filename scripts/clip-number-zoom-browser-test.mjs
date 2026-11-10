@@ -97,6 +97,46 @@ try {
         const style = getComputedStyle(el); return {foreground:style.color,background:style.backgroundColor};
       });
       assert.notEqual(activeColors.foreground,activeColors.background);
+
+      // Room renders from local asset URLs like the teacher preview, but a
+      // zoomed Room clip has its own bounded, interactive camera.
+      await page.waitForFunction(() => window.clipFixture.room.state.ready && window.clipFixture.room.state.target.kind==='clip');
+      const roomFrame=page.frameLocator('#clip-fixture-room');
+      await roomFrame.getByRole('button',{name:'Werkzeugleiste einblenden',exact:true}).click();
+      const hand=roomFrame.getByRole('button',{name:'Hand',exact:true});
+      await hand.click();
+      const stage=roomFrame.locator('.live-view-canvas.is-clip.is-ready');
+      await stage.evaluate(el=>Promise.all(el.getAnimations({subtree:true}).map(animation=>animation.finished)));
+      const roomBox=await page.locator('#clip-fixture-room').boundingBox();
+      const x=roomBox.x+207,y=roomBox.y+142;
+      const raster=stage.locator('canvas.static');
+      const pixels=()=>raster.evaluate(canvas=>canvas.toDataURL());
+      const hostState=()=>page.evaluate(()=>{
+        const api=window.clipFixture.api,{scrollX,scrollY,zoom}=api.getAppState();
+        return {scrollX,scrollY,zoom,objects:api.getSceneElements().map(({id,version})=>[id,version])};
+      });
+      const beforeHand=await hostState(), fittedInset=await stage.evaluate(el=>el.style.clipPath);
+      await page.mouse.move(x,y);
+      await page.keyboard.down('Control');
+      for(let i=0;i<4;i++)await page.mouse.wheel(0,-110);
+      await page.keyboard.up('Control');
+      assert.notEqual(await stage.evaluate(el=>el.style.clipPath),fittedInset,'Room zoom must not snap back to fit');
+      const zoomed=await pixels();
+      await page.mouse.down();await page.mouse.move(x+30,y-38,{steps:10});await page.mouse.up();
+      assert.notEqual(await pixels(),zoomed,'the hand pans a zoomed Room clip with a mouse');
+      if(engine==='chromium'){
+        const input=await page.context().newCDPSession(page);
+        const beforeTouch=await pixels();
+        await input.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:x+30,y:y-38}]});
+        for(let i=1;i<=8;i++)await input.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+30-30*i/8,y:y-38+38*i/8}]});
+        await input.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+        assert.notEqual(await pixels(),beforeTouch,'the hand pans a zoomed Room clip with touch');
+        await input.detach();
+      }
+      assert.equal(await hand.getAttribute('aria-pressed'),'true');
+      assert.equal(await roomFrame.locator('.room-object-input,.room-ink-input').count(),0);
+      assert.deepEqual(await hostState(),beforeHand,'Room hand gestures leave teacher camera and objects intact');
+
       await material.focus(); await page.keyboard.press('Enter');
       await page.waitForFunction(() => document.querySelector('[aria-label="Materialclip 99 zeigen"]').getAttribute('aria-pressed') === 'true');
       await page.waitForFunction(() => window.clipFixture.room.state.ready && document.querySelector('.clip-frame.is-active'));
@@ -117,12 +157,37 @@ try {
       assert.equal(await material.count(),0);
       await page.getByRole('button', {name:'Clip-Änderung rückgängig',exact:true}).click();
       await material.waitFor();
+
+      // The fixture overlays an iframe on the host. From here on only host controls receive clicks.
+      await page.addStyleTag({content:'#clip-fixture-room { pointer-events: none; }'});
+      // The first room document opens but never runs its receiver, as with a
+      // white window. Recovery must actually launch a new receiver and show the
+      // already selected clip, not just retry publishing to the dead channel.
+      await page.getByRole('button', {name:/^Room Canvas,/}).click();
+      await page.getByRole('button', {name:'Beenden',exact:true}).click();
+      await page.route('**/room.html?channel=*', route => route.fulfill({
+        contentType:'text/html', body:'<!doctype html><title>Room Canvas</title>',
+      }), {times:1});
+      await page.getByRole('button', {name:'Präsentieren',exact:true}).click();
+      await page.getByRole('button', {name:'Starten',exact:true}).click();
+      await page.getByRole('button', {name:'Room Canvas, Wird vorbereitet …',exact:true}).waitFor();
+      const firstRoomUrl = await page.locator('#clip-fixture-room').getAttribute('src');
+      await material.focus(); await page.keyboard.press('Enter');
+      await page.getByRole('button', {name:'Room Canvas, Nicht bereit',exact:true}).waitFor();
+      const startupError = page.getByRole('alert').filter({hasText:'Room Canvas konnte nicht starten.'});
+      await startupError.waitFor();
+      await startupError.screenshot({path:out + engine + '-room-startup-error.png'});
+      await startupError.getByRole('button', {name:'Erneut versuchen',exact:true}).click();
+      await page.waitForFunction(() => window.clipFixture.room.state.ready &&
+        document.querySelector('[aria-label="Materialclip 99 zeigen"]').closest('.clip-frame').classList.contains('is-active'));
+      assert.notEqual(await page.locator('#clip-fixture-room').getAttribute('src'),firstRoomUrl);
+      await startupError.waitFor({state:'hidden'});
       assert.deepEqual(errors,[]);
-      results.push({engine,checks:'touch extension, keyboard activation, context menu, reassignment 99, Escape, deletion/undo, unchanged saved clips',errors});
+      results.push({engine,checks:'touch extension, keyboard activation, context menu, reassignment 99, Escape, deletion/undo, unchanged saved clips, local Room hand zoom and pan, blank Room startup and retry to selected clip',errors});
     } finally {await browser.close();}
   }
   await writeFile(out + 'checks.json',JSON.stringify(results,null,2));
-  console.log('PASS: clip badges at 10/25/50/100/200/300% in light/dark, Chromium/WebKit, 48px hit targets and clip actions');
+  console.log('PASS: clip actions, 48px hit targets, Room hand gestures and blank startup recovery');
 } finally {
   await server.close();
   await rm(archiveRoot,{recursive:true,force:true});

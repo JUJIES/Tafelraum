@@ -1,5 +1,5 @@
 import type { AgentCanvasState, AgentCanvasResult } from "./canvas-agent";
-import type { AgentMaterial } from "./agent-materials";
+import type { AgentMaterial, PendingMaterial } from "./agent-materials";
 import type { MaterialRemoval } from "../../material-removal.mjs";
 export type CanvasTheme = "light" | "dark";
 
@@ -92,8 +92,9 @@ export type CanvasViewportPoint = {
 };
 
 export interface CanvasPort {
+  previewAgentMaterials(items:PendingMaterial[]):()=>void;
   inspectAgentCanvas(): AgentCanvasState;
-  executeAgentCommand(command: unknown, materials?: Map<string, AgentMaterial>, expiresAt?: number): Promise<AgentCanvasResult>;
+  executeAgentCommand(command: unknown, materials?: Map<string, AgentMaterial>, expiresAt?: number, onSaving?: () => void): Promise<AgentCanvasResult>;
   selectTool(tool: CanvasTool, context: CanvasToolContext): void;
   rotateSelection(direction: CanvasRotationDirection): void;
   placeImages(assets: readonly CanvasImageAsset[], point?: CanvasViewportPoint): Promise<void>;
@@ -115,4 +116,5 @@ export interface CanvasPort {
   focusArchiveMaterial(archivePath: string, legacyFileName?: string): boolean;
   getUnsavedInteractiveHtmlChangeCount(): number;
   flushPersistence(): Promise<void>;
+  cacheRecoveryDraft(): Promise<void>;
 }

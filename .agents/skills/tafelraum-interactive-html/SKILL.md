@@ -158,3 +158,16 @@ Typography, color, composition, number of pages, interaction model, subject, lan
 When a new capability is genuinely needed, extend the manifest and central renderer contract first. Do not encode it as a filename convention, folder meaning, title keyword, or one-off package workaround.
 
 Für native Druckabnahme müssen Paketstyles ihre Papierfarben und Formularfelder ausdrücklich bestimmen; die gemeinsame Vorlage darf sich nicht auf die Bildschirm-Sandbox oder ein helles Host-Theme verlassen. Die Referenz `shared-pages.css` zeigt Seitengröße und Rand, ersetzt aber nicht die paketeigene Typografie. Querformat ist im Canvas technisch vorgesehen; native Systemdruckorientierung separat im Ziel-Druckdialog abnehmen (siehe D-259-Teststand).
+
+## Verbindlicher Intake-Abgleich (03.11.2026)
+
+`--require-print` verlangt bei neuen Arbeitsblattprüfungen/-importen zusätzlich
+`print.layout = shared-pages`, denselben Entry und explizite Seitenabschnitte.
+Ein grüner reiner Druckfähigkeitscheck für ein Altformat ist keine Freigabe für
+neue Arbeitsblattimporte. Bestandsmaterial bleibt im normalen Laufzeitleser
+lesbar; keine automatische Migration gespeicherter Instanzen. Vor erneuter
+Archivierung alter Vorlagen gezielt konvertieren, alte Entries/Styles erhalten,
+Druck-PDF prüfen und frisches Einfügen testen. Referenzpakete und Starter ebenfalls
+mit diesem strengen Gate prüfen. Bildschirm und Druck müssen dieselben initialen
+Seitenproportionen/Typografie nutzen; ein Manifestlabel allein skaliert keine
+responsive CSS-Vorlage korrekt. Fachlicher Stil bleibt frei.

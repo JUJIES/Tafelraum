@@ -97,3 +97,32 @@ Focus/hover animation waits settle cancellation as well as completion, while
 retaining the assertions on final computed styles. First-lesson and architecture
 entry points now describe both published platforms rather than the earlier
 Windows packaging plan.
+
+## 10.11.2026 – Bildkopien zwischen Stunden lokal archivieren
+
+Der native Paste konnte Bildbytes in der laufenden Ansicht anzeigen, speicherte
+aber nur das Canvasobjekt mit der Provenienz der Quellstunde. Beim Reload fehlte
+das stundenlokale Asset. Die editierbare Clipboardkopie kennt jetzt flüchtig
+ihre Quellstunde. Vor dem stundenübergreifenden Einfügen bestätigt die App das
+Original im Zielmaterial und alle referenzierten Rasterdateien im Zielassetpfad.
+Die Canvasprovenienz verweist danach auf das Zielmaterial. Bei fehlender
+Originalzuordnung dient das eingebettete Ausgangsraster als Materialdatei.
+Die native Duplizierung behält Geometrie und Zuschnitt. Gleiche Stunde und
+externe PNG-Zwischenablage folgen weiterhin D-194.
+
+In Vollfassung und Public mit getrennten synthetischen Archiven in Chromium
+und WebKit geprüft: externer PNG-Import, Kopie in derselben und in einer
+anderen Stunde, Assetwrite-Fehler mit Wiederholung und Laden aus dem Archiv
+ohne Browsercache. App-Tests und Webbuilds in beiden Entwicklungsquellen
+bestanden. Die laufende Public-Vorschau bleibt auf ihrem bisherigen Stand.
+Keine native Installation, kein Kollegenupdate und keine öffentliche Freigabe
+aus dieser Änderung.
+
+
+## 10 November 2026 – Shared desktop behavior in Public 0.1.95
+
+The Public release source brings cross-lesson image paste, Room startup retry and
+bounded hand panning, confirmed agent work phases, conflict recovery and the shared
+A4 intake rule together. The Windows A4 preview, asynchronous WebView2 window
+creation and Room render scheduler remain in the Public source. Mac and Windows
+build from the same source commit. Existing worksheet packages stay readable.

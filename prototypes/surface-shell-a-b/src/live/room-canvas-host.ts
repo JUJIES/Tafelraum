@@ -33,7 +33,7 @@ import {RoomHtmlPlaybackHost,type RoomPlaybackMessage} from './room-html-playbac
 import {prepareHtmlPlaybackRoom,setHtmlPlaybackRoomActive} from '../canvas/interactive-html-live.ts';
 
 export type RoomTarget = { kind:'canvas' } | { kind:'clip'; clip:ClipFrame } | { kind:'material'; id:string; title:string; cueId?:string; number?:number };
-export type RoomState = { active:boolean; ready:boolean; target:RoomTarget; mediaId:string|null; mediaFullscreenId:string|null; error:string|null; screen:{width:number;height:number}|null };
+export type RoomState = { active:boolean; ready:boolean; startup:'waiting'|'failed'|null; target:RoomTarget; mediaId:string|null; mediaFullscreenId:string|null; error:string|null; screen:{width:number;height:number}|null };
 type RoomMessage = {type:'ready'; channel:string;width:number;height:number}|{type:'closed';channel:string}
   | {type:'media-status';channel:string;generation:number;revision:number;id:string;sequence:number;status:unknown}
   | {type:'size';channel:string;width:number;height:number}
@@ -43,11 +43,12 @@ type RoomMessage = {type:'ready'; channel:string;width:number;height:number}|{ty
 type RoomFrame = {type:'frame'; channel:string; scene:Scene; assets:{id:string;blob:Blob}[]; media?:RoomMedia|null;mediaFullscreen?:boolean;objects:RoomVisibleObject[];timers?:TimerWidget[]};
 
 const canvasTarget:RoomTarget = {kind:'canvas'};
+const roomStartupTimeoutMs = 8_000;
 
 /** One local presenter and one receiver. All edits enter the canonical host scene. */
 export class RoomCanvasHost {
   readonly previewPointer=createHostPointerChannel();
-  state:RoomState = {active:false,ready:false,target:canvasTarget,mediaId:null,mediaFullscreenId:null,error:null,screen:null};
+  state:RoomState = {active:false,ready:false,startup:null,target:canvasTarget,mediaId:null,mediaFullscreenId:null,error:null,screen:null};
   private listeners = new Set<() => void>();
   private previewListeners=new Set<() => void>();
   private preview:PublicPreview|null=null;
@@ -58,6 +59,7 @@ export class RoomCanvasHost {
   private htmlPlayback:RoomHtmlPlaybackHost|null=null;
   private stopping:Promise<void>|null=null;
   private starting:Promise<void>|null=null;
+  private startupTimer:ReturnType<typeof setTimeout>|undefined;
   private channelId = '';
   private browserWindow:Window|null = null;
   private stopVideoCommands:(()=>void)|null=null;
@@ -210,10 +212,16 @@ export class RoomCanvasHost {
     this.changed();
   }
 
-  start(){return this.starting??=(this.beginStart().finally(()=>{this.starting=null;}));}
-  private async beginStart() {
+  start(){return this.startAttempt(false);}
+  private startAttempt(restart:boolean){return this.starting??=(this.beginStart(restart).finally(()=>{this.starting=null;}));}
+  private async beginStart(restart:boolean) {
     if(this.stopping)await this.stopping;
-    if (this.state.active) { await this.showWindow();return; }
+    const initialTarget=restart&&this.state.active?this.state.target:canvasTarget;
+    if (this.state.active) {
+      if(!restart){await this.showWindow();return;}
+      // Reuse the window, but never the unconfirmed receiver or its channel.
+      await this.stop(false);
+    }
     if (!this.api) return;
     const startEpoch=this.epoch;
     try{await prepareHtmlPlaybackRoom();}catch(error){
@@ -250,7 +258,8 @@ export class RoomCanvasHost {
         const wasReady=this.state.ready;
         const preview=this.pendingPreview?.revision===message.revision?this.pendingPreview.value:null;
         if(preview&&this.inkWire&&preview.scene.elements.some(element=>element.id===this.inkWire?.id))this.inkWire=null;
-        if(!wasReady||this.state.error)this.update({ready:true,error:null});
+        clearTimeout(this.startupTimer);this.startupTimer=undefined;
+        if(!wasReady||this.state.error)this.update({ready:true,startup:null,error:null});
         if(preview&&this.preview?.scene.revision!==message.revision)this.setPreview(preview);
         this.channel?.postMessage({type:'input-ready',channel:this.channelId,generation:this.generation,revision:message.revision,ready:true});
         this.sendTeacherFocus();
@@ -333,21 +342,32 @@ export class RoomCanvasHost {
     this.mediaLeaseTimer=setInterval(()=>{if(this.state.active&&this.state.mediaId&&!this.missingTarget&&!this.state.error
       &&this.api?.getSceneElements().some(element=>element.id===this.state.mediaId&&isRoomMediaElement(element)))this.channel?.postMessage({type:'media-lease',channel:this.channelId,generation:this.generation,id:this.state.mediaId});},500);
     this.sharedViewport=getPublicViewport(this.api);
-    this.update({active:true,ready:false,target:canvasTarget,error:null});
+    this.update({active:true,ready:false,startup:'waiting',target:canvasTarget,error:null});
+    if(initialTarget.kind!=='canvas')this.setTarget(initialTarget);
     this.stopScroll=subscribeInteractiveHtmlScroll((localId,offset)=>this.sendScroll(localId,offset));
     this.stopFocus=subscribeInteractiveHtmlFocus(()=>this.sendTeacherFocus());
     try {
       if (isTauri()) {
-        this.unlisten=await listen('room-canvas-closed',()=>this.stop(false));
+        const unlisten=await listen('room-canvas-closed',()=>this.stop(false));
+        if(this.channel!==channel){unlisten();return;}
+        this.unlisten=unlisten;
         await invoke('open_room_canvas',{channel:channelId});
       } else {
         this.browserWindow=window.open(`/room.html?channel=${channelId}`,'tafelraum-room-canvas');
         if (!this.browserWindow) throw new Error('Das Raumfenster wurde blockiert.');
         this.windowTimer=setInterval(()=>{if(this.browserWindow?.closed)this.stop(false);},750);
       }
+      if(this.channel!==channel)return;
+      if(this.state.startup==='waiting')this.startupTimer=setTimeout(()=>{
+        this.startupTimer=undefined;
+        if(this.channel!==channel||this.state.startup!=='waiting')return;
+        console.warn('Room Canvas startup timed out', this.receiverReady?'first frame not confirmed':'receiver not connected');
+        this.update({startup:'failed'});
+      },roomStartupTimeoutMs);
       this.schedule(0);
     } catch(error) {
-      this.stop(false);
+      if(this.channel!==channel)return;
+      await this.stop(false);
       this.update({error:error instanceof Error?error.message:'Fenster konnte nicht geöffnet werden.'});
     }
   }
@@ -365,6 +385,7 @@ export class RoomCanvasHost {
     if (!this.state.active && !this.channel) return;
     if(this.htmlPlayback?.hasOutputs)await this.htmlPlayback.pauseAndFlush();
     this.htmlPlayback?.dispose();this.htmlPlayback=null;
+    clearTimeout(this.startupTimer);this.startupTimer=undefined;
     this.epoch++;clearTimeout(this.timer);this.timer=undefined;clearTimeout(this.inspectionTimer);this.inspectionTimer=undefined;
     clearTimeout(this.inkTimer);this.inkTimer=undefined;this.inkPreviewId=null;this.inkWire=null;
     clearTimeout(this.actionFlushTimer);this.actionFlushTimer=undefined;this.pendingActions=[];
@@ -386,7 +407,7 @@ export class RoomCanvasHost {
     this.mediaAttempt=0;
     this.projector.stop();this.projector=createPublicProjector(() => this.materialChanged(), () => ({mode:'locked',participantIds:[]}), 'room');
     this.fullProjection=null;this.materialProjection=null;this.sceneTracker=new SceneChangeTracker();this.lastFiles.clear();this.generation++;this.revision=0;
-    this.update({active:false,ready:false,target:canvasTarget,mediaId:null,mediaFullscreenId:null,screen:null});this.setPreview(null);
+    this.update({active:false,ready:false,startup:null,target:canvasTarget,mediaId:null,mediaFullscreenId:null,screen:null});this.setPreview(null);
     setHtmlPlaybackRoomActive(false);
   }
 
@@ -655,7 +676,9 @@ export class RoomCanvasHost {
   }
   setCanvas() {this.setTarget(canvasTarget);}
   retry() {
-    if(!this.state.active||this.missingTarget)return;
+    if(!this.state.active)return this.start();
+    if(this.state.startup==='failed')return this.startAttempt(true);
+    if(this.missingTarget)return;
     this.mediaAttempt++;
     this.fullProjection=null;this.materialProjection=null;
     this.update({ready:false,error:null});this.schedule(0);

@@ -1,6 +1,7 @@
 import { shapeShadowRegion } from "./shape-shadow-region";
 import { t, useUiLocale, uiLanguageTag } from "../i18n";
 import { displaySize, createImageElements, createAudioElement, createVideoElement, createInteractiveHtmlElement, createEmbeddedAppElement, createYouTubeElement, createCanvasLinkElements } from "./material-elements";
+import {previewAgentMaterials} from "./agent-material-preview";
 import { createCanvasAgent } from "./canvas-agent";
 import { getImageCornerRadius } from "./material-appearance";
 import type { AgentMaterial } from "./agent-materials";
@@ -108,6 +109,7 @@ import {
   loadCanvasSnapshot,
   saveCanvasFiles,
   saveCanvasSnapshot,
+  cacheCanvasRecoveryDraft,
   type StoredCanvasSnapshot,
 } from "./canvas-persistence";
 import { fileCanvasSaveStatus, flushFileCanvasSnapshot, loadFileCanvasSnapshot } from "../archive-file-persistence";
@@ -4624,9 +4626,10 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
     const selectedElements = api.getSceneElements().filter((element) => selectedIds.has(element.id));
     if (selectedElements.length === 0) return;
 
-    const selectedFileIds = new Set(selectedElements.flatMap((element) => (
-      element.type === "image" && element.fileId ? [element.fileId] : []
-    )));
+    const selectedFileIds = new Set(selectedElements.flatMap((element) => {
+      const ids = referencedImageFileIds(element);
+      return ids.length ? ids : element.type === "image" && element.fileId ? [element.fileId] : [];
+    }));
     const selectedFiles = Object.fromEntries(Object.entries(api.getFiles()).filter(([fileId]) => (
       selectedFileIds.has(fileId as FileId)
     ))) as ReturnType<ExcalidrawImperativeAPI["getFiles"]>;
@@ -4645,7 +4648,10 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
         await navigator.clipboard.write([new ClipboardItem({
           "image/png": png,
         })]);
-        rememberInternalImageCopy(clipboardText, png);
+        // The native serializer only includes the displayed rendition.
+        // Preserve the other files needed to switch an improved image back.
+        const sceneText = JSON.stringify({ ...JSON.parse(clipboardText), files: selectedFiles });
+        rememberInternalImageCopy({ lessonId, sceneText }, png);
       } else {
         await navigator.clipboard.writeText(clipboardText);
       }
@@ -4653,7 +4659,7 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
       console.error(t("Canvasobjekt konnte nicht kopiert werden."), error);
       setCanvasActionError("Kopieren nicht möglich");
     }
-  }, [api]);
+  }, [api, lessonId]);
 
   useEffect(() => {
     const copyImages = (event: ClipboardEvent) => {
@@ -5949,6 +5955,21 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
       await flushFileCanvasSnapshot(lessonId);
     };
     const agent = createCanvasAgent({api, theme, flush:flushPersistence,
+      revealCreated:elements=>{
+        const root=rootRef.current;
+        if(!root || window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+        const [x,y,right,bottom]=getCommonBounds(elements);
+        const state=api.getAppState(),rect=root.getBoundingClientRect();
+        const a=sceneCoordsToViewportCoords({sceneX:x,sceneY:y},state);
+        const b=sceneCoordsToViewportCoords({sceneX:right,sceneY:bottom},state);
+        const mark=document.createElement('div');
+        mark.className='agent-placement-outline';
+        mark.setAttribute('aria-hidden','true');
+        Object.assign(mark.style,{left:a.x-rect.left-5+'px',top:a.y-rect.top-5+'px',width:b.x-a.x+10+'px',height:b.y-a.y+10+'px'});
+        root.appendChild(mark);
+        const clear=()=>mark.remove();
+        mark.animate([{opacity:0},{opacity:.8,offset:.25},{opacity:0}],{duration:560}).finished.then(clear,clear);
+      },
       persistence:() => ({...fileCanvasSaveStatus(lessonId),pending:fileCanvasSaveStatus(lessonId).pending || persistenceTimer.current !== null}),
       active:() => agentActive.current && committedAgentPort.current === port,
       busy:() => { const state=api.getAppState(); return Boolean(state.isLoading || state.editingTextElement || state.newElement
@@ -5974,6 +5995,7 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
       },
     });
     return {
+      previewAgentMaterials:items=>previewAgentMaterials(api,rootRef.current,items),
       inspectAgentCanvas:agent.inspect,
       executeAgentCommand:agent.execute,
       selectTool: (tool, context) => applyTool(api, tool, context),
@@ -6265,6 +6287,22 @@ export function CanvasSurface({ onMaterialFocusChange, getFocusViewport, onTimer
       },
       getUnsavedInteractiveHtmlChangeCount,
       flushPersistence,
+      cacheRecoveryDraft: async () => {
+        if (api.getAppState().isLoading || agent.inspect().busy) throw new Error(t("Eine Canvasaktion läuft noch. Bitte danach erneut versuchen."));
+        if (persistenceTimer.current !== null) { window.clearTimeout(persistenceTimer.current); persistenceTimer.current = null; }
+        const a = api.getAppState();
+        const snapshot: StoredCanvasSnapshot = { schemaVersion: 1,
+          elements: api.getSceneElementsIncludingDeleted(), clips: clipsRef.current,
+          interactiveHtmlStates: interactiveHtmlStatesRef.current,
+          viewport: { scrollX: a.scrollX, scrollY: a.scrollY, zoom: a.zoom } };
+        const signature = JSON.stringify(snapshot);
+        await cacheCanvasRecoveryDraft(lessonId, snapshot);
+        if (!agentActive.current || signature !== JSON.stringify({ ...snapshot,
+          elements: api.getSceneElementsIncludingDeleted(), clips: clipsRef.current,
+          interactiveHtmlStates: interactiveHtmlStatesRef.current })) {
+          throw new Error(t("Der Canvas wurde inzwischen verändert. Bitte erneut versuchen."));
+        }
+      },
     };
   }, [api, focusMaterial, clearImageFocus, getUnsavedInteractiveHtmlChangeCount, lessonId, theme]);
 

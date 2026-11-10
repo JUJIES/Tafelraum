@@ -175,3 +175,20 @@ test('flush waits for an already-running board write and rejects its failure', a
   release(new Response(JSON.stringify({error:'Disk full'}),{status:500}));
   await Promise.all([rejection,secondRejection]);
 });
+
+test("only a coded board revision conflict offers recovery and remains typed through flush", async t => {
+  const archive = await freshArchive();
+  let conflict = true;
+  t.mock.method(globalThis, "fetch", async () => conflict
+    ? new Response(JSON.stringify({error:"Newer archive revision", code:"board_revision_conflict"}), {status:409})
+    : ok());
+  await assert.rejects(archive.saveFileCanvasSnapshot("lesson", snapshot), archive.CanvasRevisionConflict);
+  assert.equal(archive.hasCanvasRevisionConflict("lesson"), true);
+  await assert.rejects(archive.flushFileCanvasSnapshot("lesson"), archive.CanvasRevisionConflict);
+  conflict = false;
+  await archive.saveFileCanvasSnapshot("lesson", snapshot);
+  assert.equal(archive.hasCanvasRevisionConflict("lesson"), false);
+  t.mock.method(globalThis, "fetch", async () => new Response(JSON.stringify({error:"Other conflict",code:"other_conflict"}),{status:409}));
+  await assert.rejects(archive.saveFileCanvasSnapshot("other",snapshot));
+  assert.equal(archive.hasCanvasRevisionConflict("other"), false);
+});

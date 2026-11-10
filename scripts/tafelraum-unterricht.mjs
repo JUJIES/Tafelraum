@@ -3,18 +3,21 @@ import {readFile,stat} from 'node:fs/promises';
 import {createReadStream} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import path from 'node:path';
-import {fileURLToPath,pathToFileURL} from 'node:url';
+import {pathToFileURL} from 'node:url';
 import {teachingAgentPrefix,teachingAgentProtocol,teachingCatalog,findTeachingLessons,resolveTeachingLesson,resolveTeachingSeries} from '../prototypes/surface-shell-a-b/teaching-agent-protocol.mjs';
 import {installInteractiveMaterial} from './install-interactive-material.mjs';
+import {interactiveMaterialFolderName} from '../prototypes/surface-shell-a-b/interactive-material.mjs';
 
 const usage = `Tafelraum Unterricht organisieren (nur laufender lokaler Archivserver)
   status | find [--query Text] | resolve --lesson ID-oder-Titel | materials --lesson ...
   create --series ID-oder-Name [--class ... --subject ...] --title Titel [--date YYYY-MM-DD]
-  import --lesson ... --file Datei
-  link --lesson ... --link https://... [--title Titel]
-  install-html --lesson ... --source-dir Ordner --mode worksheet|digital
+  import --lesson ... --file Datei [--work-id UUID]
+  link --lesson ... --link https://... [--title Titel] [--work-id UUID]
+  install-html --lesson ... --source-dir Ordner --mode worksheet|digital [--work-id UUID]
   rename --lesson ... --path Materialpfad --name Name --previous-name Bisheriger-Name
   order --lesson ... --file JSON-mit-paths-und-previousPaths
+  work-start --lesson ... --work-id UUID [--work-scope canvas|archive] [--work-preparation images]
+  work-heartbeat | work-finish | work-cancel --lesson ... --work-id UUID
   open --lesson ... | refresh | context | job --session ID --request-id ID
 Ziel einschränken: --class ... --subject ... --series ...
 Verbindung: --url http://127.0.0.1:49317 [--archive-root erwarteter-Pfad] [--session ID]
@@ -23,7 +26,7 @@ Keine automatische Zielwahl, Canvasplatzierung, Löschung oder Datei-Fallbacks.`
 
 export function parseTeachingArguments(argv) {
   const [action,...rest]=argv, options={};
-  const names=new Set(['query','lesson','class','subject','series','title','date','lesson-id','file','link','source-dir','mode','path','name','previous-name','url','archive-root','session','request-id']);
+  const names=new Set(['query','lesson','class','subject','series','title','date','lesson-id','file','link','source-dir','mode','path','name','previous-name','url','archive-root','session','request-id','work-id','work-scope','work-preparation']);
   for(let index=0;index<rest.length;index+=2){
     const key=rest[index]?.replace(/^--/,''),value=rest[index+1];
     if(!rest[index]?.startsWith('--')||!names.has(key)||typeof value!=='string'||value.startsWith('--')||key in options)throw new Error('Ungültige oder doppelte Option: '+rest[index]);
@@ -34,16 +37,16 @@ export function parseTeachingArguments(argv) {
 
 export function createTeachingClient(origin='http://127.0.0.1:49317') {
   if(!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(origin))throw new Error('Nur ein lokaler Tafelraum-Server ist erlaubt.');
-  async function request(route,{method='GET',body,stream}={}){
+  async function request(route,{method='GET',body,stream,timeoutMs}={}){
     const response=await fetch(origin+route,{method,headers:{'X-Tafelraum-Agent':'1',...(body===undefined?{}:{'Content-Type':'application/json'})},
-      body:stream??(body===undefined?undefined:JSON.stringify(body)),...(stream?{duplex:'half'}:{}),signal:AbortSignal.timeout(stream?600000:45000),redirect:'error'});
+      body:stream??(body===undefined?undefined:JSON.stringify(body)),...(stream?{duplex:'half'}:{}),signal:AbortSignal.timeout(timeoutMs??(stream?600000:45000)),redirect:'error'});
     const result=await response.json().catch(()=>null);
     if(!response.ok)throw new Error(result?.error??`Tafelraum antwortet mit ${response.status}; Anschluss gegebenenfalls noch nicht installiert.`);
     if(result===null)throw new Error('Tafelraum liefert keine gültige API-Antwort. Serveradresse und Appversion prüfen.');
     return result;
   }
-  async function session(selected){
-    const {sessions}=await request(teachingAgentPrefix+'/sessions');
+  async function session(selected,timeoutMs){
+    const {sessions}=await request(teachingAgentPrefix+'/sessions',{timeoutMs});
     const candidates=sessions.filter(s=>s.protocol===teachingAgentProtocol&&(!selected||s.id===selected));
     if(candidates.length!==1)throw new Error('Genau eine verbundene Lehreransicht auswählen (--session). Organisationsanschluss der aktuellen App erforderlich.');
     return candidates[0];
@@ -55,7 +58,8 @@ export function createTeachingClient(origin='http://127.0.0.1:49317') {
     const deadline=Date.now()+40000;
     while(Date.now()<deadline){
       const job=await request(`${teachingAgentPrefix}/sessions/${target.id}/jobs/${requestId}`);
-      if(job.status==='completed'){
+      if(job.status==='unconfirmed')throw new Error('Ergebnis unbestätigt. Auftragsstatus und aktuellen Stundenstand prüfen; nicht mit neuer ID wiederholen.');
+   if(job.status==='completed'||job.status==='expired'){
         if(!job.result.ok)throw new Error(job.result.error??'Auftrag fehlgeschlagen.');
         return job.result;
       }
@@ -68,7 +72,7 @@ export function createTeachingClient(origin='http://127.0.0.1:49317') {
 
 export async function runTeachingCommand(action,o={},log=()=>{}) {
   if(!action||action==='--help'||action==='help')return {help:usage};
-  if(!['status','find','resolve','materials','create','import','link','install-html','rename','order','open','refresh','context','job'].includes(action))throw new Error('Unbekannter Befehl. --help verwenden.');
+  if(!['status','find','resolve','materials','create','import','link','install-html','rename','order','open','refresh','context','job','work-start','work-heartbeat','work-finish','work-cancel'].includes(action))throw new Error('Unbekannter Befehl. --help verwenden.');
   const client=createTeachingClient(o.url),{request}=client;
   const status=await request('/api/archive/status');
   if(!status.available||typeof status.archiveRoot!=='string'||!path.isAbsolute(status.archiveRoot))throw new Error('Aktive Archivbasis ist nicht verfügbar.');
@@ -100,6 +104,17 @@ export async function runTeachingCommand(action,o={},log=()=>{}) {
     return finish({created:result.created,lesson});
   }
   const lesson=resolveTeachingLesson(archive,selectors);
+  if(action.startsWith('work-')){
+    if(!o['work-id'])throw new Error('--work-id UUID erforderlich; dieselbe ID für die gesamte Arbeitsphase verwenden.');
+    const work={type:'workPhase',lessonId:lesson.id,workId:o['work-id'],action:action.slice(5),
+      ...(o['work-scope']?{scope:o['work-scope']}:{}),...(o['work-preparation']?{preparation:o['work-preparation']}:{} )};
+    if(action==='work-start'&&work.scope==='archive'){
+      const target=await client.session(o.session);
+      if(!target.capabilities?.archiveWorkFinish)throw new Error('Diese Lehreransicht unterstützt keinen bestätigten Archivabschluss.');
+      return {archiveRoot:status.archiveRoot,...await client.command(work,{sessionId:target.id,requestId:o['request-id'],onRequest:log})};
+    }
+    return {archiveRoot:status.archiveRoot,...await command(work)};
+  }
   const base=`/api/archive/lessons/${encodeURIComponent(lesson.id)}/materials`;
   if(action==='materials')return {lesson,...await request(base)};
   if(action==='open'){
@@ -116,36 +131,67 @@ export async function runTeachingCommand(action,o={},log=()=>{}) {
     }
     throw new Error('Stundenwechsel ausgeführt, Zielcanvas aber noch nicht bestätigt. context prüfen.');
   }
-  let result;
-  if(action==='import'){
-    if(!o.file||(await stat(o.file)).isFile()===false)throw new Error('Quelldatei fehlt.');
-    result=await request(base+'/file?name='+encodeURIComponent(path.basename(o.file)),{method:'PUT',stream:createReadStream(o.file)});
-  }else if(action==='link'){
-    if(!o.link)throw new Error('--link fehlt.');
-    result=await request(base+'/links',{method:'POST',body:{url:o.link}});
-    if(o.title){
-      try{
-        const renamed=await request(base,{method:'PATCH',body:{path:result.material.path,displayName:o.title,previousDisplayName:result.material.displayName??result.material.name}});
-        result={...result,material:renamed.material};
-      }catch(error){result={...result,rename:{applied:false,error:error.message}};}
-    }
-  }else if(action==='install-html'){
-    if(!o['source-dir']||!['worksheet','digital'].includes(o.mode))throw new Error('--source-dir und --mode worksheet|digital erforderlich.');
-    // Keep the established validator/installer. Only its target comes from the live server.
-    result=await installInteractiveMaterial({archiveRoot:status.archiveRoot,lessonId:lesson.id,sourceDirectory:path.resolve(o['source-dir']),requirePrint:o.mode==='worksheet'});
-  }else if(action==='rename'){
-    if(!o.path||!o.name||!o['previous-name'])throw new Error('--path, --name und --previous-name aus materials erforderlich.');
-    result=await request(base,{method:'PATCH',body:{path:o.path,displayName:o.name,previousDisplayName:o['previous-name']}});
-  }else if(action==='order'){
-    if(!o.file)throw new Error('--file fehlt.');
-    const order=JSON.parse(await readFile(o.file,'utf8'));
-    result=await request(base+'/order',{method:'PUT',body:{paths:order.paths,previousPaths:order.previousPaths}});
+  // Optional UI signal. Queue it in the selected teacher session without waiting for UI execution.
+  const tracksMaterial=['import','install-html','link'].includes(action);
+  const target=tracksMaterial?await client.session(o.session,700).catch(()=>null):null;
+  const operationId=randomUUID();
+  async function signal(phase,materialPath){
+    if(!target)return false;
+    return request(teachingAgentPrefix+'/sessions/'+target.id+'/activity',{method:'POST',timeoutMs:700,
+      body:{type:'materialActivity',lessonId:lesson.id,operationId,phase,
+        ...(o['work-id']?{workId:o['work-id']}:{}),...(materialPath?{materialPath}:{})}}).then(
+          result=>result.accepted===true,()=>false);
   }
-  try{
-    const verified=await request(base);
-    return finish({lesson,result,verified:true,materials:verified.materials});
-  }catch(error){
-    return finish({lesson,result,verified:false,verificationError:error.message});
+  const activity={startQueued:await signal('begin'),resultQueued:false};
+  const activityResult=tracksMaterial?{activity}:{};
+  let heartbeat=Promise.resolve();
+  const heartbeatTimer=target?setInterval(()=>{heartbeat=signal('begin');},10000):null;
+  let phase='unconfirmed',confirmedPath;
+  try {
+    let result;
+    if(action==='import'){
+      if(!o.file||(await stat(o.file)).isFile()===false)throw new Error('Quelldatei fehlt.');
+      result=await request(base+'/file?name='+encodeURIComponent(path.basename(o.file)),{method:'PUT',stream:createReadStream(o.file)});
+    }else if(action==='link'){
+      if(!o.link)throw new Error('--link fehlt.');
+      result=await request(base+'/links',{method:'POST',body:{url:o.link}});
+      if(o.title){
+        try{
+          const renamed=await request(base,{method:'PATCH',body:{path:result.material.path,displayName:o.title,previousDisplayName:result.material.displayName??result.material.name}});
+          result={...result,material:renamed.material};
+        }catch(error){result={...result,rename:{applied:false,error:error.message}};}
+      }
+    }else if(action==='install-html'){
+      if(!o['source-dir']||!['worksheet','digital'].includes(o.mode))throw new Error('--source-dir und --mode worksheet|digital erforderlich.');
+      // Keep the established validator/installer. Only its target comes from the live server.
+      result=await installInteractiveMaterial({archiveRoot:status.archiveRoot,lessonId:lesson.id,sourceDirectory:path.resolve(o['source-dir']),requirePrint:o.mode==='worksheet'});
+    }else if(action==='rename'){
+      if(!o.path||!o.name||!o['previous-name'])throw new Error('--path, --name und --previous-name aus materials erforderlich.');
+      result=await request(base,{method:'PATCH',body:{path:o.path,displayName:o.name,previousDisplayName:o['previous-name']}});
+    }else if(action==='order'){
+      if(!o.file)throw new Error('--file fehlt.');
+      const order=JSON.parse(await readFile(o.file,'utf8'));
+      result=await request(base+'/order',{method:'PUT',body:{paths:order.paths,previousPaths:order.previousPaths}});
+    }
+    try{
+      phase='saved';
+      const verified=await request(base);
+      if(tracksMaterial&&result.material){
+        const resultPath=action==='install-html'?interactiveMaterialFolderName+'/'+result.material.id:result.material.path;
+        if(verified.materials.some(material=>material.path===resultPath))confirmedPath=resultPath;
+      }
+      const matched=!tracksMaterial||Boolean(confirmedPath);
+      const completed=await finish({lesson,result,verified:matched,materials:verified.materials,...activityResult,
+        ...(!matched?{verificationError:'Material im aktuellen Bestand nicht bestätigt.'}:{})});
+      if(matched&&completed.view.refreshed)phase=result.created===true?'added':'clear';
+      return completed;
+    }catch(error){
+      return finish({lesson,result,verified:false,verificationError:error.message,...activityResult});
+    }
+  } finally {
+    if(heartbeatTimer)clearInterval(heartbeatTimer);
+    await heartbeat;
+    activity.resultQueued=await signal(phase,confirmedPath);
   }
 }
 

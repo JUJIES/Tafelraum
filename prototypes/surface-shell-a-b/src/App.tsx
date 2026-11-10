@@ -8,6 +8,8 @@ import { formatLessonDate, nextPlanningDate, lessonTitleStorageKey, storedLesson
 import { requiresLiveSourceChangeConfirmation } from "./live/live-host";
 import { useTeachingAgent } from "./teaching-agent-client";
 import { teachingCatalog } from "../teaching-agent-protocol.mjs";
+import {AgentActivityDock,useAgentActivity} from './agent-activity';
+import {hasArchivedMaterial} from './agent-work';
 import { useCanvasAgent } from "./canvas-agent-client";
 import { isTauri } from "@tauri-apps/api/core";
 import { DesktopPersistenceGuard } from "./DesktopPersistenceGuard";
@@ -66,6 +68,7 @@ import { emptyCanvasMaterialUsage, type CanvasMaterialUsage } from "./canvas/mat
 import { shapeColorOptions, type ShapeColorId, type ShapeColorOption } from "./canvas/shape-colors";
 import { hasCanvasClipboardData, imageFilesFromClipboard, webLinkFromClipboard, youtubeLinkFromClipboard } from "./clipboard-import";
 import { internalSceneForPastedImage } from "./canvas/internal-image-clipboard";
+import { archiveImagePaste, readImageClipboardScene } from "./canvas/archive-image-paste";
 import { LessonMaterialPanel } from "./LessonMaterialPanel";
 import { MobileCaptureControls, useMobileCapture } from "./MobileCaptureControls";
 import { CourseStudentsEditor, StudentNotes, type NotesAnchor } from "./StudentNotes";
@@ -102,10 +105,12 @@ import {
   saveFileArchiveCatalog,
   subscribeArchiveFileState,
   flushArchiveWrites,
+  hasCanvasRevisionConflict,
   type ArchiveFileState,
 } from "./archive-file-persistence";
 import {
   loadMaterialRemovals,
+  loadLessonMaterials,
   removeLessonMaterial,
   lessonMaterialDisplayName,
   lessonMaterialDragMime,
@@ -573,7 +578,12 @@ export function App() {
   const [openColorTool, setOpenColorTool] = useState<InkTool | null>(null);
   const [toolColorAnchor, setToolColorAnchor] = useState<ToolColorAnchor | null>(null);
   const [canvasPort, setCanvasPort] = useState<CanvasPort | null>(null);
-  useCanvasAgent(canvasPort, activeLesson.id, activeLesson.title);
+  const activity=useAgentActivity();
+  const agentStatus = activity.featured;
+  const agentTarget = agentStatus && lessonClasses
+    .flatMap(group => group.subjects.flatMap(subject => subject.series.flatMap(series => series.lessons)))
+    .find(lesson => lesson.id === agentStatus.lessonId);
+  useCanvasAgent(canvasPort, activeLesson.id, activeLesson.title,activity.show);
   const [liveApi, setLiveApi] = useState<ExcalidrawImperativeAPI | null>(null);
   const liveCanvas = useLiveCanvas(liveApi, activeLesson.id);
   const onTimerRuntimeReady = useCallback((runtime: TimerRuntime | null) => { liveCanvas.room.attachTimers(runtime); liveCanvas.host.attachTimers(runtime); }, [liveCanvas.room, liveCanvas.host]);
@@ -631,10 +641,13 @@ export function App() {
   const widgetsMenuRef = useRef<HTMLDivElement>(null);
   const insertPopoverRef = useRef<HTMLDivElement>(null);
   const historyActionsRef = useRef<HTMLDivElement>(null);
+  const agentActivityDockRef = useRef<HTMLDivElement>(null);
   const workspaceChromeMotionRef = useRef({ archiveOpen, toolbar, wasDragging: false });
   const [workspaceChromeLayout, setWorkspaceChromeLayout] = useState<WorkspaceChromeLayout | null>(null);
   const lastCanvasPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
   const materialDragDepth = useRef(0);
+  const forwardedCanvasPastes = useRef(new WeakSet<ClipboardEvent>());
+  const archivingImagePaste = useRef(false);
   const showDevControls = useMemo(() => new URLSearchParams(window.location.search).get("dev") === "1", []);
   const currentPenColors = penColors[theme];
   const themeVariant = themeVariants[theme];
@@ -751,9 +764,10 @@ export function App() {
       const workspaceRect = workspace.getBoundingClientRect();
       const toolbarRect = toolbarNode.getBoundingClientRect();
       const historyRect = historyNode.getBoundingClientRect();
+      const activityRect = agentActivityDockRef.current?.getBoundingClientRect();
       const materialPanel = workspace.querySelector<HTMLElement>(".lesson-material-panel");
       const nextLayout = planWorkspaceChromeLayout({
-        historyHeight: historyRect.height,
+        historyHeight: Math.max(historyRect.height, activityRect?.height ? activityRect.bottom - historyRect.top : 0),
         historyWidth: historyRect.width,
         materialOpen: materialPanelPresent,
         materialWidth: materialPanel?.getBoundingClientRect().width ?? 324,
@@ -805,6 +819,7 @@ export function App() {
     resizeObserver.observe(workspace);
     resizeObserver.observe(toolbarNode);
     resizeObserver.observe(historyNode);
+    if (agentActivityDockRef.current) resizeObserver.observe(agentActivityDockRef.current);
     toolbarNode.addEventListener("transitionend", handleToolbarTransitionEnd);
     window.addEventListener("resize", handleChromeResize);
 
@@ -969,7 +984,11 @@ export function App() {
     }
   };
 
-  useEffect(() => subscribeArchiveFileState(setArchiveFileState), []);
+  const [canvasRevisionConflict, setCanvasRevisionConflict] = useState(false);
+  useEffect(() => subscribeArchiveFileState(state => {
+    setArchiveFileState(state);
+    setCanvasRevisionConflict(hasCanvasRevisionConflict(activeLesson.id));
+  }), [activeLesson.id]);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -1523,6 +1542,13 @@ export function App() {
       return {lessonId:state.lessonId,revision:canvas?.revision ?? null,ready:Boolean(canvas),busy:canvas?.busy ?? true,
         presenting:state.presenting,persistence:canvas?.persistence ?? null};
     };
+    if(command.type==='materialActivity'){
+      const labels={begin:'Archiviert Material',added:'Material archiviert',clear:null,unconfirmed:'Ergebnis unbestätigt',saved:'Gespeichert · Ansicht nicht aktualisiert',failed:'Nicht übernommen'};
+      const phase=command.phase==='begin'?'working':command.phase==='added'||(command.phase==='saved'&&command.materialPath)?'done':'error';
+      activity.show(command.lessonId,command.operationId,labels[command.phase],phase,expiresAt,
+        {source:'material',workId:command.workId,materialPath:command.materialPath});
+      return {ok:true};
+    }
     if (command.type === 'context') return {ok:true,context:context()};
     const initialCatalog = localLessonCatalogRef.current;
     const guardCatalog = () => {
@@ -1534,6 +1560,49 @@ export function App() {
     const profile = await loadFileArchiveProfile();
     if (!profile) throw new Error(t("Aktives Archiv ist nicht erreichbar."));
     guardCatalog();
+    if(command.type==='workPhase'){
+      if(!teachingCatalog(profile).lessons.some(item=>item.id===command.lessonId))throw new Error('Zielstunde fehlt oder liegt im Papierkorb.');
+      if(command.action!=='finish'){
+        const apply=()=>activity.work.command(command);
+        const work=command.action==='start'?activity.beginWork(command.lessonId,apply):apply();
+        activity.updateWork();
+        return {ok:true,work:{id:work.id,lessonId:work.lessonId,scope:work.scope,outcome:work.outcome,expiresAt:work.until}};
+      }
+      const previous=activity.work.requireWork(command.lessonId,command.workId);
+      if(previous.outcome==='finished')return {ok:true,persisted:true,work:{id:previous.id,lessonId:previous.lessonId,scope:previous.scope,outcome:previous.outcome}};
+      const version=activity.work.check(command.lessonId,command.workId);
+      const complete = (paths?: ReadonlySet<string>) => {
+        const work=activity.work.finish(command.lessonId,command.workId,version,paths);
+        activity.updateWork();
+        return {ok:true,persisted:true,work:{id:work.id,lessonId:work.lessonId,scope:work.scope,outcome:work.outcome}};
+      };
+      if(previous.scope==='archive'){
+        activity.work.archivePaths(command.lessonId,command.workId);
+        const collection=await loadLessonMaterials(command.lessonId,AbortSignal.timeout(Math.max(1,expiresAt-Date.now())));
+        guardCatalog();
+        return complete(new Set(collection.materials.map(material=>material.path)));
+      }
+      const initial=teachingStateRef.current, port=initial.port;
+      const revision=port?.inspectAgentCanvas().revision;
+      const guard=()=>{
+        guardCatalog();
+        const state=teachingStateRef.current;
+        if(!port||state.port!==port||state.lessonId!==command.lessonId||state.presenting||state.importing||
+          port.inspectAgentCanvas().busy||port.inspectAgentCanvas().revision!==revision||port.getUnsavedInteractiveHtmlChangeCount())
+          throw new Error('Zielstunde öffnen und laufende Bearbeitung oder Präsentation beenden. Stand vor Abschluss erneut prüfen.');
+        if(activity.work.check(command.lessonId,command.workId)!==version)throw new Error('Arbeitsphase während des Abschlusses verändert.');
+      };
+      guard();
+      try{await port!.flushPersistence();}catch(error){
+        activity.work.fail(command.lessonId,command.workId,hasArchivedMaterial(previous)?
+          'Material archiviert · Canvas noch nicht bestätigt':'Übernommen · noch nicht gespeichert');
+        activity.updateWork();throw error;
+      }
+      guard();
+      const persistence=port!.inspectAgentCanvas().persistence;
+      if(persistence.pending||persistence.state!=='saved'||!persistence.archiveRevision)throw new Error('Speicherung der Unterrichtsfläche noch nicht bestätigt.');
+      return complete();
+    }
     if (command.type === 'openLesson') {
       const target = teachingCatalog(profile).lessons.find(item => item.id === command.lessonId);
       if (!target) throw new Error(t("Zielstunde fehlt oder liegt im Papierkorb."));
@@ -1562,7 +1631,7 @@ export function App() {
     setArchiveClassDefinitions(profile.classes);
     setMaterialRefreshRevision(revision => revision + 1);
     return {ok:true,refreshed:true,context:context()};
-  });
+  },activity.disconnectWork);
 
   const importMaterialFiles = async (files: readonly File[], point?: { clientX: number; clientY: number }) => {
     if (!canvasPort || isImportingMaterial || files.length === 0) return;
@@ -1795,20 +1864,55 @@ export function App() {
     void importMaterialFiles(Array.from(event.dataTransfer.files), point);
   };
 
+  const forwardCanvasPaste = (target: Element, sceneText: string) => {
+    const data = new DataTransfer();
+    data.setData("text/plain", sceneText);
+    const event = new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: data });
+    forwardedCanvasPastes.current.add(event);
+    target.dispatchEvent(event);
+  };
+
+  const pasteEditableImages = async (
+    target: Element,
+    scene: NonNullable<ReturnType<typeof readImageClipboardScene>>,
+    sourceLessonId?: string,
+  ) => {
+    if (!canvasPort || isImportingMaterial || archivingImagePaste.current) return;
+    const targetIsCurrent = () => target.isConnected && teachingStateRef.current.lessonId === activeLesson.id;
+    if (!targetIsCurrent()) return;
+    archivingImagePaste.current = true;
+    setIsImportingMaterial(true);
+    setMaterialImportError(null);
+    try {
+      const sceneText = await archiveImagePaste(scene, activeLesson.id, sourceLessonId);
+      if (!targetIsCurrent()) return;
+      await canvasPort.applyArchiveMaterialRemovals(await loadMaterialRemovals());
+      if (targetIsCurrent()) forwardCanvasPaste(target, sceneText);
+    } catch (error) {
+      console.error(t("Material konnte nicht importiert werden."), error);
+      setMaterialImportError(error instanceof Error ? error.message : t("Material konnte nicht importiert werden."));
+    } finally {
+      setMaterialRefreshRevision(revision => revision + 1);
+      setIsImportingMaterial(false);
+      archivingImagePaste.current = false;
+    }
+  };
+
   const handleMaterialPaste = (event: ReactClipboardEvent<HTMLElement>) => {
+    if (forwardedCanvasPastes.current.has(event.nativeEvent)) return;
     const target = event.target instanceof Element ? event.target : null;
     if (target?.closest("input, textarea, [contenteditable='true']")) return;
-    // Accept legacy dual-format canvas clipboards from 0.1.10.
-    if (hasCanvasClipboardData(event.clipboardData.getData("text/plain"))) {
-      if (event.clipboardData.files.length > 0 && target?.closest(".canvas-engine")) {
-        // Excalidraw prioritizes image files even when editable scene data exists.
-        // Forward only its own representation through the normal engine paste path.
-        event.preventDefault();
-        event.stopPropagation();
-        const data = new DataTransfer();
-        data.setData("text/plain", event.clipboardData.getData("text/plain"));
-        target.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData: data }));
-      }
+    const canvasTarget = target?.closest(".canvas-engine") ? target : null;
+    const sceneText = event.clipboardData.getData("text/plain");
+    // Legacy clipboards may contain editable scene data and an exported PNG.
+    if (hasCanvasClipboardData(sceneText)) {
+      if (!canvasTarget) return;
+      const scene = readImageClipboardScene(sceneText);
+      if (!scene && event.clipboardData.files.length === 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (scene) void pasteEditableImages(canvasTarget, scene);
+      else forwardCanvasPaste(canvasTarget, sceneText);
       return;
     }
     const files = imageFilesFromClipboard(event.clipboardData);
@@ -1817,18 +1921,17 @@ export function App() {
       // its image tool stays hidden while Tafelraum owns asset persistence.
       event.preventDefault();
       event.stopPropagation();
-      const canvasTarget = target?.closest(".canvas-engine") ? target : null;
       void (async () => {
         if (files.length === 1 && canvasTarget) {
-          const sceneText = await internalSceneForPastedImage(files[0]);
-          if (sceneText) {
-            const data = new DataTransfer();
-            data.setData("text/plain", sceneText);
-            canvasTarget.dispatchEvent(new ClipboardEvent("paste", {
-              bubbles: true,
-              cancelable: true,
-              clipboardData: data,
-            }));
+          const copy = await internalSceneForPastedImage(files[0]);
+          if (!canvasTarget.isConnected || teachingStateRef.current.lessonId !== activeLesson.id) return;
+          if (copy?.lessonId === activeLesson.id) {
+            forwardCanvasPaste(canvasTarget, copy.sceneText);
+            return;
+          }
+          const scene = copy && readImageClipboardScene(copy.sceneText);
+          if (scene) {
+            await pasteEditableImages(canvasTarget, scene, copy.lessonId);
             return;
           }
         }
@@ -1910,9 +2013,7 @@ export function App() {
             </time>
           )}
         </div>
-        <h1 className="topbar-lesson-title" title={lessonTitle}>
-          {lessonTitle}
-        </h1>
+        <h1 className="topbar-lesson-title" title={lessonTitle}>{lessonTitle}</h1>
         <div className="topbar-actions">
           <div className="presentation-actions" role="group" aria-label={t("Präsentationswerkzeuge")}>
             <LaserToolButton laser={laser} disabled={!liveApi} header/>
@@ -1929,6 +2030,19 @@ export function App() {
             >
               <ArchiveFeedbackIcon aria-hidden="true"/>
               <span>{t(archiveSaveFeedbackCopy[combinedSaveFeedback])}</span>
+              {canvasRevisionConflict && <button className="action-button" type="button"
+                title={t("Aktuellen Entwurf sichern, Stunde neu laden und eine Fassung wählen")}
+                onClick={async () => {
+                  try {
+                    if (!canvasPort || isImportingMaterial) throw new Error(t("Eine Canvasaktion läuft noch. Bitte danach erneut versuchen."));
+                    if (canvasPort.getUnsavedInteractiveHtmlChangeCount() > 0 && !window.confirm(t("Nicht gespeicherte Eingaben in interaktiven Materialien verwerfen und neu laden?"))) return;
+                    liveCanvas.room.stop();
+                    await flushNotes();
+                    if (window.localStorage.getItem(archiveDirtyStorageKey)) throw new Error(t("Die Unterrichtsorganisation ist noch nicht gespeichert."));
+                    await canvasPort.cacheRecoveryDraft();
+                    window.location.reload();
+                  } catch (error) { window.alert(error instanceof Error ? error.message : t("Entwurf konnte nicht gesichert werden. Die Stunde bleibt geöffnet.")); }
+                }}>{t("Konflikt lösen")}</button>}
             </div>}
           <span className="topbar-utility-divider" aria-hidden="true"/>
           <div className="topbar-utility-group">
@@ -1951,6 +2065,7 @@ export function App() {
           setStudentsEditor({ classId, anchor: notesAnchor }); setNotesAnchor(null);
         }}/>}
       <ArchiveNavigation
+        activities={activity.byLesson}
         onEditStudents={(classId, anchor) => { setNotesAnchor(null); setMaterialPanelOpen(false); setStudentsEditor({ classId, anchor }); }}
         classesEditable={archiveClassDefinitions !== null}
         onClassSave={async (id, label, previousLabel) => {
@@ -2196,6 +2311,10 @@ export function App() {
           <span className="canvas-history-divider" aria-hidden="true"/>
           <ActionButton icon="undo" label={t("Rückgängig")} iconOnly disabled={!canvasPort} onClick={() => canvasPort?.undo()} />
           <ActionButton icon="redo" label={t("Wiederholen")} iconOnly disabled={!canvasPort} onClick={() => canvasPort?.redo()} />
+          <AgentActivityDock dockRef={agentActivityDockRef}
+            item={agentTarget ? agentStatus : undefined}
+            target={agentTarget && agentTarget.id !== activeLesson.id ? storedLessonTitle(agentTarget) : undefined}
+            onOpenTarget={agentTarget ? () => void openLesson(agentTarget) : undefined}/>
         </div>
         {showDevControls && (
           <div className="canvas-zoom-controls" role="group" aria-label={t("Canvas-Zoom")}>

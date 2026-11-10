@@ -39,3 +39,38 @@ test('broker delivers once, preserves request identity, isolates sessions and re
  assert.equal((await send('/sessions')).body.sessions[0].token,undefined);
  clock+=1001;assert.equal((await send(`/sessions/${host.id}/jobs/r1`)).status,409);
 });
+
+
+test('expired jobs release the queue without replay; delivered work requires inspection and accepts a late result',async t=>{
+ let clock=Date.now();
+ const broker=createCanvasAgentBroker({now:()=>clock,pollMs:1,leaseMs:120000});
+ const server=createServer((req,res)=>void broker.middleware(req,res,()=>res.end()));
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ t.after(()=>{broker.close();server.closeAllConnections();server.close();});
+ const base='http://127.0.0.1:'+server.address().port+'/api/canvas-agent';
+ async function send(route,body,token,method='POST'){
+  const response=await fetch(base+route,{method,headers:{'X-Tafelraum-Agent':'1','Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:body===undefined?undefined:JSON.stringify(body)});
+  return {status:response.status,value:await response.json()};
+ }
+ const host=(await send('/hosts',{lessonId:'test',title:'Test'})).value;
+ const jobs='/sessions/'+host.id+'/jobs',poll='/sessions/'+host.id+'/poll';
+ const command={type:'clip',expectedRevision:'revision',number:1,rect:{x:0,y:0,width:100,height:100}};
+ const submit=(id,cmd=command)=>send(jobs,{lessonId:'test',requestId:id,command:cmd});
+ await submit('never-delivered');
+ clock+=30001;
+ assert.equal((await send(jobs+'/never-delivered',undefined,undefined,'GET')).value.status,'expired');
+ assert.equal((await submit('never-delivered')).value.status,'expired');
+ assert.equal((await submit('lost-ack')).status,202);
+ await send(poll,{},host.token);
+ clock+=30001;
+ assert.equal((await send(jobs+'/lost-ack',undefined,undefined,'GET')).value.status,'unconfirmed');
+ assert.equal((await submit('unsafe-retry')).status,409);
+ assert.equal((await submit('inspect',{type:'inspect'})).status,202);
+ assert.equal((await send(poll,{},host.token)).value.job.id,'inspect');
+ await send(jobs+'/inspect',{ok:true},host.token,'PUT');
+ assert.equal((await submit('next')).status,202);
+ assert.equal((await send(jobs+'/lost-ack',{ok:true,applied:true,persisted:true},host.token,'PUT')).status,200);
+ const late=(await send(jobs+'/lost-ack',undefined,undefined,'GET')).value;
+ assert.equal(late.status,'completed');assert.equal(late.result.persisted,true);
+ assert.equal((await submit('lost-ack')).value.status,'completed');
+});

@@ -6,8 +6,8 @@
 
 ## Download Tafelraum
 
-- **[Download for Windows (.exe)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.94/Tafelraum-Public-0.1.94-Windows-x64-setup.exe)** · Windows x64 · [Installation guide](prototypes/surface-shell-a-b/distribution/public/WINDOWS-INSTALLATION.txt)
-- **[Download for Mac (.zip)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.94/Tafelraum-Public-0.1.94-macOS-arm64.zip)** · Apple Silicon (M-series) · [Installation guide](prototypes/surface-shell-a-b/distribution/public/INSTALLATIONSANLEITUNG.txt)
+- **[Download for Windows (.exe)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.95/Tafelraum-Public-0.1.95-Windows-x64-setup.exe)** · Windows x64 · [Installation guide](prototypes/surface-shell-a-b/distribution/public/WINDOWS-INSTALLATION.txt)
+- **[Download for Mac (.zip)](https://github.com/JUJIES/Tafelraum/releases/download/v0.1.95/Tafelraum-Public-0.1.95-macOS-arm64.zip)** · Apple Silicon (M-series) · [Installation guide](prototypes/surface-shell-a-b/distribution/public/INSTALLATIONSANLEITUNG.txt)
 
 [All GitHub releases](https://github.com/JUJIES/Tafelraum/releases)
 

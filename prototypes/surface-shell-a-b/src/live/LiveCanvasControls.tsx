@@ -164,6 +164,9 @@ export function LiveCanvasControls({ live }: { live: ReturnType<typeof useLiveCa
   const targetLabel=target.kind==='clip'?`Clip ${'number' in target.clip?target.clip.number:''}`.trim()
     :target.kind==='material'?(target.number ? t("Clip {0} · {1}", target.number, target.title) : t("Material · {0}", target.title)):'Canvas';
   const targetModeLabel=target.kind==='material'?t("Material"):target.kind==='clip'?'Clip':'Canvas';
+  const roomStartupLabel=roomState.startup==='waiting'?t("Wird vorbereitet …"):roomState.startup==='failed'?t("Nicht bereit"):null;
+  const roomError=roomState.startup==='failed'?"Room Canvas konnte nicht starten.":roomState.error;
+  const presentationError=selectedOutput==='room'?roomError:state.error||localError;
   const hasTarget=target.kind!=='canvas';
   const copyInvitation = async () => {
     setLocalError(null);
@@ -199,12 +202,12 @@ export function LiveCanvasControls({ live }: { live: ReturnType<typeof useLiveCa
       ? <RoomPreview room={room} screen={roomState.screen} onFocus={live.focusArea} onClose={()=>live.setPreviewOpen(false)}/>
       : <StudentPreview preview={state.preview} pointer={host.previewPointer} onFocus={live.focusArea} onClose={()=>live.setPreviewOpen(false)}/>)}
     <button ref={triggerRef} type="button" className={`live-host-trigger ${live.presenting ? "has-session" : ""} ${liveReady||roomState.ready ? "is-live" : ""}`} aria-expanded={live.open} aria-controls="live-host-panel" title={t("Präsentieren")}
-      aria-label={live.presenting ? `${selectedOutput==='room'?'Room Canvas':'Remote Canvas'}, ${targetLabel}` : t("Präsentieren")}
+      aria-label={live.presenting ? `${selectedOutput==='room'?'Room Canvas':'Remote Canvas'}, ${roomStartupLabel??targetLabel}` : t("Präsentieren")}
       disabled={!live.ready}
       onClick={() => live.setOpen(!live.open)}>
       {live.presenting ? selectedOutput==='room' ? <Monitor aria-hidden="true"/> : <Globe aria-hidden="true"/> : <Radio aria-hidden="true"/>}
       <span className="live-host-title">{t("Präsentieren")}</span>
-      {live.presenting && <span className="live-host-mode" data-mode={target.kind}>{targetModeLabel}</span>}
+      {live.presenting && <span className="live-host-mode" data-mode={roomStartupLabel?'canvas':target.kind} data-empty={roomState.startup==='failed'}>{roomStartupLabel??targetModeLabel}</span>}
       {selectedOutput==='remote'&&state.session && <span className="live-host-count" aria-hidden="true"><UsersRound/>{count}</span>}
     </button>
     {live.presenting&&hasTarget&&<button type="button" className="live-target-clear" aria-label={t("Zur Canvasansicht")} title={t("Zur Canvasansicht")} onClick={()=>selectedOutput==='room'?room.setCanvas():host.setFree()}><X aria-hidden="true"/></button>}
@@ -253,8 +256,8 @@ export function LiveCanvasControls({ live }: { live: ReturnType<typeof useLiveCa
         {selectedOutput==='remote'&&state.session&&<button className="live-host-copy live-preview-toggle" aria-pressed={live.previewOpen} onClick={()=>{live.setPreviewOpen(!live.previewOpen);live.setOpen(false);}}><Eye/>{t("Schülervorschau")}</button>}
         {selectedOutput==='room'&&roomState.active&&<button className="live-host-copy live-preview-toggle" aria-pressed={live.previewOpen} onClick={()=>{live.setPreviewOpen(!live.previewOpen);live.setOpen(false);}}><Eye/>{t("Raumvorschau")}</button>}
       </div>
-      {(roomState.error||selectedOutput==='remote'&&(state.error||localError))&&<div className="live-host-error" role="alert">{t(roomState.error||state.error||localError||"")}
-        {!(selectedOutput==='room'&&roomState.error?.includes('wurde entfernt'))&&<button onClick={() => {setLocalError(null);if(selectedOutput==='room')room.retry();else if(state.session)host.retryPublish();else void host.create();}}>{t("Erneut versuchen")}</button>}
+      {presentationError&&<div className="live-host-error" role="alert">{t(presentationError)}
+        {!(selectedOutput==='room'&&roomError?.includes('wurde entfernt'))&&<button onClick={() => {setLocalError(null);if(selectedOutput==='room')void room.retry();else if(state.session)host.retryPublish();else void host.create();}}>{t("Erneut versuchen")}</button>}
       </div>}
     </div>}
     <dialog ref={dialogRef} className="live-switch-dialog" onCancel={(event) => { event.preventDefault(); live.resolveSourceChange(false); }}>

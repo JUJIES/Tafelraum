@@ -34,7 +34,8 @@ try{
   const deadline=Date.now()+40000;
   while(Date.now()<deadline){
    const job=await request(`/sessions/${session.id}/jobs/${requestId}`);
-   if(job.status==='completed'){emit({requestId,...job.result});if(!job.result.ok)process.exitCode=1;break;}
+   if(job.status==='unconfirmed')throw new Error('Ergebnis unbestätigt. Auftragsstatus und aktuellen Stundenstand prüfen; nicht mit neuer ID wiederholen.');
+   if(job.status==='completed'||job.status==='expired'){emit({requestId,...job.result});if(!job.result.ok)process.exitCode=1;break;}
    await new Promise(r=>setTimeout(r,150));
   }
   if(!process.exitCode&&Date.now()>=deadline)throw new Error(`Ergebnis unbestätigt. Nicht mit neuer requestId wiederholen. Status mit job --session ${session.id} --request-id ${requestId} prüfen.`);

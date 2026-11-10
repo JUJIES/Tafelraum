@@ -13,6 +13,7 @@ The suite uses its own temporary archives, browser profiles and loopback servers
 | Check | What it exercises |
 | --- | --- |
 | `test:storage-material-browser` | Archive writes, the browser cache, lesson switching and material recovery. |
+| [Image clipboard](image-clipboard-browser-test.mjs) | Built app, isolated archive and simulated system clipboard. Covers external PNGs, same-lesson paste, cross-lesson asset write failure and retry, and reload without a browser cache. After `npm run build`, run `node scripts/image-clipboard-browser-test.mjs [chromium\|webkit]` from the repository root. |
 | `test:hardening-browser` | Public settings, Room presentation, draft recovery and the native save handshake through a simulated bridge. |
 | `test:developer-start` | A clean source checkout, explicit development start, Vite dev/preview, lesson/class navigation, material rendering, saving and reload. |
 | `test:source-browser` | Real `npm start`, including the production build and normal local archive server, UI objects/image import, full server restart, restoration in a fresh profile and Room Canvas. Rejects a development-client entry page. Optional argument `msedge` or `chrome` selects an installed browser channel; port 5173 must be free. |

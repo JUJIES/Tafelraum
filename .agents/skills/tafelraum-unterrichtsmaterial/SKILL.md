@@ -16,6 +16,10 @@ verwenden, ohne Inhalt, Format oder Qualitätsprüfungen dieser Pipeline zu änd
 
 ## Bei einem neuen Materialauftrag
 
+Wenn Erstellung und Übernahme in eine konkrete Stunde zusammen beauftragt
+sind, die [sichtbare Arbeitsphase](../tafelraum-unterricht-organisieren/SKILL.md#sichtbare-arbeitsphase-in-tafelraum)
+vor der Erstellung nach den dortigen Ziel- und Anschlussregeln beginnen.
+
 1. Kläre aus Auftrag und Gespräch Zielgruppe, Lernhandlung und gewünschtes Format.
    Lies [Unterrichtsworkflow](../../../docs/unterricht/00_ARBEITSWEISE_UNTERRICHT.md)
    für gemeinsame Regeln und den Umgang mit eigenen Unterrichtsvorgaben.

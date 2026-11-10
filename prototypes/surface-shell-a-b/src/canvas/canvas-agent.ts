@@ -15,6 +15,7 @@ export type AgentCanvasState = {
 export type AgentCanvasResult = {ok:boolean;applied:boolean;persisted:boolean;state:AgentCanvasState;created?:Record<string,string[]>;error?:string};
 type Options={persistence():AgentCanvasState['persistence'];api:ExcalidrawImperativeAPI;busy():boolean;active():boolean;theme:'light'|'dark';flush():Promise<void>;
  getClips():PresentationClip[];getHtmlState():unknown;commitClips(clips:PresentationClip[]):void;
+ revealCreated?(elements:readonly ExcalidrawElement[]):void;
  buildMaterial(material:AgentMaterial,x:number,y:number):ExcalidrawElement[];
  saveMaterials(materials:AgentMaterial[]):Promise<void>;
 };
@@ -36,7 +37,7 @@ export function createCanvasAgent(o:Options){
   const state=inspect();if(state.busy)throw new Error('Canvas wird gerade bearbeitet. Nach Abschluss erneut lesen.');
   if(state.revision!==command.expectedRevision)throw new Error('Canvas wurde inzwischen verändert. Aktuellen Stand lesen und Auftrag neu planen.');
  };
- const execute=async(value:unknown,materials:Map<string,AgentMaterial>=new Map(),expiresAt=Date.now()+30000):Promise<AgentCanvasResult>=>{
+ const execute=async(value:unknown,materials:Map<string,AgentMaterial>=new Map(),expiresAt=Date.now()+30000,onSaving?:()=>void):Promise<AgentCanvasResult>=>{
   let applied=false;
   try{
    const command=readCanvasAgentCommand(value);if(command.type==='inspect')return {ok:true,applied:false,persisted:false,state:inspect()};
@@ -52,7 +53,7 @@ export function createCanvasAgent(o:Options){
      if(!o.api.getSceneElements().some(e=>e.id===command.elementId&&canBeMaterialClipElement(e)))throw new Error('Material ist kein gültiges Clipziel.');
      const assignment=assignMaterialClip(current,command.elementId,crypto.randomUUID(),command.number);if(!assignment)throw new Error('Clip konnte nicht angelegt werden.');next=assignment.clips;
     }else next=readClipFrames([...current.filter(c=>c.number!==command.number),{id:occupied?.id??crypto.randomUUID(),number:command.number,...command.rect}]);
-    o.commitClips(next);applied=true;await o.flush();return {ok:true,applied,persisted:true,state:inspect()};
+    o.commitClips(next);applied=true;onSaving?.();await o.flush();return {ok:true,applied,persisted:true,state:inspect()};
    }
    let elements:readonly ExcalidrawElement[]=[...o.api.getSceneElementsIncludingDeleted()];const created:Record<string,string[]>={};
    const target=(id:string)=>{const e=elements.find(e=>e.id===id&&!e.isDeleted);if(!e||e.locked)throw new Error('Objekt fehlt oder ist gesperrt: '+id);if(richTextImageSourceId(e))throw new Error('Rekonstruierbare Textgrafik ist kein Bearbeitungsziel.');return e;};
@@ -78,7 +79,11 @@ export function createCanvasAgent(o:Options){
    if(elements.length>20000)throw new Error('Canvasgrenze überschritten.');
    await o.saveMaterials([...materials.values()]);guard(command,expiresAt); // user edits during async asset work win
    o.api.updateScene({elements,appState:command.viewport?{scrollX:command.viewport.scrollX,scrollY:command.viewport.scrollY,zoom:{value:command.viewport.zoom as never}}:undefined,captureUpdate:command.operations.length?CaptureUpdateAction.IMMEDIATELY:CaptureUpdateAction.NEVER});
-   applied=true;await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));await o.flush();return {ok:true,applied,persisted:true,created,state:inspect()};
+   applied=true;
+   const addedIds=new Set(Object.values(created).flat());
+   if(addedIds.size)o.revealCreated?.(elements.filter(element=>addedIds.has(element.id)));
+   onSaving?.();
+   await new Promise<void>(resolve=>requestAnimationFrame(()=>resolve()));await o.flush();return {ok:true,applied,persisted:true,created,state:inspect()};
   }catch(e){return {ok:false,applied,persisted:false,error:e instanceof Error?e.message:String(e),state:inspect()};}
  };
  return {inspect,execute};

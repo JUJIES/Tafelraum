@@ -125,7 +125,13 @@ try{
   const original=path.join(app,'src/assets/demo/transport-set.png'),materialFile=path.join(work,'agent-demo.png');
   await copyFile(original,materialFile);const bytes=await readFile(materialFile);
   assert.deepEqual(bytes.subarray(0,8),Buffer.from([137,80,78,71,13,10,26,10]));assert.equal(bytes.readUInt32BE(16),1536);assert.equal(bytes.readUInt32BE(20),1024);
-  const imported=await teaching('import','--lesson',lessonId,'--file',materialFile);
+  const archiveWorkId='44444444-4444-4444-8444-444444444444';
+  await teaching('work-start','--lesson',lessonId,'--work-id',archiveWorkId,'--work-scope','archive');
+  await page.locator('.agent-activity-dock [data-state="working"]').getByText('Bereitet Materialien vor',{exact:true}).waitFor();
+  const imported=await teaching('import','--lesson',lessonId,'--file',materialFile,'--work-id',archiveWorkId);
+  const archiveFinished=await teaching('work-finish','--lesson',lessonId,'--work-id',archiveWorkId);
+  assert.equal(archiveFinished.persisted,true);
+  assert.equal(archiveFinished.work.outcome,'finished');
   assert.equal(imported.persisted,true);assert.equal(imported.result.created,true);const materialPath=imported.result.material.path;
   assert.equal((await teaching('import','--lesson',lessonId,'--file',materialFile)).result.created,false);
   const materials=await teaching('materials','--lesson',lessonId);assert.equal(materials.materials.length,1);

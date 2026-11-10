@@ -16,7 +16,9 @@ type ArchiveDocument = {
 const listeners = new Set<(state: ArchiveFileState) => void>();
 type PendingSnapshot = { snapshot: StoredCanvasSnapshot; confirmed?: (revision: string, previous: string | null) => Promise<void>; preservePrevious?: boolean };
 const pendingSnapshots = new Map<string, PendingSnapshot>();
-const canvasFailures = new Map<string, string>();
+const canvasFailures = new Map<string, Error>();
+export class CanvasRevisionConflict extends Error {}
+export const hasCanvasRevisionConflict = (lessonId: string) => canvasFailures.get(lessonId) instanceof CanvasRevisionConflict;
 const snapshotTimers = new Map<string, number>();
 const boardRevisions = new Map<string, string | null>();
 const canvasSaveQueues = new Map<string, Promise<void>>();
@@ -66,8 +68,10 @@ async function archiveRequest<T>(path: string, init?: RequestInit, missingIsNull
   }
   if (missingIsNull && response.status === 404) return null;
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { error?: string } | null;
-    throw new Error(body?.error ?? t("Archivzugriff fehlgeschlagen ({0}).", response.status));
+    const body = await response.json().catch(() => null) as { error?: string; code?: string } | null;
+    const message = body?.error ?? t("Archivzugriff fehlgeschlagen ({0}).", response.status);
+    if (response.status === 409 && body?.code === "board_revision_conflict") throw new CanvasRevisionConflict(message);
+    throw new Error(message);
   }
   return await response.json() as T;
 }
@@ -110,7 +114,7 @@ export async function flushArchiveWrites() {
 }
 
 export function reportCanvasSaveFailure(lessonId: string, error: unknown) {
-  canvasFailures.set(lessonId, error instanceof Error ? error.message : "Canvas konnte nicht gespeichert werden.");
+  canvasFailures.set(lessonId, error instanceof Error ? error : new Error("Canvas konnte nicht gespeichert werden."));
   setArchiveFileState("error");
 }
 
@@ -237,7 +241,7 @@ export async function flushFileCanvasSnapshot(lessonId: string) {
   const pending = pendingSnapshots.get(lessonId);
   if (!pending) {
     await canvasSaveQueues.get(lessonId); await flushFileCanvasFiles(lessonId);
-    if (canvasFailures.has(lessonId)) throw new Error(canvasFailures.get(lessonId));
+    if (canvasFailures.has(lessonId)) throw canvasFailures.get(lessonId);
     return;
   }
   pendingSnapshots.delete(lessonId);

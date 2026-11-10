@@ -147,19 +147,19 @@ export function lessonInteractiveMaterialUrl(lessonId: string, materialId: strin
   return `/api/archive/lessons/${encodeURIComponent(lessonId)}/materials/interactive/${encodeURIComponent(materialId)}/${resource}`;
 }
 
-export async function loadLessonMaterials(lessonId: string) {
+export async function loadLessonMaterials(lessonId: string, signal?: AbortSignal) {
   const response = await fetch(`/api/archive/lessons/${encodeURIComponent(lessonId)}/materials`, {
-    cache: "no-store",
+    signal, cache: "no-store",
   });
   if (!response.ok) throw new Error(await materialError(response));
   return await response.json() as LessonMaterialCollection;
 }
 
-export async function lessonMaterialToFile(lessonId: string, material: LessonMaterial) {
+export async function lessonMaterialToFile(lessonId: string, material: LessonMaterial, signal?: AbortSignal) {
   if (material.kind === "link" || material.kind === "interactive") {
     throw new Error("Dieses Material ist keine einzelne lokale Datei.");
   }
-  const response = await fetch(lessonMaterialFileUrl(lessonId, material.path), { cache: "no-store" });
+  const response = await fetch(lessonMaterialFileUrl(lessonId, material.path), { signal, cache: "no-store" });
   if (!response.ok) throw new Error(await materialError(response));
   const blob = await response.blob();
   return new File([blob], material.name, {

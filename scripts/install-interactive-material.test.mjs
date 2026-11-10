@@ -139,7 +139,16 @@ test("akzeptiert ein druckbares Arbeitsblatt und verweigert einen fehlenden Druc
     await assert.rejects(checkInteractiveMaterial({ sourceDirectory, requirePrint: true }), { code: "ENOENT" });
     await assert.rejects(installInteractiveMaterial({ archiveRoot, lessonId: "stunde-1", sourceDirectory, requirePrint: true }), { code: "ENOENT" });
     await writeFile(path.join(sourceDirectory, "print.html"), "<h1>Leere Druckvorlage</h1>");
-    assert.equal((await checkInteractiveMaterial({ sourceDirectory, requirePrint: true })).print.entry, "print.html");
+    // Existing legacy packages stay readable, but cannot pass the new worksheet intake.
+    assert.equal((await readInteractiveMaterialPackage(sourceDirectory, "motoren-quiz")).print.entry, "print.html");
+    await assert.rejects(checkInteractiveMaterial({ sourceDirectory, requirePrint: true }), /gemeinsame A4-Seiten/);
+    await assert.rejects(installInteractiveMaterial({ archiveRoot, lessonId: "stunde-1", sourceDirectory, requirePrint: true }), /gemeinsame A4-Seiten/);
+    await assert.rejects(readdir(path.join(archiveRoot, "faecher/physik/reihen/motoren/stunden/stunde-1/material/interaktiv")), { code: "ENOENT" });
+    manifest.print = { entry: "index.html", page: "A4", orientation: "portrait", mode: "template", layout: "shared-pages" };
+    await writeFile(manifestPath, JSON.stringify(manifest));
+    await assert.rejects(checkInteractiveMaterial({ sourceDirectory, requirePrint: true }), /data-tafelraum-page/);
+    await writeFile(path.join(sourceDirectory, "index.html"), '<main data-tafelraum-page="1"><h1>Leere Druckvorlage</h1></main>');
+    assert.equal((await checkInteractiveMaterial({ sourceDirectory, requirePrint: true })).print.layout, "shared-pages");
     const result = await installInteractiveMaterial({ archiveRoot, lessonId: "stunde-1", sourceDirectory, requirePrint: true });
     assert.equal(result.created, true);
     assert.equal(await readFile(path.join(result.targetDirectory, "print.html"), "utf8"), "<h1>Leere Druckvorlage</h1>");

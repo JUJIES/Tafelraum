@@ -55,6 +55,11 @@ Beispiele und Prüffragen bei Bedarf: [references/layout.md](references/layout.m
 
 ## Gezielten Auftrag ausführen
 
+Bei beauftragter Canvasänderung die
+[sichtbare Arbeitsphase](../tafelraum-unterricht-organisieren/SKILL.md#sichtbare-arbeitsphase-in-tafelraum)
+vor der eigentlichen Vorbereitung starten und bis zur bestätigten Speicherung
+führen. Eine bereits gestartete Phase aus der Materialvorbereitung weiterführen.
+
 1. JSON-Auftrag im Arbeitsordner erstellen. Die zuletzt gelesene
    `expectedRevision` mitsenden. Befehle/Beispiele:
    [Canvas-Agent-Vertrag](../../../docs/implementation/45_CANVAS_AGENT.md).

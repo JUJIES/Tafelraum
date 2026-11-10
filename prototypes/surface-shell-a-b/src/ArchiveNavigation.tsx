@@ -231,7 +231,9 @@ function InlineLessonTitle({ initialValue = "", scheduledFor, onCancel, onSubmit
   );
 }
 
-export function ArchiveNavigation({ classesEditable, onEditStudents, onClassSave, activeClassId, activeLessonId, activeLessonTitle, isOpen, lessonClasses, onArchiveItemTrash, onClassSelect, onDuplicateArchiveItem, onLessonCreate, onLessonRename, onLessonSelect, onOrderChange, onPasteArchiveItem, onSeriesCreate, onSeriesRename, onSubjectCreate, onSubjectRename, onTrashRestore, trashItems }: {
+import {AgentActivityMark,type LessonActivities} from './agent-activity';
+export function ArchiveNavigation({ activities, classesEditable, onEditStudents, onClassSave, activeClassId, activeLessonId, activeLessonTitle, isOpen, lessonClasses, onArchiveItemTrash, onClassSelect, onDuplicateArchiveItem, onLessonCreate, onLessonRename, onLessonSelect, onOrderChange, onPasteArchiveItem, onSeriesCreate, onSeriesRename, onSubjectCreate, onSubjectRename, onTrashRestore, trashItems }: {
+  activities: LessonActivities;
   classesEditable: boolean;
   onEditStudents(id: string, anchor: DOMRect): void;
   onClassSave(id: string, label: string, previousLabel?: string): Promise<void>;
@@ -807,6 +809,7 @@ export function ArchiveNavigation({ classesEditable, onEditStudents, onClassSave
                             >
                               <span className="lesson-link-title">
                                 {lesson.id === activeLessonId ? activeLessonTitle.trim() || lesson.title : storedLessonTitle(lesson)}
+                                {activities.get(lesson.id) && <AgentActivityMark compact item={activities.get(lesson.id)!}/>}
                               </span>
                               {lesson.metadata.scheduledFor && (
                                 <time className="lesson-link-date" dateTime={lesson.metadata.scheduledFor}>

@@ -23,10 +23,11 @@ export function DesktopPersistenceGuard({ flush }: { flush: () => Promise<void> 
         // A minimized WebView may suspend animation frames, including on Quit.
         await new Promise<void>(resolve => window.setTimeout(resolve, 0));
         let saved = false;
+        let failure: string | undefined;
         try { await current.current(); saved = true; }
-        catch (error) { console.error(t("Speichern vor dem Beenden fehlgeschlagen."), error); }
+        catch (error) { failure = error instanceof Error ? error.message : String(error); console.error(t("Speichern vor dem Beenden fehlgeschlagen."), error); }
         if (disposed || activeRequest.current !== event.payload) return;
-        try { await invoke("confirm_desktop_persistence", { id: event.payload, saved }); }
+        try { await invoke("confirm_desktop_persistence", { id: event.payload, saved, ...(failure ? { error: failure } : {}) }); }
         catch { saved = false; }
         if (!saved && !disposed && activeRequest.current === event.payload) { activeRequest.current = null; setSaving(false); }
       }),

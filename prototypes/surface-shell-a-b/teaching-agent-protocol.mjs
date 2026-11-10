@@ -1,8 +1,29 @@
 /** Small app-shell contract. Material creation and canvas commands stay separate. */
 export const teachingAgentProtocol = 'tafelraum-teaching-agent-v1';
 export const teachingAgentPrefix = '/api/teaching-agent';
+const uuid = value => typeof value === 'string' && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(value);
 export function readTeachingAgentCommand(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Ungültiger Organisationsauftrag.');
+  if (value.type === 'materialActivity' && /^[a-z0-9][a-z0-9._-]{0,127}$/i.test(value.lessonId ?? '') &&
+      typeof value.lessonId === 'string' && typeof value.operationId === 'string' && /^[a-f0-9-]{36}$/i.test(value.operationId) &&
+      ['begin','added','clear','unconfirmed','saved','failed'].includes(value.phase)) {
+    const {type,lessonId,operationId,phase,workId,materialPath}=value;
+    if ((workId!==undefined&&!uuid(workId)) ||
+        (materialPath!==undefined&&(!['added','clear','saved'].includes(phase)||typeof materialPath!=='string'||
+         materialPath.length>1000||/[\\\u0000-\u001f]/.test(materialPath)||materialPath.split('/').some(part=>!part||part==='.'||part==='..')))) {
+      throw new Error('Ungültiger Materialnachweis.');
+    }
+    return {type,lessonId,operationId,phase,...(workId?{workId}:{}),...(materialPath?{materialPath}:{})};
+  }
+  if (value.type === 'workPhase') {
+    if (typeof value.lessonId !== 'string' || !/^[a-z0-9][a-z0-9._-]{0,127}$/i.test(value.lessonId) ||
+        !uuid(value.workId) ||
+        !['start','heartbeat','finish','cancel'].includes(value.action)) throw new Error('Ungültige Arbeitsphase.');
+    const {lessonId,workId,action,scope,preparation}=value;
+    if ((scope!==undefined&&(action!=='start'||!['archive','canvas'].includes(scope)))||
+        (preparation!==undefined&&(action!=='start'||preparation!=='images'))) throw new Error('Ungültiger Arbeitsumfang.');
+    return {type:'workPhase',lessonId,workId,action,...(scope?{scope}:{}),...(preparation?{preparation}:{})};
+  }
   if (value.type === 'context' || value.type === 'refresh') return {type:value.type};
   if (value.type !== 'openLesson' || ![value.lessonId,value.expectedLessonId].every(id => typeof id === 'string' && /^[a-z0-9][a-z0-9._-]{0,127}$/i.test(id))
       || typeof value.expectedRevision !== 'string' || !value.expectedRevision || value.expectedRevision.length > 200) {

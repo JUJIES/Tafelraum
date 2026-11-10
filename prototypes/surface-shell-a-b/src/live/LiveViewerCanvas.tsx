@@ -350,9 +350,12 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
   useEffect(() => {
     if (!api || !clip) return;
     let updating = false;
+    // Room also receives local asset URLs via previewAssets. Only a fixed
+    // view should refit on every move; Room's local camera must only clamp.
+    const refit = Boolean(previewAssets) && !roomCameraIndependent;
     const constrain = () => {
       if (updating) return;
-      const state = api.getAppState(), next = boundedCamera(state, clip, Boolean(previewAssets), previewAssets ? 24*state.width/(state.width>state.height?1093:820) : 24);
+      const state = api.getAppState(), next = boundedCamera(state, clip, refit, previewAssets ? 24*state.width/(state.width>state.height?1093:820) : 24);
       if (Math.abs(next.scrollX-state.scrollX) < .001 && Math.abs(next.scrollY-state.scrollY) < .001 && Math.abs(next.zoom.value-state.zoom.value) < .00001) return;
       updating = true;
       try { api.updateScene({appState: next as Pick<typeof state, "scrollX" | "scrollY" | "zoom">, captureUpdate: CaptureUpdateAction.NEVER}); } finally { updating = false; }
@@ -361,7 +364,7 @@ export default function CanvasViewer({ scene, renderVersion=0, participation, co
     const resize = new ResizeObserver(() => {cancelRecall();requestAnimationFrame(constrain);});
     if (root.current) resize.observe(root.current);
     constrain(); return () => { unsubscribe(); resize.disconnect(); };
-  }, [api, clip]);
+  }, [api, clip, Boolean(previewAssets), roomCameraIndependent]);
 
   useEffect(() => {
     if (!api || !clip) {setClipInset(undefined);return;}

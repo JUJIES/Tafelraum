@@ -384,18 +384,21 @@ async fn open_room_canvas(app: AppHandle, channel: String) -> Result<(), String>
     if channel.len() != 36 || !channel.chars().all(|c| c.is_ascii_hexdigit() || c == '-') {
         return Err("Ungültige Raumansicht.".into());
     }
-    if let Some(window) = app.get_webview_window("room-canvas") {
-        window.show().map_err(|error| error.to_string())?;
-        window.unminimize().map_err(|error| error.to_string())?;
-        window.set_focus().map_err(|error| error.to_string())?;
-        return Ok(());
-    }
     #[cfg(debug_assertions)]
     let base = "http://127.0.0.1:5173";
     #[cfg(not(debug_assertions))]
     let base = format!("http://127.0.0.1:{}", app.state::<DesktopRelease>().port);
     let url = Url::parse(&format!("{base}/room.html?channel={channel}"))
         .map_err(|error| error.to_string())?;
+    if let Some(window) = app.get_webview_window("room-canvas") {
+        if window.url().ok().as_ref() != Some(&url) {
+            window.navigate(url).map_err(|error| error.to_string())?;
+        }
+        window.show().map_err(|error| error.to_string())?;
+        window.unminimize().map_err(|error| error.to_string())?;
+        window.set_focus().map_err(|error| error.to_string())?;
+        return Ok(());
+    }
     // Only choose a display automatically when the main window has one unambiguous alternative.
     let target_monitor = app.get_webview_window("main").and_then(|main| {
         let current = main.current_monitor().ok()??;
