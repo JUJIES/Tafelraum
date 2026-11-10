@@ -157,6 +157,7 @@ try{
   // A second writer changes the board after this teacher loaded its revision.
   const otherRead=await page.request.get(origin+'/api/archive/lessons/lesson-start/board');
   const otherBoard=await otherRead.json();otherBoard.viewport.scrollX+=133;
+  const oldInkIds=otherBoard.elements.map(element=>element.id);
   const otherWrite=await page.request.put(origin+'/api/archive/lessons/lesson-start/board',{
    headers:{'If-Match':otherRead.headers().etag},data:otherBoard});
   assert.equal(otherWrite.status(),200);
@@ -169,12 +170,18 @@ try{
   await page.mouse.move(canvas.x+550,canvas.y+400,{steps:8});await page.mouse.up();
   await rejected;
   await page.getByRole('button',{name:'Konflikt lösen',exact:true}).waitFor();
-  const savedDraft=await page.evaluate(async()=>{
+  // A 409 can belong to a queued save from before this gesture. Wait for this
+  // stroke, identified against the previous board, in the durable draft.
+  const draftHandle=await page.waitForFunction(async oldIds=>{
    const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('tafelraum-surface-lab',3);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
-   const record=await new Promise((resolve,reject)=>{const r=db.transaction('canvas-snapshots').objectStore('canvas-snapshots').get('lesson-start');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});db.close();return record;
-  });
+   const record=await new Promise((resolve,reject)=>{const r=db.transaction('canvas-snapshots').objectStore('canvas-snapshots').get('lesson-start');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});db.close();
+   return record?.pending && record.snapshot.elements.some(element=>
+    element.type==='freedraw' && !element.isDeleted && !oldIds.includes(element.id) &&
+    element.customData?.penGeometryVersion===2 && element.width>=49 && element.height>=49) ? record : null;
+  },oldInkIds);
+  const savedDraft=await draftHandle.jsonValue();
+  await draftHandle.dispose();
   assert.equal(savedDraft.pending,true);
-  assert(savedDraft.snapshot.elements.some(element=>element.type==='freedraw'&&!element.isDeleted));
   await page.screenshot({path:path.join(output,name+'-save-conflict.png'),animations:'disabled'});
   await page.setViewportSize({width:960,height:800});
   await page.screenshot({path:path.join(output,name+'-save-conflict-960.png'),animations:'disabled'});
@@ -189,8 +196,9 @@ try{
   await page.evaluate(()=>{IDBDatabase.prototype.transaction=window.originalTransaction;});
   await page.getByRole('button',{name:'Konflikt lösen',exact:true}).click();
   await page.getByRole('heading',{name:'Welche Fassung öffnen?',exact:true}).waitFor();
+  const recovered=page.waitForResponse(response=>response.url().endsWith('/lesson-start/board')&&response.request().method()==='PUT'&&response.status()===200);
   await page.getByRole('button',{name:'Entwurf wiederherstellen',exact:true}).click();
-  await page.waitForResponse(response=>response.url().endsWith('/lesson-start/board')&&response.request().method()==='PUT'&&response.status()===200);
+  await recovered;
   const restored=await (await page.request.get(origin+'/api/archive/lessons/lesson-start/board')).json();
   // Excalidraw hydration normalizes absent bindings from null to an empty list.
   const bindings=elements=>elements.map(element=>({...element,boundElements:element.boundElements??[]}));
