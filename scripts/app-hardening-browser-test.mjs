@@ -172,16 +172,19 @@ try{
   await page.getByRole('button',{name:'Konflikt lösen',exact:true}).waitFor();
   // A 409 can belong to a queued save from before this gesture. Wait for this
   // stroke, identified against the previous board, in the durable draft.
-  const draftHandle=await page.waitForFunction(async oldIds=>{
+  const readDraft=()=>page.evaluate(async oldIds=>{
    const db=await new Promise((resolve,reject)=>{const r=indexedDB.open('tafelraum-surface-lab',3);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
    const record=await new Promise((resolve,reject)=>{const r=db.transaction('canvas-snapshots').objectStore('canvas-snapshots').get('lesson-start');r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});db.close();
    return record?.pending && record.snapshot.elements.some(element=>
     element.type==='freedraw' && !element.isDeleted && !oldIds.includes(element.id) &&
     element.customData?.penGeometryVersion===2 && element.width>=49 && element.height>=49) ? record : null;
   },oldInkIds);
-  const savedDraft=await draftHandle.jsonValue();
-  await draftHandle.dispose();
-  assert.equal(savedDraft.pending,true);
+  let savedDraft;
+  const draftDeadline=Date.now()+10000;
+  while (!(savedDraft=await readDraft()) && Date.now()<draftDeadline) {
+   await new Promise(resolve=>setTimeout(resolve,50));
+  }
+  assert.ok(savedDraft?.pending,'the new stroke must reach the durable draft');
   await page.screenshot({path:path.join(output,name+'-save-conflict.png'),animations:'disabled'});
   await page.setViewportSize({width:960,height:800});
   await page.screenshot({path:path.join(output,name+'-save-conflict-960.png'),animations:'disabled'});
