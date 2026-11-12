@@ -112,22 +112,31 @@ jobs:
             [DllImport("user32.dll")] public static extern void mouse_event(uint flags, uint dx, uint dy, uint data, UIntPtr extra);
           }
           '@
-          function Invoke-NativeElement($element) {
-            $action = $null
-            if ($element.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$action)) {
-              $action.Invoke()
-            } elseif ($element.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$action)) {
-              $action.Expand()
-            } else {
-              $bounds = $element.Current.BoundingRectangle
-              if ($bounds.IsEmpty -or $bounds.Width -le 0 -or $bounds.Height -le 0) {
-                throw "No screen bounds for native element: $($element.Current.Name)"
-              }
-              [void][TafelraumTestPointer]::SetCursorPos(
-                [int]($bounds.X + $bounds.Width / 2), [int]($bounds.Y + $bounds.Height / 2))
-              [TafelraumTestPointer]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
-              [TafelraumTestPointer]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
+          function Click-NativeElement($element) {
+            $bounds = $element.Current.BoundingRectangle
+            if ($bounds.IsEmpty -or $bounds.Width -le 0 -or $bounds.Height -le 0) {
+              throw "No screen bounds for native element: $($element.Current.Name)"
             }
+            [void][TafelraumTestPointer]::SetCursorPos(
+              [int]($bounds.X + $bounds.Width / 2), [int]($bounds.Y + $bounds.Height / 2))
+            [TafelraumTestPointer]::mouse_event(2, 0, 0, 0, [UIntPtr]::Zero)
+            [TafelraumTestPointer]::mouse_event(4, 0, 0, 0, [UIntPtr]::Zero)
+          }
+
+          function Invoke-NativeElement($element) {
+            Write-Host "Invoking $($element.Current.Name), enabled=$($element.Current.IsEnabled)"
+            $action = $null
+            try {
+              if ($element.TryGetCurrentPattern([System.Windows.Automation.InvokePattern]::Pattern, [ref]$action)) {
+                $action.Invoke()
+                return
+              }
+              if ($element.TryGetCurrentPattern([System.Windows.Automation.ExpandCollapsePattern]::Pattern, [ref]$action)) {
+                $action.Expand()
+                return
+              }
+            } catch { Write-Host "Using the visible control after UI Automation reported: $($_.Exception.Message)" }
+            Click-NativeElement $element
           }
 
           Install-App $previous
@@ -144,6 +153,9 @@ jobs:
           }
           if ($manifest.version -ne '0.1.96' -or $manifest.sourceCommit -ne $sourceCommit) { throw 'Public feed is not ready' }
 
+          # The previous app checks automatically at startup. Let that request settle.
+          Start-Sleep -Seconds 8
+          $oldApp.Refresh()
           $window = [System.Windows.Automation.AutomationElement]::FromHandle($oldApp.MainWindowHandle)
           $nativeMenu = Find-NativeElement $window 'Tafelraum'
           $check = $null
@@ -152,6 +164,8 @@ jobs:
               Invoke-NativeElement $nativeMenu
               $check = Find-NativeElement $window ([regex]::Unescape('Nach Updates suchen \u2026'))
               if (!$check) { $check = Find-NativeElement $window ([regex]::Unescape('Check for updates \u2026')) }
+              if (!$check) { $check = Find-NativeElement $window ([regex]::Unescape('Update 0.1.96 verf\u00fcgbar \u2026')) }
+              if (!$check) { $check = Find-NativeElement $window ([regex]::Unescape('Update 0.1.96 available \u2026')) }
             } catch { Write-Host $_.Exception.Message }
           }
           if (!$check) {
@@ -180,7 +194,7 @@ jobs:
             Start-Sleep -Seconds 1
           }
           if (!$install) { throw 'Updater confirmation dialog did not appear' }
-          Invoke-NativeElement $install
+          Click-NativeElement $install
           Write-Host "Confirmed Windows update dialog"
           if (!$oldApp.WaitForExit(300000)) { throw 'Old process did not hand off to the updater' }
           $restarted = $null
