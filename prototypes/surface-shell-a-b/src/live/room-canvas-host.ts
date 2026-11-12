@@ -12,7 +12,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import type {ExcalidrawElement} from '@excalidraw/excalidraw/element/types';
 import { CaptureUpdateAction, newElementWith } from '@excalidraw/excalidraw';
-import type { ClipFrame } from '../canvas/clip-frames.ts';
+import type { ClipFrame, ClipScrollAnchor } from '../canvas/clip-frames.ts';
 import { getInteractiveHtmlFocus, getInteractiveHtmlScroll, getInteractiveHtmlState, subscribeInteractiveHtmlFocus, subscribeInteractiveHtmlScroll, showInteractiveHtmlRoomFocus, type RoomInteractiveMaterial } from '../canvas/interactive-html-live.ts';
 import { getPublicViewport, createPublicProjector, type PublicProjection } from './public-projection.ts';
 import type { HostPointerChannel } from './host-pointer-channel.ts';
@@ -32,7 +32,7 @@ import { readRoomHtmlFocusMessage, type RoomHtmlFocusMessage } from './room-html
 import {RoomHtmlPlaybackHost,type RoomPlaybackMessage} from './room-html-playback.ts';
 import {prepareHtmlPlaybackRoom,setHtmlPlaybackRoomActive} from '../canvas/interactive-html-live.ts';
 
-export type RoomTarget = { kind:'canvas' } | { kind:'clip'; clip:ClipFrame } | { kind:'material'; id:string; title:string; cueId?:string; number?:number };
+export type RoomTarget = { kind:'canvas' } | { kind:'clip'; clip:ClipFrame; scrollAnchor?:ClipScrollAnchor } | { kind:'material'; id:string; title:string; cueId?:string; number?:number };
 export type RoomState = { active:boolean; ready:boolean; startup:'waiting'|'failed'|null; target:RoomTarget; mediaId:string|null; mediaFullscreenId:string|null; error:string|null; screen:{width:number;height:number}|null };
 type RoomMessage = {type:'ready'; channel:string;width:number;height:number}|{type:'closed';channel:string}
   | {type:'media-status';channel:string;generation:number;revision:number;id:string;sequence:number;status:unknown}
@@ -67,6 +67,7 @@ export class RoomCanvasHost {
   private windowTimer:ReturnType<typeof setInterval>|undefined;
   private unlisten:UnlistenFn|null = null;
   private stopScroll:(()=>void)|null=null;
+  private clipHtmlScroll=new Map<string,{x:number;y:number}>();
   private stopFocus:(()=>void)|null=null;
   private roomFocus:RoomHtmlFocusMessage|null=null;
   private stopPointer:(()=>void)|null=null;
@@ -183,6 +184,7 @@ export class RoomCanvasHost {
     this.unsubscribes.forEach(stop=>stop());this.unsubscribes=[];
     if (lessonId !== this.lessonId) {
       this.htmlPlayback?.clear();
+      this.clipHtmlScroll.clear();
       this.generation++;this.revision=0;this.sceneVersion++;this.fullProjection=null;this.materialProjection=null;
       this.sentAssets.clear();this.missingTarget=false;
       this.neutralRevision=0;
@@ -344,7 +346,9 @@ export class RoomCanvasHost {
     this.sharedViewport=getPublicViewport(this.api);
     this.update({active:true,ready:false,startup:'waiting',target:canvasTarget,error:null});
     if(initialTarget.kind!=='canvas')this.setTarget(initialTarget);
-    this.stopScroll=subscribeInteractiveHtmlScroll((localId,offset)=>this.sendScroll(localId,offset));
+    this.stopScroll=subscribeInteractiveHtmlScroll((localId,offset)=>{
+      if(this.state.target.kind!=='clip')this.sendScroll(localId,offset);
+    });
     this.stopFocus=subscribeInteractiveHtmlFocus(()=>this.sendTeacherFocus());
     try {
       if (isTauri()) {
@@ -396,6 +400,7 @@ export class RoomCanvasHost {
     this.channel?.close();this.channel=null;this.receiverReady=false;
     this.unlisten?.();this.unlisten=null;
     this.stopScroll?.();this.stopScroll=null;
+    this.clipHtmlScroll.clear();
     this.stopFocus?.();this.stopFocus=null;
     this.previewPointer.set(null);
     if (closeWindow) {
@@ -600,8 +605,8 @@ export class RoomCanvasHost {
     this.inkWire={localId:source.id,id:element.id,revision,element};this.lastInkAt=performance.now();
   }
 
-  showClip(clip:ClipFrame) {this.setTarget({kind:'clip',clip});}
-  moveClip(clip:ClipFrame) {if(this.state.target.kind==='clip'&&this.state.target.clip.id===clip.id)this.setTarget({kind:'clip',clip});}
+  showClip(clip:ClipFrame,scrollAnchor?:ClipScrollAnchor) {this.setTarget({kind:'clip',clip,scrollAnchor});}
+  moveClip(clip:ClipFrame,scrollAnchor?:ClipScrollAnchor) {if(this.state.target.kind==='clip'&&this.state.target.clip.id===clip.id)this.setTarget({kind:'clip',clip,scrollAnchor});}
   showMaterial(id:string,title:string,cueId?:string,number?:number) {
     this.setTarget({kind:'material',id,title,...(cueId?{cueId,number}:{})});
   }
@@ -689,6 +694,17 @@ export class RoomCanvasHost {
     const targetChanged=current.kind!==target.kind
       || current.kind==='material'&&target.kind==='material'&&current.id!==target.id
       || current.kind==='clip'&&target.kind==='clip'&&current.clip.id!==target.clip.id;
+    if(targetChanged){
+      this.clipHtmlScroll.clear();
+      if(target.kind==='clip')for(const element of this.api?.getSceneElements()??[]){
+        if(!element.isDeleted&&element.customData?.materialKind==='interactive-html')
+          this.clipHtmlScroll.set(element.id,getInteractiveHtmlScroll(element.id));
+      }
+    }
+    if(target.kind==='clip'&&target.scrollAnchor){
+      const {elementId,x,y}=target.scrollAnchor;
+      this.clipHtmlScroll.set(elementId,{x,y});
+    }
     // Moving/resizing the same clip only changes its camera bounds. Keep live
     // HTML leases and the confirmed output intact until its next frame arrives.
     if(targetChanged)this.htmlPlayback?.clear();
@@ -839,7 +855,15 @@ export class RoomCanvasHost {
         objects:this.roomObjects.map(({sourceId:_sourceId,...object})=>object),timers} satisfies RoomFrame);
       newAssets.forEach(asset=>this.sentAssets.add(asset.id));
       if(target.kind==='canvas')this.camera();
-      for(const material of projection.materials)if(material.roomLocalId)this.sendScroll(material.roomLocalId,getInteractiveHtmlScroll(material.roomLocalId));
+      for(const {roomLocalId} of projection.materials){
+        if(!roomLocalId)continue;
+        let offset=getInteractiveHtmlScroll(roomLocalId);
+        if(target.kind==='clip'){
+          offset=this.clipHtmlScroll.get(roomLocalId)??offset;
+          this.clipHtmlScroll.set(roomLocalId,offset);
+        }
+        this.sendScroll(roomLocalId,offset);
+      }
     } catch(error) {
       console.error('Room Canvas projection failed',error);
       if(epoch===this.epoch)this.update({ready:false,error:error instanceof Error?error.message:'Ansicht konnte nicht aktualisiert werden.'});

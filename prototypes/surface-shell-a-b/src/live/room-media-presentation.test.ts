@@ -44,7 +44,7 @@ test('Room changes the display target independently of its single video output',
     channel.receive({type:'ready',channel:channelId,width:1920,height:1080});
     const flush=async()=>{mock.timers.tick(100);await new Promise<void>(resolve=>setImmediate(resolve));};
     host.showClip(crop.clip);host.playMedia(video.id,true,12);await flush();
-    assert.deepEqual(host.state.target,crop);assert.equal(host.state.mediaId,video.id);
+    assert.deepEqual(host.state.target,{...crop,scrollAnchor:undefined});assert.equal(host.state.mediaId,video.id);
     let published=channel.sent.filter(message=>message.type==='frame').at(-1);
     channel.receive({type:'shown',channel:channelId,generation:published.scene.generation,revision:published.scene.revision});
     const releases=mock.method((host as any).htmlPlayback,'clear');
@@ -60,12 +60,14 @@ test('Room changes the display target independently of its single video output',
     assert.equal(movedFrame.scene.presentation.clip.x,crop.clip.x+8);
     assert.equal(movedFrame.assets.length,0,'moving the camera does not resend assets');
     const worksheet={...crop.clip,id:'worksheet',x:950};
-    host.showClip(worksheet);
+    const scrollAnchor={elementId:'worksheet-material',x:0,y:150};
+    host.showClip(worksheet,scrollAnchor);
     assert.equal(releases.mock.callCount(),1,'a real clip switch still releases HTML playback');
     assert.equal(host.state.ready,false,'a real clip switch waits for confirmation');
     await flush();
     const worksheetFrame=channel.sent.filter(message=>message.type==='frame').at(-1);
     assert.equal(worksheetFrame.scene.presentation.clip.id,worksheet.id);
+    assert.equal('scrollAnchor' in worksheetFrame.scene.presentation.clip,false);
     assert.equal(worksheetFrame.media.id,video.id);
     assert.equal(worksheetFrame.media.playing,true);
     assert.equal(worksheetFrame.media.outsideTarget,true);
@@ -74,7 +76,7 @@ test('Room changes the display target independently of its single video output',
     sendRoomVideoCommand(video.id,{type:'pause'});
     assert.equal(channel.sent.at(-1).action.type,'pause');
     sendRoomVideoCommand(video.id,{type:'play'});
-    assert.deepEqual(host.state.target,{kind:'clip',clip:worksheet});
+    assert.deepEqual(host.state.target,{kind:'clip',clip:worksheet,scrollAnchor});
     assert.equal(channel.sent.at(-1).action.type,'play');
     host.showClip(crop.clip);await flush();
     releases.mock.restore();
@@ -97,10 +99,10 @@ test('Room changes the display target independently of its single video output',
 
     assert.equal(channel.sent.filter(message=>message.type==='frame').at(-1)?.media?.playing,true);
     host.setMediaFullscreen(video.id,true);await flush();
-    assert.deepEqual(host.state.target,crop);
+    assert.deepEqual(host.state.target,{...crop,scrollAnchor:undefined});
     const full=channel.sent.filter(message=>message.type==='frame').at(-1);
     assert.equal(full.mediaFullscreen,true);assert.equal(full.scene.presentation.clip.id,video.id);
-    host.playMedia(video.id,false,21);assert.deepEqual(host.state.target,crop);
+    host.playMedia(video.id,false,21);assert.deepEqual(host.state.target,{...crop,scrollAnchor:undefined});
     channel.receive({type:'media-fullscreen-exit',channel:channelId,generation:full.scene.generation-1,id:video.id});
     assert.equal(host.state.mediaFullscreenId,video.id);
     channel.receive({type:'media-fullscreen-exit',channel:channelId,generation:full.scene.generation,id:video.id});await flush();

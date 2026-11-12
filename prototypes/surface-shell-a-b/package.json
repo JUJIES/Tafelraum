@@ -7,7 +7,7 @@
     "email": "mail@jujies.app",
     "url": "https://github.com/JUJIES"
   },
-  "version": "0.1.95",
+  "version": "0.1.96",
   "type": "module",
   "scripts": {
     "pretest": "node ../../scripts/check-distribution.mjs && npm run test:html-playback",

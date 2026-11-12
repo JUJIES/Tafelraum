@@ -10,8 +10,9 @@ export function pruneRemovedMaterials(snapshot, removals, lessonId) {
     return material && (paths.has(data?.archiveMaterialPath)
       || !data?.archiveMaterialPath && legacyNames.has(data?.sourceFileName));
   }).map(element => element.id)]);
+  const clipTargetId = clip => clip.kind === 'material' ? clip.elementId : (clip.htmlAnchor ?? clip.pdfAnchor)?.elementId;
   if (!removedIds.size || !snapshot.elements.some(element => removedIds.has(element.id))
-    && !snapshot.clips?.some(clip => clip.kind === "material" && removedIds.has(clip.elementId))
+    && !snapshot.clips?.some(clip => removedIds.has(clipTargetId(clip)))
     && !Object.keys(snapshot.interactiveHtmlStates ?? {}).some(id => removedIds.has(id))) return snapshot;
   // Only owner-specific annotation/cover groups, never arbitrary user groups.
   let changed = true;
@@ -38,7 +39,7 @@ export function pruneRemovedMaterials(snapshot, removals, lessonId) {
       return boundElements?.length !== element.boundElements?.length || startBinding !== element.startBinding || endBinding !== element.endBinding
         ? {...element, boundElements, startBinding, endBinding} : element;
     }),
-    clips: snapshot.clips?.filter(clip => clip.kind !== 'material' || !removedIds.has(clip.elementId)),
+    clips: snapshot.clips?.filter(clip => !removedIds.has(clipTargetId(clip))),
     interactiveHtmlStates: snapshot.interactiveHtmlStates && Object.fromEntries(
       Object.entries(snapshot.interactiveHtmlStates).filter(([id]) => !removedIds.has(id))),
   };

@@ -1,4 +1,9 @@
 {
+  "0.1.96": [
+    "HTML worksheet clips follow the text in the teacher view while Room Canvas keeps showing the selected passage. Clip frames can still be moved and resized.",
+    "PDF clips stay attached to their page when it moves on the canvas, including pages from multi-page PDFs.",
+    "Links are easier to read while typing in dark mode."
+  ],
   "0.1.95": [
     "Copy images between lessons and keep their editable canvas objects and source material after reopening.",
     "Retry a Room Canvas startup that fails to show content, and pan within a zoomed Room clip.",

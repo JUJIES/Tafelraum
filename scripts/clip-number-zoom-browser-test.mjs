@@ -1,7 +1,7 @@
 // Real ClipLayer/CanvasSurface with a separate, synthetic archive.
 // From the app directory: npm run test:browser:clips
 import assert from 'node:assert/strict';
-import {mkdir, mkdtemp, writeFile, rm} from 'node:fs/promises';
+import {mkdir, mkdtemp, readFile, writeFile, rm} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {fileURLToPath} from 'node:url';
 import {createArchiveMiddleware} from '../prototypes/surface-shell-a-b/archive-server.mjs';
@@ -15,19 +15,35 @@ const {createServer} = await import(require.resolve('vite'));
 const {default:react} = await import(require.resolve('@vitejs/plugin-react'));
 const pw = process.argv[2] ? await import(process.argv[2]) : require('playwright');
 const archiveRoot = await mkdtemp(out + 'archive-');
-await initializeEmptyArchive(archiveRoot);
-const archive = createArchiveMiddleware(archiveRoot);
+let archive;
 const server = await createServer({
   configFile:false, root:root + 'prototypes/surface-shell-a-b', cacheDir:out + 'vite-cache',
   define:{__TAFELRAUM_VERSION__:JSON.stringify('clip-number-check')},
   server:{host:'127.0.0.1', port:0, hmr:false, watch:{ignored:['**/src-tauri/**','**/desktop-resources/**']}},
-  plugins:[react(), {name:'synthetic-clip-number-archive', configureServer(s) {s.middlewares.use(archive);}}],
+  plugins:[react(), {name:'synthetic-clip-number-archive', configureServer(s) {
+    s.middlewares.use((request,response,next) => archive(request,response,next));
+  }}],
 });
 const results = [];
 try {
   await server.listen();
   const origin = 'http://127.0.0.1:' + server.httpServer.address().port;
   for (const engine of ['chromium','webkit']) {
+    const engineArchive = archiveRoot + '/' + engine;
+    await mkdir(engineArchive);
+    await initializeEmptyArchive(engineArchive);
+    const catalogPath = engineArchive + '/archive.json';
+    const catalog = JSON.parse(await readFile(catalogPath,'utf8'));
+    catalog.catalog.lessons[0].materialBasis = {scope:'lesson',archivePath:'material',archiveSeriesId:'series-start'};
+    await writeFile(catalogPath,JSON.stringify(catalog));
+    const htmlPath = engineArchive + '/material/interaktiv/scroll-test';
+    await mkdir(htmlPath,{recursive:true});
+    await writeFile(htmlPath + '/manifest.json',JSON.stringify({
+      format:'tafelraum-interactive-html',schemaVersion:1,id:'scroll-test',title:'Scrolltest',entry:'index.html',
+      defaultViewport:{width:600,height:448},
+    }));
+    await writeFile(htmlPath + '/index.html','<!doctype html><meta charset="utf-8"><title>Scrolltest</title><main style="height:1600px">Scrollbares Testblatt</main>');
+    archive = createArchiveMiddleware(engineArchive);
     const browser = await pw[engine].launch({headless:true});
     try {
       const page = await browser.newPage({viewport:{width:1920,height:1050}, hasTouch:true});
@@ -158,13 +174,11 @@ try {
       await page.getByRole('button', {name:'Clip-Änderung rückgängig',exact:true}).click();
       await material.waitFor();
 
-      // The fixture overlays an iframe on the host. From here on only host controls receive clicks.
-      await page.addStyleTag({content:'#clip-fixture-room { pointer-events: none; }'});
       // The first room document opens but never runs its receiver, as with a
       // white window. Recovery must actually launch a new receiver and show the
       // already selected clip, not just retry publishing to the dead channel.
       await page.getByRole('button', {name:/^Room Canvas,/}).click();
-      await page.getByRole('button', {name:'Beenden',exact:true}).click();
+      await page.getByRole('button', {name:'Beenden',exact:true}).press('Enter');
       await page.route('**/room.html?channel=*', route => route.fulfill({
         contentType:'text/html', body:'<!doctype html><title>Room Canvas</title>',
       }), {times:1});
@@ -182,8 +196,168 @@ try {
         document.querySelector('[aria-label="Materialclip 99 zeigen"]').closest('.clip-frame').classList.contains('is-active'));
       assert.notEqual(await page.locator('#clip-fixture-room').getAttribute('src'),firstRoomUrl);
       await startupError.waitFor({state:'hidden'});
+
+      // The PDF renderer places an independent raster element per page.
+      await page.evaluate(() => window.clipFixture.api.updateScene({
+        appState:{zoom:{value:1},scrollX:0,scrollY:0,selectedElementIds:{}},
+      }));
+      await page.waitForFunction(() => +document.querySelector('.clip-layer').style.getPropertyValue('--clip-number-scale') === 1);
+      const pdf = await page.evaluate(async () => {
+        const {api,port} = window.clipFixture;
+        const image = api.getSceneElements().find(element => element.type === 'image');
+        const file = api.getFiles()[image.fileId];
+        const layer = document.querySelector('.clip-layer').getBoundingClientRect();
+        await port.placeImages([{id:crypto.randomUUID(),dataUrl:file.dataURL,mimeType:'image/png',pixelWidth:640,pixelHeight:427,
+          source:{fileName:'Testblatt.pdf',kind:'pdf-page',pageNumber:1}},
+          {id:crypto.randomUUID(),dataUrl:file.dataURL,mimeType:'image/png',pixelWidth:640,pixelHeight:427,
+            source:{fileName:'Testblatt.pdf',kind:'pdf-page',pageNumber:2}}],{clientX:layer.x+1240,clientY:layer.y+375});
+        const sheet = api.getSceneElements().find(element => element.customData?.sourceKind === 'pdf-page');
+        return {id:sheet.id,x:sheet.x,y:sheet.y};
+      });
+      const layer = await page.locator('.clip-layer').boundingBox();
+      const pageX = layer.x + pdf.x, pageY = layer.y + pdf.y;
+      await page.getByRole('button', {name:'Clip aufnehmen',exact:true}).click();
+      await page.mouse.move(pageX+50,pageY+55);
+      await page.mouse.down();
+      await page.mouse.move(pageX+250,pageY+170,{steps:10});
+      await page.mouse.up();
+      const pdfClip = page.getByRole('button', {name:'Clip 2 zeigen',exact:true});
+      const frame = pdfClip.locator('xpath=../..');
+      const framePosition = locator => locator.evaluate(el => ({x:parseFloat(el.style.left),y:parseFloat(el.style.top)}));
+      const freeFrame = area.locator('xpath=../..');
+      const originalFrame = await framePosition(frame);
+      const originalFree = await framePosition(freeFrame);
+      await page.keyboard.press('2');
+      await page.waitForFunction(() => window.clipFixture.room.state.ready && window.clipFixture.room.state.target.kind === 'clip');
+      await page.getByRole('button', {name:'Auswahl',exact:true}).click();
+      await page.mouse.move(pageX+300,pageY+210);
+      await page.mouse.down();
+      await page.mouse.move(pageX+425,pageY+295,{steps:10});
+      await page.mouse.up();
+      await page.waitForFunction(({id,x,y}) => {
+        const current = window.clipFixture.api.getSceneElements().find(element => element.id === id);
+        return current?.x === x+125 && current?.y === y+85;
+      },pdf);
+      const movedFrame = {x:originalFrame.x+125,y:originalFrame.y+85};
+      await page.waitForFunction(({x,y}) => {
+        const target = window.clipFixture.room.state.target;
+        return target.kind === 'clip' && target.clip.x === x && target.clip.y === y;
+      },movedFrame);
+      assert.deepEqual(await framePosition(frame),movedFrame);
+      assert.deepEqual(await framePosition(freeFrame),originalFree);
+      await page.evaluate(() => window.clipFixture.port.undo());
+      await page.waitForFunction(({x,y}) => {
+        const target = window.clipFixture.room.state.target;
+        return target.kind === 'clip' && target.clip.x === x && target.clip.y === y;
+      },originalFrame,{timeout:3500}).catch(async error => {
+        const state = await page.evaluate(id => {
+          const {api,room} = window.clipFixture;
+          const image = api.getSceneElements().find(element => element.id === id);
+          return {image:{x:image?.x,y:image?.y,sourceKind:image?.customData?.sourceKind},target:room.state.target};
+        },pdf.id);
+        throw new Error(`Undo did not return to ${JSON.stringify(originalFrame)}. Current state: ${JSON.stringify(state)}`,{cause:error});
+      });
+      assert.deepEqual(await framePosition(frame),originalFrame);
+      await page.evaluate(() => window.clipFixture.port.redo());
+      await page.waitForFunction(({x,y}) => {
+        const target = window.clipFixture.room.state.target;
+        return target.kind === 'clip' && target.clip.x === x && target.clip.y === y;
+      },movedFrame);
+      await page.evaluate(() => window.clipFixture.port.flushPersistence());
+      await page.reload();
+      assert.deepEqual(await framePosition(frame),movedFrame);
+      assert.deepEqual(await framePosition(freeFrame),originalFree);
+
+      await page.evaluate(() => window.clipFixture.port.placeInteractiveHtml({
+        archiveMaterialPath:'material/interaktiv/scroll-test',id:'scroll-test',lessonId:'lesson-start',
+        title:'Scrolltest',entry:'index.html',print:null,defaultViewport:{width:600,height:448},
+      },{clientX:700,clientY:400}));
+      const teacherHtml = page.frameLocator('.interactive-html-canvas-frame iframe').locator('main');
+      await teacherHtml.waitFor();
+      await page.evaluate(async () => {
+        const {getInteractiveHtmlScroll} = await import('/src/canvas/interactive-html-live.ts');
+        window.readTeacherHtmlOffset = () => {
+          const sheet = window.clipFixture.api.getSceneElements().find(el => el.customData?.materialKind==='interactive-html');
+          return sheet && getInteractiveHtmlScroll(sheet.id).y;
+        };
+      });
+      const scrollOffset = locator => locator.evaluate(el => el.ownerDocument.defaultView.scrollY);
+      const scrollTeacher = async top => {
+        await teacherHtml.evaluate((el,y) => el.ownerDocument.defaultView.scrollTo(0,y),top);
+        await page.waitForFunction(y => window.readTeacherHtmlOffset()===y,top);
+      };
+      await scrollTeacher(150);
+      const sheetBox = await page.locator('.interactive-html-canvas-frame').boundingBox();
+      await page.getByRole('button', {name:'Clip aufnehmen',exact:true}).click();
+      await page.mouse.move(sheetBox.x+80,sheetBox.y+140);
+      await page.mouse.down();
+      await page.mouse.move(sheetBox.x+420,sheetBox.y+340,{steps:10});
+      await page.mouse.up();
+      const htmlClip = page.getByRole('button',{name:'Clip 3 zeigen',exact:true});
+      const htmlFrame = htmlClip.locator('xpath=../..');
+      const initialHtmlFrame = await framePosition(htmlFrame);
+      await page.getByRole('button', {name:'Präsentieren',exact:true}).click();
+      await page.getByRole('button', {name:'Starten',exact:true}).click();
+      await page.waitForFunction(() => window.clipFixture.room.state.ready);
+      await page.keyboard.press('3');
+      await page.waitForFunction(() => window.clipFixture.room.state.ready && window.clipFixture.room.state.target.kind==='clip');
+      const roomHtml = roomFrame.frameLocator('[data-room-material-id] iframe').getByText('Scrollbares Testblatt',{exact:true});
+      const waitForRoomOffset = y => roomHtml.evaluate((el,expected) => new Promise((resolve,reject) => {
+        const view=el.ownerDocument.defaultView;
+        const timeout=view.setTimeout(() => reject(new Error(`Room scroll: ${view.scrollY}, expected ${expected}, root: ${el.ownerDocument.scrollingElement?.scrollHeight}/${view.innerHeight}`)),4000);
+        const check=()=>{if(view.scrollY===expected){view.clearTimeout(timeout);resolve();}else view.requestAnimationFrame(check);};
+        check();
+      }),y);
+      await waitForRoomOffset(150);
+      const outputGeometry = () => page.evaluate(() => window.clipFixture.room.getPreviewSnapshot()?.scene.presentation?.clip);
+      const initialOutput = await outputGeometry();
+      await scrollTeacher(230);
+      await page.waitForFunction(y => {
+        const frame=document.querySelector('[aria-label="Clip 3 zeigen"]')?.closest('.clip-frame');
+        return frame && Math.abs(parseFloat(frame.style.top)-y)<.1;
+      },initialHtmlFrame.y-80);
+      assert.deepEqual(await outputGeometry(),initialOutput,'scrolling the teacher never moves the output clip');
+      assert.equal(await scrollOffset(roomHtml),150);
+      await scrollTeacher(700);
+      await htmlClip.waitFor({state:'hidden'});
+      assert.deepEqual(await outputGeometry(),initialOutput,'scrolling the teacher frame off the sheet keeps Room presenting');
+      await scrollTeacher(150);
+      assert.deepEqual(await framePosition(htmlFrame),initialHtmlFrame);
+
+      const moveHandle = page.getByRole('button',{name:'Clip 3 verschieben'});
+      const handle = await moveHandle.boundingBox();
+      await page.mouse.move(handle.x+handle.width/2,handle.y+handle.height/2);
+      await page.mouse.down();
+      await page.mouse.move(handle.x+handle.width/2+32,handle.y+handle.height/2+20,{steps:8});
+      await page.mouse.up();
+      await page.waitForFunction(x => {
+        const clip=window.clipFixture.room.getPreviewSnapshot()?.scene.presentation?.clip;
+        return clip && Math.abs(clip.x-x)<.1;
+      },initialOutput.x+32);
+      const movedHtmlFrame=await framePosition(htmlFrame);
+      assert.equal(await scrollOffset(roomHtml),150);
+      const roomHtmlFrame = roomFrame.locator('[data-room-material-id] iframe');
+      const htmlBox = await roomHtmlFrame.boundingBox();
+      await page.mouse.move(htmlBox.x+htmlBox.width/2,htmlBox.y+htmlBox.height/2);
+      await page.mouse.wheel(0,180);
+      const localOffset = await roomHtml.evaluate(el => new Promise((resolve,reject) => {
+        const view=el.ownerDocument.defaultView;
+        const timeout=view.setTimeout(() => reject(new Error('Manual Room scroll did not move the sheet')),4000);
+        const check=()=>{if(view.scrollY>150){view.clearTimeout(timeout);resolve(view.scrollY);}else view.requestAnimationFrame(check);};
+        check();
+      }));
+      await scrollTeacher(610);
+      await htmlClip.waitFor({state:'hidden'});
+      assert.equal(await scrollOffset(roomHtml),localOffset,'manual Room scroll survives teacher scroll');
+      await scrollTeacher(150);
+      assert.deepEqual(await framePosition(htmlFrame),movedHtmlFrame);
+      await page.evaluate(() => window.clipFixture.port.flushPersistence());
+      await page.reload();
+      await htmlClip.waitFor();
+      const reloaded = await framePosition(htmlFrame);
+      assert.ok(Math.abs(reloaded.y-(movedHtmlFrame.y+150))<.1,'reload restores the document anchor with the teacher scrolled to the top');
       assert.deepEqual(errors,[]);
-      results.push({engine,checks:'touch extension, keyboard activation, context menu, reassignment 99, Escape, deletion/undo, unchanged saved clips, local Room hand zoom and pan, blank Room startup and retry to selected clip',errors});
+      results.push({engine,checks:'clip controls, Room gestures and recovery, PDF clip binding, stable HTML scroll in active Room clip, manual Room scroll and clip movement',errors});
     } finally {await browser.close();}
   }
   await writeFile(out + 'checks.json',JSON.stringify(results,null,2));

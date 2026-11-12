@@ -190,6 +190,19 @@ Nach Auswahl eines HTML-Materials schaltet das Speicher-Icon die lokale Inhaltsp
 
 In Room Canvas kann dieselbe Materialinstanz zusätzlich im zweiten Fenster bearbeitet werden. Beide Eingaben laufen über die vorhandene fachliche Zustandsbrücke und denselben Stunden-Snapshot. Für Standardfelder verbindet der Host Änderungen je Feld; bei eigener Paket-API ist der JSON-Pfad die kleinste generische Konflikteinheit. Paket-`applyState` soll bei unveränderten Feldern den aktiven Textcursor nicht versetzen. Room-Scrollstand und Eingabefokus sind fensterlokal. Remote Canvas behält seine separate Freigabelogik.
 
+Ein HTML-gebundener Ausschnittclip speichert die Instanz, ihre Position und
+den Root-Scrollstand bei der Aufnahme. Ältere Clips mit eindeutigem
+HTML-Material unter ihrer Mitte werden beim Laden für den Dokumentanfang
+zugeordnet. Die Lehrerprojektion nutzt dieselbe Scrolltranslation wie
+Markierungen und blendet den Rahmen an der Kante der Materialansicht aus.
+Der Room-Host verwendet die gespeicherte Geometrie und den gespeicherten
+Scrollstand. Bewusstes Verschieben oder Skalieren des Rahmens ändert den
+Ausschnitt. Direktes Scrollen im Raumfenster hat dort weiterhin Vorrang.
+Formulare bleiben über die vorhandene Zustandsbrücke gekoppelt.
+Die Bindung setzt eine vom Embed gemeldete Root-Scrollposition voraus.
+Isolierte Fremd-Iframes und innere Scrollcontainer ohne solche Meldung
+liefern keine verlässliche Dokumentposition.
+
 D-247 ergänzt den bestehenden lokalen Lehrerfokus: Beim gemeinsamen Ausfüllen zeigt Room den blinkenden Schreibstrich oder die gewählte Textspanne des aktiven Lehrerfelds. Die injizierte Brücke misst Textgeometrie für auswählbare Standard-Textfelder, Textareas und `contenteditable`; Room projiziert sie am entsprechenden Feld, ohne dessen Fokus oder DOM-Auswahl zu setzen. Feldinhalt und sichtbare Textgeometrie müssen zusammenpassen. Eigene Room-Eingabe behält ihren nativen Cursor; das bestehende `Lehrkraft`-Label bleibt als Feldhinweis erhalten. Passwortfelder und Controls ohne lesbare Textauswahl erhalten keine Textprojektion. Der Dokument-Scroll bleibt fensterlokal; nur der innere Textviewport eines gerade nicht vorne bedienten Felds darf der Lehrereingabe folgen. Diese begrenzte Präsenz gehört ausschließlich in den lokalen Room-Kanal, nie in Paket-API, Stunden-Snapshot, Remote-Wire oder Raumvorschau. Neue Materialpakete benötigen dafür keine Anpassung.
 
 Eigene JavaScript-Abläufe wie Quizrunde, Aufdeckstufe, Prüfrückmeldung oder Spielstand gehören ebenfalls in diesen semantischen Paketvertrag: `window.tafelraumLive.getState()`, `applyState(value)` und `tafelraum:statechange` nach jeder fachlichen Änderung. Die automatische Formularbrücke kann interne JavaScript-Variablen nicht erkennen. Dieser Room-Vertrag gilt auch ohne `manifest.live.state = v1`; dessen Deklaration würde die Paketdateien zusätzlich an Remote-Teilnehmer ausliefern und ist für lehrerseitige Lösungen ungeeignet. Vor der Übernahme eines solchen Pakets beide Klickrichtungen mit der konkreten Interaktion prüfen.

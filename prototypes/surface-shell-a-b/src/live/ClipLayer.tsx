@@ -3,19 +3,20 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject, type P
 import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types';
 import { getCommonBounds } from '@excalidraw/excalidraw';
 import { Grip, X } from 'lucide-react';
-import { assignMaterialClip, canBeMaterialClipElement, isMaterialClip, nextClipNumber, type ClipFrame, type PresentationClip } from '../canvas/clip-frames';
+import { areaClipElementId, areaClipScrollAnchor, assignMaterialClip, bindAreaClip, canBeMaterialClipElement, isMaterialClip, nextClipNumber, resolveAreaClip, htmlClipMaterial, type ClipScrollAnchor, type ClipFrame, type PresentationClip } from '../canvas/clip-frames';
+import { getInteractiveHtmlScroll, subscribeInteractiveHtmlScroll } from '../canvas/interactive-html-live';
 import { materialContainsPoint } from '../canvas/material-annotation-targets';
 import { getMaterialBorderRadius } from '../canvas/material-appearance';
 import './clip-layer.css';
 
 export type ClipControls = {
-  creating: boolean; finish(): void; created(): void; show(clip: PresentationClip): void; removed(clip: PresentationClip): void; replaced(clip: PresentationClip): void;
-  move(clip: ClipFrame): void;
-  activeClip: Omit<ClipFrame, "number"> | null; activeId: string | null; canShowMaterial(elementId:string): boolean; pending: boolean; shown: boolean;
+  creating: boolean; finish(): void; created(): void; show(clip: PresentationClip, scrollAnchor?: ClipScrollAnchor): void; removed(clip: PresentationClip): void; replaced(clip: PresentationClip): void;
+  move(clip: ClipFrame, scrollAnchor?: ClipScrollAnchor): void;
+  activeClip: Omit<ClipFrame, "number"> | null; activeScrollAnchor?: ClipScrollAnchor | null; activeId: string | null; canShowMaterial(elementId:string): boolean; pending: boolean; shown: boolean;
   shortcut: RefObject<((number: number) => boolean) | null>;
   addSelected: RefObject<((number?: number) => boolean) | null>;
 };
-type Drag = { pointer: number; x: number; y: number; before: ClipFrame; kind: 'create' | 'move' | 'resize'; materialId?: string };
+type Drag = { pointer: number; x: number; y: number; before: ClipFrame; kind: 'create' | 'move' | 'resize'; materialId?: string; output?: ClipFrame; scrollAnchor?: ClipScrollAnchor };
 export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
   externalCommit?: RefObject<((clips: PresentationClip[]) => void) | null>;
   api: ExcalidrawImperativeAPI; clips: PresentationClip[]; onChange(clips: PresentationClip[]): void; controls: ClipControls;
@@ -45,12 +46,7 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
   },[]);
   const [, setMaterialRevision] = useState(0);
   useEffect(() => { if (!undo) return; const timer = setTimeout(()=>setUndo(null),8000); return ()=>clearTimeout(timer); }, [undo]);
-  const change = (next: PresentationClip[]) => {
-    onChange(next);
-    const active = next.find(clip => clip.id === controls.activeClip?.id);
-    if (active && !isMaterialClip(active)) controls.move(active);
-  };
-  const commit = (next: PresentationClip[]) => { setUndo(clips); change(next); };
+  const commit = (next: PresentationClip[]) => { setUndo(clips); onChange(next); };
   const drag = useRef<Drag | null>(null), layer = useRef<HTMLDivElement>(null);
   const latest = useRef({clips, controls, onChange}); latest.current = {clips, controls, onChange};
   const addMaterial = (elementId: string, number?: number) => {
@@ -95,9 +91,9 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
     };
     const unsub = api.onScrollChange(refresh), changed = api.onChange(() => {
       refresh();
-      const ids = latest.current.clips.filter(isMaterialClip).map(clip => clip.elementId);
-      if (ids.length === 0) return;
-      const materialIds = new Set(ids);
+      const materialIds = new Set(latest.current.clips.map(clip => isMaterialClip(clip) ? clip.elementId : areaClipElementId(clip)));
+      materialIds.delete(undefined);
+      if (!materialIds.size) return;
       const geometry = api.getSceneElements().filter(element => materialIds.has(element.id))
         .map(element => [element.id,element.x,element.y,element.width,element.height,element.angle,element.isDeleted,element.roundness]);
       const signature = JSON.stringify(geometry);
@@ -106,9 +102,13 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
         setMaterialRevision(value => value + 1);
       }
     });
+    const scroll = subscribeInteractiveHtmlScroll(id => {
+      if (latest.current.clips.some(clip => !isMaterialClip(clip) && clip.htmlAnchor?.elementId === id))
+        setMaterialRevision(value => value + 1);
+    });
     const observer = new ResizeObserver(refresh);
     if (layer.current) observer.observe(layer.current);
-    return () => { unsub(); changed(); observer.disconnect(); };
+    return () => { unsub(); changed(); scroll(); observer.disconnect(); };
   }, [api]);
   useEffect(() => {
     if (!externalCommit) return;
@@ -117,8 +117,6 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
       current.clips.filter(c => !next.some(n => n.id === c.id && JSON.stringify(n) === JSON.stringify(c))).forEach(current.controls.replaced);
       setUndo(current.clips);
       current.onChange(next);
-      const active = next.find(c => c.id === current.controls.activeId);
-      if (active && !isMaterialClip(active)) current.controls.move(active);
     };
     return () => { externalCommit.current = null; };
   }, [externalCommit]);
@@ -129,7 +127,9 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
       if (!clip || current.controls.creating || api.getAppState().editingTextElement
         || (isMaterialClip(clip) && (!current.controls.canShowMaterial(clip.elementId)
           || !api.getSceneElements().some(element => element.id === clip.elementId && canBeMaterialClipElement(element))))) return false;
-      current.controls.show(clip); return true;
+      const target = isMaterialClip(clip) ? clip : resolveAreaClip(clip, api.getSceneElements());
+      if (!target) return false;
+      current.controls.show(target,isMaterialClip(clip) ? undefined : areaClipScrollAnchor(clip)); return true;
     };
     controls.addSelected.current = number => {
       if (api.getAppState().editingTextElement) return false;
@@ -146,7 +146,7 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
     const escape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || (!drag.current && !latest.current.controls.creating)) return;
       event.preventDefault(); event.stopPropagation();
-      if (drag.current?.kind !== 'create' && drag.current) latest.current.controls.move(drag.current.before);
+      if (drag.current?.output) latest.current.controls.move(drag.current.output,drag.current.scrollAnchor);
       if (drag.current && layer.current?.hasPointerCapture(drag.current.pointer)) layer.current.releasePointerCapture(drag.current.pointer);
       drag.current = null; setDraft(null); latest.current.controls.finish();
     };
@@ -160,7 +160,11 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
   const begin = (event: ReactPointerEvent, before: ClipFrame, kind: Drag['kind'], materialId?: string) => {
     if (event.button !== 0) return;
     event.preventDefault(); event.stopPropagation();
-    const p = point(event); drag.current = {pointer:event.pointerId, ...p, before, kind, materialId};
+    const original = clips.find(clip => clip.id === before.id);
+    const area = original && !isMaterialClip(original) ? original : undefined;
+    const output = area ? resolveAreaClip(area,api.getSceneElements()) ?? undefined : undefined;
+    const p = point(event);
+    drag.current = {pointer:event.pointerId, ...p, before, kind, materialId, output, scrollAnchor:area && areaClipScrollAnchor(area)};
     layer.current!.setPointerCapture(event.pointerId); setDraft(before);
   };
   const finish = (event: ReactPointerEvent, cancelled = false) => {
@@ -173,10 +177,13 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
       && Math.hypot(end.x-current.x,end.y-current.y)*api.getAppState().zoom.value < 10) {
       completed = addMaterial(current.materialId);
     } else if (!cancelled && draft && draft.width >= 20 && draft.height >= 20) {
-      commit(current.kind === 'create' ? [...clips, draft] : clips.map(clip => clip.id === draft.id ? draft : clip));
+      const previous = clips.find(clip => clip.id === draft.id);
+      const bound = bindAreaClip(draft,api.getSceneElements(),getInteractiveHtmlScroll,
+        previous && !isMaterialClip(previous) ? previous : undefined);
+      commit(current.kind === 'create' ? [...clips, bound] : clips.map(clip => clip.id === bound.id ? bound : clip));
       if (current.kind === 'create') controls.created();
       completed = true;
-    } else if (current.kind !== 'create') controls.move(current.before);
+    } else if (current.output) controls.move(current.output,current.scrollAnchor);
     setDraft(null);
     if (completed) {
       if(!cancelled&&current.kind==='create')capturedClick.current={x:event.clientX,y:event.clientY,until:Date.now()+600};
@@ -185,7 +192,32 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
     if (layer.current?.hasPointerCapture(event.pointerId)) layer.current.releasePointerCapture(event.pointerId);
   };
   const placed = (clip: Pick<ClipFrame,"x"|"y"|"width"|"height">) => ({left:(clip.x+camera.scrollX)*camera.zoom.value,top:(clip.y+camera.scrollY)*camera.zoom.value,width:clip.width*camera.zoom.value,height:clip.height*camera.zoom.value});
-  const visible = draft ? [...clips.filter(clip => clip.id !== draft.id), draft] : clips;
+  const elements = api.getSceneElements();
+  const active = clips.find(clip => clip.id === controls.activeClip?.id);
+  const activeFrame = active && !isMaterialClip(active) ? resolveAreaClip(active, elements) : null;
+  const shown = controls.activeClip;
+  const shownScroll = controls.activeScrollAnchor;
+  const scrollAnchor = active && !isMaterialClip(active) ? areaClipScrollAnchor(active) : undefined;
+  const scrollMatches = shownScroll === undefined || (scrollAnchor?.elementId === shownScroll?.elementId
+    && scrollAnchor?.x === shownScroll?.x && scrollAnchor?.y === shownScroll?.y);
+  const frameX = activeFrame?.x, frameY = activeFrame?.y;
+  const frameWidth = activeFrame?.width, frameHeight = activeFrame?.height;
+  const editingActive = draft?.id === active?.id;
+  useEffect(() => {
+    if (!active || isMaterialClip(active) || !shown || editingActive) return;
+    if (shown.x === frameX && shown.y === frameY && shown.width === frameWidth && shown.height === frameHeight && scrollMatches) return;
+    // Apply after the editor has settled its scene update (including native undo).
+    const request = requestAnimationFrame(() => {
+      const { controls } = latest.current;
+      const current = controls.activeClip;
+      if (current?.id !== active.id) return;
+      const frame = resolveAreaClip(active, api.getSceneElements());
+      if (!frame) controls.removed(active);
+      else if (current.x !== frame.x || current.y !== frame.y || current.width !== frame.width || current.height !== frame.height || !scrollMatches) controls.move(frame,areaClipScrollAnchor(active));
+    });
+    return () => cancelAnimationFrame(request);
+  }, [api, active, editingActive, frameX, frameY, frameWidth, frameHeight, shown, scrollMatches]);
+  const visible: PresentationClip[] = draft ? [...clips.filter(clip => clip.id !== draft.id), draft] : clips;
   return <div ref={layer} className={`clip-layer ${controls.creating ? 'is-creating' : ''}`}
     style={{'--clip-number-scale': Math.min(1, camera.zoom.value)} as CSSProperties}
     onPointerDown={event => {
@@ -203,22 +235,40 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
         : current.kind === 'move' ? {...b,x:b.x+dx,y:b.y+dy}
         : {...b,width:Math.max(20,b.width+dx),height:Math.max(20,b.height+dy)};
       setDraft(next);
-      if (current.kind !== 'create') controls.move(next);
+      if (current.output) controls.move({
+        ...next,x:current.output.x+next.x-b.x,y:current.output.y+next.y-b.y,
+      },current.scrollAnchor);
     }} onPointerUp={event => finish(event)} onPointerCancel={event => finish(event,true)}>
-    {undo && !controls.creating && <div className="clip-undo"><button onClick={() => {change(undo);setUndo(null);}}>{t("Clip-Änderung rückgängig")}</button><button aria-label={t("Rückgängig-Hinweis schließen")} onClick={()=>setUndo(null)}><X/></button></div>}
+    {undo && !controls.creating && <div className="clip-undo"><button onClick={() => {onChange(undo);setUndo(null);}}>{t("Clip-Änderung rückgängig")}</button><button aria-label={t("Rückgängig-Hinweis schließen")} onClick={()=>setUndo(null)}><X/></button></div>}
     {visible.map(clip => {
       const material = isMaterialClip(clip)
-        ? api.getSceneElements().find(element => element.id === clip.elementId && !element.isDeleted
+        ? elements.find(element => element.id === clip.elementId && !element.isDeleted
           && (canBeMaterialClipElement(element) || element.customData?.materialKind === "audio")) : null;
       if (isMaterialClip(clip) && !material) return null;
       // Keep older audio frames removable without creating or presenting new audio clips.
       const audioClip = material?.customData?.materialKind === "audio";
       const canShow = !isMaterialClip(clip) || (controls.canShowMaterial(isMaterialClip(clip)?clip.elementId:'') && !audioClip);
       const bounds = material ? getCommonBounds([material]) : null;
+      const output = isMaterialClip(clip) ? null : resolveAreaClip(clip,elements);
+      const frame = isMaterialClip(clip) ? null : resolveAreaClip(clip,elements,getInteractiveHtmlScroll);
+      const html = isMaterialClip(clip) ? undefined : htmlClipMaterial(clip,elements);
       const geometry = bounds
         ? {x:bounds[0],y:bounds[1],width:bounds[2]-bounds[0],height:bounds[3]-bounds[1]}
-        : clip as ClipFrame;
+        : frame;
+      if (!geometry) return null;
       const position = placed(geometry);
+      if (html && frame && output) {
+        const [left,top,right,bottom] = getCommonBounds([html]);
+        // Trim only along the direction the document moved. A clip can
+        // deliberately include canvas margins next to the worksheet.
+        const leftInset = frame.x === output.x ? 0 : Math.max(0,left-frame.x);
+        const rightInset = frame.x === output.x ? 0 : Math.max(0,frame.x+frame.width-right);
+        const topInset = frame.y === output.y ? 0 : Math.max(0,top-frame.y);
+        const bottomInset = frame.y === output.y ? 0 : Math.max(0,frame.y+frame.height-bottom);
+        if (leftInset+rightInset >= frame.width || topInset+bottomInset >= frame.height) return null;
+        if (leftInset || rightInset || topInset || bottomInset)
+          Object.assign(position,{clipPath:`inset(${[topInset,rightInset,bottomInset,leftInset].map(n => n*camera.zoom.value+'px').join(' ')})`});
+      }
       const selected = controls.activeId === clip.id;
       const live = selected && controls.shown;
       return <div key={clip.id} className={`clip-frame ${isMaterialClip(clip) ? 'is-material' : ''} ${live ? 'is-active' : selected ? 'is-selected' : ''}`}
@@ -247,12 +297,12 @@ export function ClipLayer({api, clips, onChange, controls, externalCommit}: {
             }
           }} onPointerMove={event => {if (press.current && Math.hypot(event.clientX-press.current.x,event.clientY-press.current.y)>8) clearPress();}}
           onPointerUp={clearPress} onPointerCancel={clearPress}
-          onClick={event => {event.stopPropagation(); if (suppressClick.current) {suppressClick.current = false; return;} if (canShow) controls.show(clip);}}><span className="clip-number-badge">{clip.number}{selected && controls.pending && <span className="clip-pending"/>}</span></button>
+          onClick={event => {event.stopPropagation(); if (suppressClick.current) {suppressClick.current = false; return;} if (canShow) controls.show(output ?? clip,isMaterialClip(clip) ? undefined : areaClipScrollAnchor(clip));}}><span className="clip-number-badge">{clip.number}{selected && controls.pending && <span className="clip-pending"/>}</span></button>
       </div>
-      {!isMaterialClip(clip) && <div className="clip-frame-actions">
-        <button aria-label={t("Clip {0} verschieben", clip.number)} title={t("Verschieben")} className="clip-move" onPointerDown={event => begin(event,clip,'move')}><Grip/></button>
+      {frame && <div className="clip-frame-actions">
+        <button aria-label={t("Clip {0} verschieben", clip.number)} title={t("Verschieben")} className="clip-move" onPointerDown={event => begin(event,frame,'move')}><Grip/></button>
       </div>}
-      {!isMaterialClip(clip) && <button className="clip-resize" aria-label={t("Clip {0} Größe ändern", clip.number)} onPointerDown={event => begin(event,clip,'resize')}/>}
+      {frame && <button className="clip-resize" aria-label={t("Clip {0} Größe ändern", clip.number)} onPointerDown={event => begin(event,frame,'resize')}/>}
     </div>;})}
     {menu && (() => {
       const clip = clips.find(item => item.id === menu.clipId);

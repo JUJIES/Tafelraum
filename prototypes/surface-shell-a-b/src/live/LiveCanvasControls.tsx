@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { CaptureUpdateAction } from "@excalidraw/excalidraw";
 import { FluentToolbarIcon } from "../icons/FluentToolbarIcon";
-import { canBeMaterialClipElement, isMaterialClip, type ClipFrame, type PresentationClip } from "../canvas/clip-frames";
+import { canBeMaterialClipElement, isMaterialClip, type ClipScrollAnchor, type ClipFrame, type PresentationClip } from "../canvas/clip-frames";
 import QRCode from "qrcode";
 import { StudentPreview } from "./StudentPreview";
 import { Eye, Copy, Globe, LocateFixed, Monitor, MonitorUp, Play, QrCode, Radio, ScanLine, Square, Trash2, UsersRound, X } from "lucide-react";
@@ -88,7 +88,7 @@ export function useLiveCanvas(api: ExcalidrawImperativeAPI | null, lessonId: str
     clipControls: {
       creating: creatingClip, finish: () => setCreatingClip(false),
       created: () => undefined,
-      show: (clip: PresentationClip) => {
+      show: (clip: PresentationClip, scrollAnchor?: ClipScrollAnchor) => {
         if (isMaterialClip(clip)) {
           const element = api?.getSceneElements().find(candidate => candidate.id === clip.elementId && canBeMaterialClipElement(candidate));
           if (!element) return;
@@ -96,10 +96,10 @@ export function useLiveCanvas(api: ExcalidrawImperativeAPI | null, lessonId: str
           if(!roomState.active)return;
           const title = isTimerWidget(element) ? 'Timer' : typeof element.customData?.sourceTitle === 'string' ? element.customData.sourceTitle : t("Material");
           room.showMaterial(clip.elementId, title, clip.id, clip.number);
-        } else if(roomState.active)room.showClip(clip);
+        } else if(roomState.active)room.showClip(clip,scrollAnchor);
         else if(remoteActive)host.showClip(clip);
       },
-      move: (clip: ClipFrame) => {if(roomState.active)room.moveClip(clip);else if(remoteActive)host.moveClip(clip);},
+      move: (clip: ClipFrame, scrollAnchor?: ClipScrollAnchor) => {if(roomState.active)room.moveClip(clip,scrollAnchor);else if(remoteActive)host.moveClip(clip);},
       removed: (clip: PresentationClip) => {
         if (isMaterialClip(clip)) {
           if (room.state.target.kind === 'material' && room.state.target.cueId === clip.id) room.setCanvas();
@@ -115,6 +115,7 @@ export function useLiveCanvas(api: ExcalidrawImperativeAPI | null, lessonId: str
         if (host.state.presentation.clip?.id === clip.id) host.setFree();
       },
       activeClip: roomState.active ? roomState.target.kind==='clip'?roomState.target.clip:null : state.presentation.mode==='clip'?state.presentation.clip:null,
+      activeScrollAnchor: roomState.active && roomState.target.kind==='clip' ? roomState.target.scrollAnchor ?? null : undefined,
       activeId: roomState.active
         ? roomState.target.kind === 'clip' ? roomState.target.clip.id : roomState.target.kind === 'material' ? roomState.target.cueId ?? null : null
         : state.presentation.mode === 'clip' ? state.presentation.clip?.id ?? null : null,

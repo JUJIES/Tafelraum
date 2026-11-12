@@ -20,6 +20,13 @@ Die Lehrkraft zieht auf dem Canvas einen nummerierten Clip auf und zeigt ihn dur
 
 ## Freigabe und Persistenz
 
+Ein Ausschnittclip auf einem scrollbaren HTML-Dokument folgt in der Lehreransicht
+der Textstelle. Das Raumfenster erhält die gespeicherte Aufnahmegeometrie samt
+Dokument-Scrollstand. Absichtliches Ziehen des Rahmens bleibt eine Änderung
+des gezeigten Ausschnitts. Mehrseitige PDFs bestehen auf dem Canvas aus
+einzelnen Seitenbildern. Ein eindeutig auf einer Seite liegender Ausschnitt
+folgt deren Verschiebung und beim Pannen der Lehreransicht dem Blatt.
+
 D-306 präzisiert ausschließlich Materialcliprahmen: Ihre sichtbare Kontur übernimmt Rundung und Drehung des referenzierten Materials im aktuellen Canvaszoom. Nummer/Bedienung bleiben am bisherigen Begrenzungsrahmen. Ausschnittrechtecke, Kamerabegrenzung, Clipdaten und öffentliche Projektion bleiben unverändert. Aktuelle Darstellung und Prüfstand im Room-UI-Brief19 und Decision Log.
 
 D-311: Ausschnitt- und Materialclipnummern verwenden dieselbe sichtbare Kachel:

@@ -21,7 +21,7 @@ import { pruneRemovedMaterials, type MaterialRemoval } from "../../material-remo
 import type { LaserToolState } from "../live/LaserTool";
 import { HostPointerOverlay } from "../live/HostPointerOverlay";
 import { ClipLayer, type ClipControls } from "../live/ClipLayer";
-import { readClipFrames, type PresentationClip } from "./clip-frames";
+import { isMaterialClip, readClipFrames, restoreAreaClip, type PresentationClip } from "./clip-frames";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 import { flushSync } from "react-dom";
 import {
@@ -741,15 +741,15 @@ async function buildInitialData(
   receiveRemovals(removals);
   const loadedSnapshot = await loadCanvasSnapshot(lessonId, resolveRecovery);
   const snapshot = loadedSnapshot ? pruneRemovedMaterials(loadedSnapshot, removals, lessonId) : null;
-  receiveStoredState(
-    readClipFrames(snapshot?.clips),
-    readStoredInteractiveHtmlStates(snapshot?.interactiveHtmlStates),
-  );
   const snapshotElements = snapshot?.elements
     ? normalizeInteractiveHtmlFrameGeometry(restoreCanvasAnnotationsAfterEraser(snapshot.elements).elements)
     : null;
   const elements = (snapshotElements ? applyThemeInk(snapshotElements, theme) : createSeedElements(theme, seed))
     .filter(element => !richTextImageSourceId(element));
+  receiveStoredState(
+    readClipFrames(snapshot?.clips).map(clip => isMaterialClip(clip) ? clip : restoreAreaClip(clip,elements)),
+    readStoredInteractiveHtmlStates(snapshot?.interactiveHtmlStates),
+  );
   const referencedFileIds = [...new Set(elements.flatMap((element) => (
     referencedImageFileIds(element).filter((fileId) => fileId !== transportFileId)
   )))];

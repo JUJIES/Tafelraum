@@ -126,3 +126,37 @@ bounded hand panning, confirmed agent work phases, conflict recovery and the sha
 A4 intake rule together. The Windows A4 preview, asynchronous WebView2 window
 creation and Room render scheduler remain in the Public source. Mac and Windows
 build from the same source commit. Existing worksheet packages stay readable.
+
+
+## 12.11.2026 – HTML-Scrollstand in Room-Ausschnittclips
+
+Beim Öffnen eines Ausschnittclips hält der Room-Host den aktuellen
+Root-Scrollstand der HTML-Instanzen für das aktive Ziel. Im Raumfenster
+bleibt die Textstelle beim Weiterscrollen der Lehrkraft sichtbar. Direktes
+Scrollen im Raumfenster hat dort Vorrang. Das manuelle Verschieben oder
+Ändern der Größe desselben Rahmens übernimmt die neue Geometrie und erhält
+den Room-Scrollstand. Ein Zielwechsel erfasst die Startposition erneut.
+Die Scrollposition bleibt flüchtig. Gemeinsame Formulareingaben laufen
+weiterhin über die vorhandene Zustandsbrücke.
+
+In persönlicher Vollfassung und öffentlichem Entwicklungscheckout mit
+getrennten synthetischen Archiven in Chromium und WebKit geprüft.
+[Room-Bedienung](../design/19_ROOM_CANVAS_PILOT_UI_BRIEF.md) und
+[HTML-Vertrag](04_INTERAKTIVE_HTML_MATERIALIEN.md) beschreiben den Ablauf.
+
+
+## 12.11.2026 – Sichtbare Clipbindung an scrollbares Material und Linkkontrast
+
+Die Lehrkraft sieht den HTML-Ausschnittclip an der erfassten Textstelle.
+Die vorhandene Scrollbrücke liefert die Root-Position für die Projektion
+wie bei Markierungen. Der Rahmen scrollt aus der Materialansicht und beim
+Zurückscrollen wieder hinein. Room Canvas hält die gespeicherte Aufnahme.
+Direktes Ziehen oder Skalieren ändert den Ausschnitt. Die PDF-Bindung
+arbeitet weiter pro gerasterter Seite, auch bei mehrseitigen Dokumenten.
+Die Linkeingabe nutzt die zum Farbschema passende Oberfläche des Materialbereichs und
+markiert Fokus über den Rahmen.
+
+Chromium und WebKit in Vollfassung und öffentlichem Entwicklungscheckout
+mit synthetischen Archiven geprüft. Enthalten sind echter Griffdrag,
+unabhängiges Room-Scrollen, Reload, PDF-Seitenbewegung und Linkeingabe
+ohne Textauswahl. Gemessener Textkontrast 12,77:1 hell und 14,38:1 dunkel.

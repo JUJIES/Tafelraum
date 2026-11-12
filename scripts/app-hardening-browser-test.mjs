@@ -60,6 +60,36 @@ try{
   remoteConfigured=false;remoteFails=false;
   await page.goto(origin+'/?dev=1');
   await page.getByRole('button',{name:'Widgets',exact:true}).waitFor();
+  const materialButton=page.getByRole('button',{name:'Material hinzufügen',exact:true});
+  const settingsButton=page.getByRole('button',{name:'Einstellungen',exact:true});
+  const switchTheme=async light=>{
+   await settingsButton.click();
+   await page.getByRole('switch',{name:light?'Helles Design aktivieren':'Dunkles Design aktivieren',exact:true}).click();
+   await settingsButton.click();
+  };
+  for(const theme of ['light','dark']){
+   if(theme==='dark')await switchTheme(false);
+   await materialButton.click();
+   await page.getByRole('button',{name:'Link hinzufügen',exact:true}).click();
+   const input=page.getByRole('textbox',{name:'Link einfügen',exact:true});
+   await input.fill('https://example.org/arbeitsblatt');
+   await input.press('End');
+   const contrast=await input.evaluate(element=>{
+    const luminance=color=>color.match(/[0-9.]+/g).slice(0,3).map(Number).map(value=>{
+     const channel=value/255;
+     return channel<=.04045?channel/12.92:((channel+.055)/1.055)**2.4;
+    }).reduce((sum,value,index)=>sum+value*[.2126,.7152,.0722][index],0);
+    const foreground=luminance(getComputedStyle(element).color);
+    const background=luminance(getComputedStyle(element.parentElement).backgroundColor);
+    return (Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05);
+   });
+   assert.ok(contrast>=4.5,`${theme} link input contrast: ${contrast}`);
+   await page.locator('.lesson-material-link-form').screenshot({path:path.join(output,name+'-link-input-'+theme+'.png')});
+   checks.push(name+': '+theme+' unselected link text contrast '+contrast.toFixed(2)+':1');
+   await page.getByRole('button',{name:'Linkeingabe schließen',exact:true}).click();
+   await materialButton.click();
+  }
+  await switchTheme(true);
   if(distribution.remoteCanvas){
   await page.getByRole('button',{name:'Präsentieren',exact:true}).click();
   const remote=page.getByRole('button',{name:'Remote Canvas',exact:true});

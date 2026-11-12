@@ -3,7 +3,8 @@ import type {ExcalidrawImperativeAPI} from '@excalidraw/excalidraw/types';
 import type {ExcalidrawElement} from '@excalidraw/excalidraw/element/types';
 import {readCanvasAgentCommand,type AgentCommand} from '../../canvas-agent-protocol.mjs';
 import {transformMaterialBundle} from './material-transform';
-import {canBeMaterialClipElement,assignMaterialClip,readClipFrames,type PresentationClip} from './clip-frames';
+import {assignMaterialClip,bindAreaClip,canBeMaterialClipElement,isMaterialClip,readClipFrames,resolveAreaClip,type PresentationClip} from './clip-frames';
+import {getInteractiveHtmlScroll} from './interactive-html-live';
 import {richTextOf,richTextImageSourceId} from './rich-text-scene';
 import type {AgentMaterial} from './agent-materials';
 
@@ -28,7 +29,11 @@ export function createCanvasAgent(o:Options){
   if(signature!==lastSignature){revision++;lastSignature=signature;}
   const a=o.api.getAppState();
   return {revision:`${generation}:${revision}`,busy:o.busy(),persistence:o.persistence(),selectedIds:Object.keys(a.selectedElementIds).filter(id=>a.selectedElementIds[id]),
-   viewport:{scrollX:a.scrollX,scrollY:a.scrollY,zoom:a.zoom.value,width:a.width,height:a.height},clips:o.getClips(),
+   viewport:{scrollX:a.scrollX,scrollY:a.scrollY,zoom:a.zoom.value,width:a.width,height:a.height},
+   clips:o.getClips().flatMap(clip=>{
+    const target=isMaterialClip(clip)?clip:resolveAreaClip(clip,elements,getInteractiveHtmlScroll);
+    return target?[target]:[];
+   }),
    objects:elements.filter(e=>!e.isDeleted&&!richTextImageSourceId(e)).map(e=>({id:e.id,type:e.customData?.materialKind?String(e.customData.materialKind):e.type,x:e.x,y:e.y,width:e.width,height:e.height,angle:e.angle,locked:e.locked,groupIds:e.groupIds,...(e.type==='text'?{text:e.originalText??e.text}:{}),...(typeof e.customData?.archiveMaterialPath==='string'?{materialPath:e.customData.archiveMaterialPath}:{})}))};
  };
  const guard=(command:Exclude<AgentCommand,{type:'inspect'}>,expiresAt:number)=>{
@@ -52,7 +57,11 @@ export function createCanvasAgent(o:Options){
     if(command.elementId){
      if(!o.api.getSceneElements().some(e=>e.id===command.elementId&&canBeMaterialClipElement(e)))throw new Error('Material ist kein gültiges Clipziel.');
      const assignment=assignMaterialClip(current,command.elementId,crypto.randomUUID(),command.number);if(!assignment)throw new Error('Clip konnte nicht angelegt werden.');next=assignment.clips;
-    }else next=readClipFrames([...current.filter(c=>c.number!==command.number),{id:occupied?.id??crypto.randomUUID(),number:command.number,...command.rect}]);
+    }else{
+     if(!command.rect)throw new Error('Cliprahmen fehlt.');
+     next=readClipFrames([...current.filter(c=>c.number!==command.number),
+      bindAreaClip({id:occupied?.id??crypto.randomUUID(),number:command.number,...command.rect},o.api.getSceneElements(),getInteractiveHtmlScroll)]);
+    }
     o.commitClips(next);applied=true;onSaving?.();await o.flush();return {ok:true,applied,persisted:true,state:inspect()};
    }
    let elements:readonly ExcalidrawElement[]=[...o.api.getSceneElementsIncludingDeleted()];const created:Record<string,string[]>={};

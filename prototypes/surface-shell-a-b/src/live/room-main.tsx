@@ -350,7 +350,7 @@ function RoomView() {
           targetMotion.current={generation:message.scene.generation,revision:message.scene.revision,
             dx:Math.sign(deltaX)*Math.min(26,Math.abs(deltaX)/20),
             dy:Math.sign(deltaY)*Math.min(18,Math.abs(deltaY)/20)};
-          objectPreview.current=null;clearTimeout(transformTimeout.current);setRoomReady(false);setHtmlInputReady(false);setTool('hand');locallyScrolled.current.clear();roomScroll.current.clear();innerScroll.current.clear();
+          objectPreview.current=null;clearTimeout(transformTimeout.current);setRoomReady(false);setHtmlInputReady(false);setTool('hand');locallyScrolled.current.clear();scroll.current.clear();roomScroll.current.clear();innerScroll.current.clear();
         }
         for(const asset of message.assets)if(!assets.current.has(asset.id))assets.current.set(asset.id,URL.createObjectURL(asset.blob));
         const nextUrls=Object.fromEntries(message.scene.assetIds.flatMap(id=>assets.current.has(id)?[[id,assets.current.get(id)!]]:[]));
